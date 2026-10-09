@@ -1,5 +1,5 @@
 "use client";
-import {MapPin,Monitor,CalendarDays,ArrowRight,GraduationCap,NotebookPen} from 'lucide-react';
+import {MapPin,Monitor,CalendarDays,ArrowRight,NotebookPen} from 'lucide-react';
 import StudyGraphic from './study-graphic';
 import ReferralHighlight from './referral-highlight';
 import StudyGuide from './study-guide';
@@ -15,7 +15,7 @@ export default function Landing({open}:{open:OpenDialog}){
   <section className="hero wrap marketing-hero">
    <div className="hero-copy">
     <h1>Ripetizioni di matematica<br/><span>e informatica</span></h1>
-    <p>Lavoriamo sugli esercizi e sul codice che stai affrontando a scuola o all’università, cercando di capire i passaggi che ti mettono in difficoltà. Quando qualcosa non è chiaro, lo riprendiamo con altri esempi e proviamo insieme.</p>
+    <p>Do ripetizioni a ragazzi delle superiori e studenti universitari, in studio a Lodi oppure online. Puoi contattarmi per recuperare un argomento, preparare una verifica o organizzare lo studio per un esame, anche se non sai ancora quante lezioni ti serviranno.</p>
     <div className="hero-formats">
      <div><MapPin size={19} aria-hidden="true"/><span><strong>Lezioni in presenza a Lodi</strong><small>Studio in {studio.address}</small></span></div>
      <div><Monitor size={19} aria-hidden="true"/><span><strong>Lezioni in videochiamata</strong><small>Lavagna digitale e schermo condiviso</small></span></div>
@@ -30,8 +30,8 @@ export default function Landing({open}:{open:OpenDialog}){
    <div>
     <h2 id="home-tutor-title">Ciao, sono Francesco</h2>
     <p>Sono laureato in Informatica e sto frequentando la magistrale. Da diversi anni do ripetizioni a ragazzi delle superiori e studenti universitari, e nel tempo ho seguito anche molti ragazzi con DSA.</p>
-    <p>Essendo ancora studente, conosco bene le preoccupazioni prima di una verifica o di un esame. Mi piace che a lezione ci si possa parlare tranquillamente e chiedere di rispiegare anche quello che sembra più semplice, perché spesso una difficoltà nasce proprio da un passaggio rimasto poco chiaro.</p>
-    <ul className="home-tutor-facts"><li><GraduationCap size={20} aria-hidden="true"/>Superiori e università</li><li><NotebookPen size={20} aria-hidden="true"/>Esercizi del tuo programma</li></ul>
+    <p>Essendo ancora studente, so cosa significa passare ore su un argomento e continuare ad avere dubbi. Per questo cerco di mettere i ragazzi a proprio agio, lasciando il tempo di fare domande e provare gli esercizi. Se una spiegazione non basta, la riprendiamo in un altro modo, senza dare per scontato che le basi siano già chiare.</p>
+
     <div className="actions"><a className="text-link" href="/francesco">Qualcosa in più su di me<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
    </div>
   </section>

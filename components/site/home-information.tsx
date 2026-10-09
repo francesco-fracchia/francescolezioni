@@ -1,19 +1,12 @@
-import {ArrowRight,CalendarDays,ChevronDown,ClipboardList,NotebookPen,UserRound,Users} from 'lucide-react';
+import {ArrowRight,ChevronDown,UserRound,Users} from 'lucide-react';
 import {faqEntries} from '@/lib/public-faq';
 import WhatsAppIcon from './whatsapp-icon';
 import type {OpenDialog} from './types';
 
-const firstSteps = [
- {title:'Il primo incontro',detail:'Puoi scegliere dal calendario un incontro gratuito di 15 minuti, durante il quale mi racconti cosa devi preparare e guardiamo il programma. Se mi contatti per tuo figlio, puoi partecipare anche tu.',icon:CalendarDays},
- {title:'Il programma delle lezioni',detail:'Dopo aver visto gli argomenti e la tua preparazione, ci accordiamo su come organizzare le lezioni e valutiamo se farle individualmente o con compagni che studiano le stesse cose.',icon:ClipboardList},
- {title:'Il lavoro a lezione',detail:'Affrontiamo gli esercizi insieme, lasciando anche a te il tempo di provare. Le difficoltà che emergono ci aiutano a capire cosa riprendere e come proseguire negli incontri successivi.',icon:NotebookPen},
-];
-
 export function FirstSteps(){
- return <section className="wrap home-first-steps" aria-labelledby="first-steps-title">
-  <div className="home-section-heading"><div><p className="subject-audience">Prima di prenotare lezioni</p><h2 id="first-steps-title">Come cominciamo</h2></div><a className="text-link" href="/incontro">Il primo incontro<ArrowRight size={18} aria-hidden="true"/></a></div>
-  <ol className="home-step-grid">{firstSteps.map(({title,detail,icon:Icon},index)=><li key={title}><div className="home-step-top"><span>0{index+1}</span><Icon size={24} aria-hidden="true"/></div><h3>{title}</h3><p>{detail}</p></li>)}</ol>
-  <p className="reading-note">Questi 15 minuti servono a conoscerci e parlare del programma. Non sono una lezione di prova e puoi decidere liberamente se proseguire.</p>
+ return <section className="wrap home-first-steps home-start-reading" aria-labelledby="first-steps-title">
+  <div><p className="subject-audience">Il primo incontro è gratuito</p><h2 id="first-steps-title">Prima di iniziare le lezioni</h2><p>Puoi prenotare dal calendario 15 minuti per raccontarmi cosa devi preparare. Guardiamo il programma, gli esercizi che ti creano difficoltà e quanto tempo manca alla verifica o all’esame, così ci facciamo un’idea di come organizzare le lezioni.</p><p>Ti propongo da dove cominciare e valutiamo se lavorare individualmente o con compagni che stanno studiando gli stessi argomenti. Poi sei tu a decidere se proseguire. Questi 15 minuti servono a conoscerci, non sono una lezione di prova.</p><a className="text-link" href="/incontro">Scegli un orario per l’incontro<ArrowRight size={18} aria-hidden="true"/></a></div>
+  <aside><h3>Cosa puoi mostrarmi</h3><p>Il programma della materia e qualche esercizio o verifica sono sufficienti per cominciare. Non serve che tu abbia già capito dove nasce la difficoltà.</p><p>Se mi contatti per tuo figlio, puoi partecipare anche tu. Durante le lezioni partiremo da questi materiali, alternando spiegazioni ed esercizi svolti dallo studente.</p></aside>
  </section>;
 }
 
@@ -21,8 +14,8 @@ export function LessonFormats({open}:{open:OpenDialog}){
  return <section className="wrap home-lesson-formats" aria-labelledby="lesson-formats-title">
   <div className="home-section-heading"><div><p className="subject-audience">A Lodi oppure online · 55 minuti</p><h2 id="lesson-formats-title">Da solo o con i compagni</h2></div><a className="text-link" href="/prezzi">Prezzi e condizioni<ArrowRight size={18} aria-hidden="true"/></a></div>
   <div className="home-format-grid">
-   <article className="home-format-individual"><span className="public-card-label"><UserRound size={20} aria-hidden="true"/>Individuale</span><p className="home-format-price"><strong>20 €</strong><span>per lezione</span></p><h3>Lezioni individuali</h3><p>Nelle lezioni individuali possiamo dedicarci agli argomenti che ti servono, con il tempo necessario per riprendere le basi o soffermarci su un esercizio prima di andare avanti.</p><a className="button outline" href="/incontro">Parliamone nel primo incontro<ArrowRight size={18} aria-hidden="true"/></a></article>
-   <article className="home-format-group"><span className="public-card-label"><Users size={20} aria-hidden="true"/>Gruppo · da 2 a 4 studenti</span><p className="home-format-price"><strong>15 €</strong><span>a persona, per lezione</span></p><h3>Lezioni con i compagni</h3><p>Se tu e i tuoi compagni state preparando gli stessi argomenti, possiamo lavorare insieme. Se invece cerchi un gruppo, puoi lasciarmi programma e disponibilità e vedrò se ci sono altri studenti con cui organizzarlo.</p><div className="actions"><button className="button dark" onClick={()=>open('group',undefined,true)}>Ho già un compagno</button><button className="text-link" onClick={()=>open('group')}>Cerco un gruppo<ArrowRight size={18} aria-hidden="true"/></button></div></article>
+   <article className="home-format-individual"><h3 className="home-format-heading"><UserRound size={22} aria-hidden="true"/>Lezioni individuali</h3><p className="home-format-price"><strong>20 €</strong><span>per lezione</span></p><p>Se hai bisogno di recuperare un argomento o preparare un esame, nelle lezioni individuali seguiamo il tuo programma e ci fermiamo sugli esercizi che richiedono più tempo. Puoi scegliere un solo incontro oppure continuare con altre lezioni, a seconda di quello che ti serve.</p><a className="button outline" href="/incontro">Parliamone nel primo incontro<ArrowRight size={18} aria-hidden="true"/></a></article>
+   <article className="home-format-group"><h3 className="home-format-heading"><Users size={22} aria-hidden="true"/>Lezioni di gruppo</h3><p className="home-format-price"><strong>15 €</strong><span>a persona, per lezione</span></p><p>Le lezioni di gruppo sono per 2–4 studenti con un programma e una preparazione compatibili. Se hai già dei compagni, possiamo accordarci per studiare insieme; altrimenti lasciami i tuoi argomenti e gli orari in cui sei disponibile, così posso cercare un gruppo da proporti.</p><div className="actions"><button className="button dark" onClick={()=>open('group',undefined,true)}>Ho già un compagno</button><button className="text-link" onClick={()=>open('group')}>Cerco un gruppo<ArrowRight size={18} aria-hidden="true"/></button></div></article>
   </div>
   <div className="home-package-note"><p>Puoi anche concordare un pacchetto di <strong>5 lezioni individuali a 95 €</strong>, dopo aver parlato del programma e delle condizioni.</p><a className="text-link" href="/prezzi">Dettagli del pacchetto<ArrowRight size={18} aria-hidden="true"/></a></div>
   <p className="reading-note">Non paghi nulla per chiedere un gruppo e decidi se partecipare quando ti propongo i compagni e gli orari. Potrebbe volerci un po’ di tempo per trovare persone con programmi e preparazione compatibili.</p>

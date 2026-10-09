@@ -1,6 +1,6 @@
 "use client";
 import {useState} from 'react';
-import {Check,Clock,Users,UserRound} from 'lucide-react';
+import {Clock,Users,UserRound} from 'lucide-react';
 import CardArt from './card-art';
 import type {OpenDialog} from './types';
 export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGroupSize]=useState(2);return <>      <section id="prezzi" className="section wrap">
@@ -28,18 +28,8 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             <p className="duration">
               <Clock size={16} /> 55 minuti
             </p>
-            <p className="package-price-note"><strong>5 lezioni a 95 €</strong>, pagate insieme: 19 € per lezione. Concordiamo prima programma e condizioni. Dopo l’acquisto puoi fissare gli orari aperti. Il credito invito non si somma al pacchetto.</p><p>Il ritmo della lezione dipende da quello che ti serve. Possiamo fermarci su un passaggio e riprenderlo prima di andare avanti.</p>
-            <ul>
-              <li>
-                <Check /> Una lezione solo per te
-              </li>
-              <li>
-                <Check /> Esercizi del tuo programma
-              </li>
-              <li>
-                <Check /> Un piano di studio per quello che devi preparare
-              </li>
-            </ul>
+            <p className="package-price-note"><strong>5 lezioni a 95 €</strong>, pagate insieme, quindi 19 € per lezione. Concordiamo prima programma e condizioni. Dopo l’acquisto puoi fissare gli orari aperti. Il credito invito non si somma al pacchetto.</p><p>Il ritmo della lezione dipende da quello che ti serve. Possiamo fermarci su un passaggio e riprenderlo prima di andare avanti.</p>
+            <p>Lavoriamo sugli esercizi del tuo programma e organizziamo lo studio in base alla verifica o all’esame che devi preparare.</p>
             <a className="button dark" href="/acquista">Singola lezione o pacchetto</a>
             <button className="text-link calendar-link" onClick={() => open("contact")}>Chiedi informazioni</button>
           </article>
@@ -56,17 +46,7 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             <p>
               Lavorate sugli stessi argomenti. Ciascuno può fare domande e svolgere esercizi.
             </p>
-            <ul>
-              <li>
-                <Check /> Programmi e preparazione verificati da me
-              </li>
-              <li>
-                <Check /> Esercizi da svolgere e discutere insieme
-              </li>
-              <li>
-                <Check /> Lista d’attesa gratuita, senza obbligo di partecipare
-              </li>
-            </ul>
+            <p>Prima di proporre un gruppo controllo che programmi e preparazione siano compatibili. Puoi lasciare gratuitamente la tua disponibilità e decidere se partecipare quando ricevi una proposta.</p>
             <div className="group-explorer">
               <div className="group-explorer-top"><span>Quanti siete?</span><div className="group-size-options" aria-label="Numero di studenti">{[2,3,4].map(size => <button key={size} aria-pressed={groupSize === size} onClick={() => setGroupSize(size)}>{size}</button>)}</div></div>
               <div className="group-people" aria-hidden="true">{Array.from({length:4},(_,i) => <span key={i} className={i < groupSize ? 'present' : ''}><UserRound size={22}/></span>)}</div>
@@ -89,5 +69,5 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
           Ogni lezione dura 55 minuti. Lascio 5 minuti tra un appuntamento e il successivo.
         </p>
       </section>
-      <section className="group-note wrap"><h2>Come trovare un gruppo</h2><p>Se non hai già un compagno, lasciami programma e disponibilità nella lista gratuita. Ti scrivo quando trovo studenti con una preparazione e orari compatibili. Per l’università controllo anche ateneo, docente e appello. Ricevi la proposta e decidi se partecipare. Il gruppo non si forma automaticamente: può servire tempo per trovare persone compatibili.</p></section>
+      <section className="group-note wrap"><h2>Come trovare un gruppo</h2><p>Se non hai già un compagno, lasciami programma e disponibilità nella lista gratuita. Ti scrivo quando trovo studenti con una preparazione e orari compatibili. Per l’università controllo anche ateneo, docente e appello. Ricevi la proposta e decidi se partecipare. Può servire tempo per trovare persone compatibili, quindi l’iscrizione alla lista non garantisce che si formi un gruppo.</p></section>
 </>;}

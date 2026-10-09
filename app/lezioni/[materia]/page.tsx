@@ -69,11 +69,11 @@ export default async function SubjectPage({ params }: Props) {
 
       <section className="subject-about">
         <h2>Ciao, sono Francesco.</h2>
-        <p>Sono laureato in Informatica e frequento la magistrale. Puoi farmi domande e chiedermi di rispiegare un passaggio: lo riprendiamo insieme.</p><a className="text-link" href="/francesco">La mia esperienza e il rapporto con gli studenti</a>
+        <p>Sono laureato in Informatica e sto frequentando la magistrale. Durante le lezioni cerco di lasciare spazio alle domande, anche quando c’è da riprendere un passaggio che abbiamo già visto.</p><a className="text-link" href="/francesco">La mia esperienza e il rapporto con gli studenti</a>
       </section>
 
       <section className="subject-programs">
-        <h2>Programmi da consultare</h2><p><a href="/esami">Esami universitari: argomenti e numero di lezioni</a> · <a href="/maturita">Ripasso per la maturità</a></p>
+        <h2>Programmi da consultare</h2><p><a href="/esami">Argomenti e lezioni per gli esami universitari</a> · <a href="/maturita">Ripasso per la maturità</a></p>
         <p>Puoi leggere gli argomenti dei percorsi. I corsi registrati sono in preparazione e non sono ancora in vendita.</p>
         <div className="subject-page-links">{paths.map(path => <a key={path.slug} className="text-link" href={`/percorsi?percorso=${path.slug}`}>{path.name}</a>)}</div>
       </section>
