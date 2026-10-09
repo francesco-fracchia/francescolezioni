@@ -1,49 +1,46 @@
 "use client";
-import {MapPin,Monitor,CalendarDays,ArrowRight,NotebookPen} from 'lucide-react';
+import {MapPin,Monitor,CalendarDays,ChevronDown,ArrowRight} from 'lucide-react';
 import StudyGraphic from './study-graphic';
 import ReferralHighlight from './referral-highlight';
 import StudyGuide from './study-guide';
 import AvailabilityPreview from './availability-preview';
 import PlatformExample from './platform-example';
-import {FirstSteps,LessonFormats,ParentQuestions} from './home-information';
+import {LessonFormats,ParentQuestions} from './home-information';
 import WhatsAppIcon from './whatsapp-icon';
 import {studio} from '@/lib/public-offer';
 import type {OpenDialog} from './types';
 
 export default function Landing({open}:{open:OpenDialog}){
- return <main className="home-compact">
+ return <main className="home-compact home-editorial">
   <section className="hero wrap marketing-hero">
    <div className="hero-copy">
-    <h1>Ripetizioni di matematica<br/><span>e informatica</span></h1>
-    <p>Do ripetizioni a ragazzi delle superiori e studenti universitari, in studio a Lodi oppure online. Puoi contattarmi per recuperare un argomento, preparare una verifica o organizzare lo studio per un esame, anche se non sai ancora quante lezioni ti serviranno.</p>
+    <h1>Ripetizioni di matematica e informatica</h1>
+    <p>Do ripetizioni a ragazzi delle superiori e studenti universitari, in studio a Lodi oppure online. Puoi contattarmi per recuperare un argomento, preparare una verifica o un esame.</p>
     <div className="hero-formats">
-     <div><MapPin size={19} aria-hidden="true"/><span><strong>Lezioni in presenza a Lodi</strong><small>Studio in {studio.address}</small></span></div>
-     <div><Monitor size={19} aria-hidden="true"/><span><strong>Lezioni in videochiamata</strong><small>Lavagna digitale e schermo condiviso</small></span></div>
+     <div><MapPin size={19} aria-hidden="true"/><span><strong>In presenza a Lodi</strong><small>{studio.address}</small></span></div>
+     <div><Monitor size={19} aria-hidden="true"/><span><strong>In videochiamata</strong><small>Lavagna digitale e schermo condiviso</small></span></div>
     </div>
-    <div className="actions"><a className="button dark" href="/incontro"><CalendarDays aria-hidden="true" size={19}/>Prenota un incontro gratuito</a><a className="button outline" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>Scrivimi su WhatsApp</a></div>
+    <div className="actions"><a className="button dark" href="/incontro"><CalendarDays aria-hidden="true" size={19}/>Prenota un incontro gratuito</a><a className="text-link hero-whatsapp" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>Scrivimi su WhatsApp</a></div>
    </div>
-   <StudyGraphic/>
+   <figure className="hero-portrait"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} fetchPriority="high"/><figcaption>Francesco Fracchia</figcaption></figure>
   </section>
-  <div className="wrap home-guide"><StudyGuide/></div>
   <section className="wrap home-tutor" aria-labelledby="home-tutor-title">
-   <div className="home-tutor-photo"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} loading="lazy"/></div>
+   <div><h2 id="home-tutor-title">Ciao, sono Francesco</h2><a className="text-link" href="/francesco">La mia formazione ed esperienza<ArrowRight size={18} aria-hidden="true"/></a></div>
    <div>
-    <h2 id="home-tutor-title">Ciao, sono Francesco</h2>
-    <p>Sono laureato in Informatica e sto frequentando la magistrale. Da diversi anni do ripetizioni a ragazzi delle superiori e studenti universitari, e nel tempo ho seguito anche molti ragazzi con DSA.</p>
-    <p>Essendo ancora studente, so cosa significa passare ore su un argomento e continuare ad avere dubbi. Per questo cerco di mettere i ragazzi a proprio agio, lasciando il tempo di fare domande e provare gli esercizi. Se una spiegazione non basta, la riprendiamo in un altro modo, senza dare per scontato che le basi siano già chiare.</p>
-
-    <div className="actions"><a className="text-link" href="/francesco">Qualcosa in più su di me<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
+    <p>Sono laureato in Informatica e sto frequentando la magistrale. Da diversi anni do ripetizioni a ragazzi delle superiori e studenti universitari, e ho seguito anche molti ragazzi con DSA.</p>
+    <p>Sono ancora studente anch’io e conosco la frustrazione di passare ore su un argomento che non torna. A lezione puoi farmi domande e chiedermi di rispiegare un passaggio, anche se l’abbiamo già visto.</p>
+    <a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a>
    </div>
   </section>
-  <FirstSteps/>
+  <div className="wrap home-guide"><StudyGuide/><details className="home-live-example"><summary>Prova un esercizio di matematica o informatica<ChevronDown size={19} aria-hidden="true"/></summary><div className="home-live-content"><p>Cambia il valore con il cursore e osserva il grafico o il risultato del codice.</p><StudyGraphic/></div></details><button className="text-link home-test-link" onClick={()=>open('test')}>Fai il test gratuito sulle basi<ArrowRight size={18} aria-hidden="true"/></button></div>
   <LessonFormats open={open}/>
+  <div className="wrap home-calendar"><AvailabilityPreview/></div>
   <section className="home-platform-band">
    <div className="wrap home-platform">
-    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Esercizi e materiali nell’area studente</h2><p>Ho costruito una piattaforma per raccogliere il lavoro che facciamo insieme. Se durante le lezioni decidiamo di aggiungere qualche esercizio da svolgere a casa, potrai consegnarlo nella tua area e ritrovare lì i materiali e le mie correzioni.</p><p className="reading-note">L’uso della piattaforma e il lavoro da casa dipendono da quello che concordiamo. Sto preparando gli accessi e i contenuti per l’apertura.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
+    <div className="home-platform-copy"><h2>Esercizi e correzioni nell’area studente</h2><p>Nell’area studente trovi i materiali delle lezioni e puoi caricare gli esercizi da correggere. Il lavoro da fare a casa è facoltativo e ci accordiamo durante le lezioni su quali esercizi seguirò.</p><a className="text-link" href="/piattaforma">Come funziona la piattaforma<ArrowRight size={18} aria-hidden="true"/></a><p className="reading-note">Sto preparando gli accessi e i contenuti per l’apertura.</p></div>
     <PlatformExample/>
    </div>
   </section>
-  <div className="wrap home-calendar"><AvailabilityPreview/></div>
   <div className="wrap"><ReferralHighlight/></div>
   <ParentQuestions/>
  </main>;
