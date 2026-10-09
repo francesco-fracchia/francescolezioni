@@ -3,13 +3,14 @@ import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import path from 'node:path';
 
-const nodeRuntime = process.env.APP_RUNTIME === 'node';
+const runtime = process.env.VERCEL === '1' || process.env.APP_RUNTIME === 'vercel' ? 'vercel' : process.env.APP_RUNTIME === 'node' ? 'node' : 'cloudflare';
+const nodeRuntime = runtime === 'node';
 
 const nextConfig: NextConfig = {
   // Preserve the real request origin, including loopback hosts in local QA.
   skipProxyUrlNormalize: true,
-  ...(nodeRuntime ? {} : { output: 'standalone' as const }),
-  env: { APP_RUNTIME: nodeRuntime ? 'node' : 'cloudflare' },
+  ...(runtime === 'cloudflare' ? { output: 'standalone' as const } : {}),
+  env: { APP_RUNTIME: runtime },
   outputFileTracingRoot: process.cwd(),
   turbopack: { root: process.cwd() },
   images: { unoptimized: true },
@@ -23,6 +24,12 @@ const nextConfig: NextConfig = {
         path.resolve('lib/node/unavailable.mjs'),
       ));
     }
+    if (runtime !== 'vercel') {
+      config.plugins.push(new webpack.NormalModuleReplacementPlugin(
+        /(?:^|\/)vercel\/runtime\.mjs$/,
+        path.resolve('lib/vercel/unavailable.mjs'),
+      ));
+    }
     return config;
   },
   async headers() {
@@ -33,7 +40,7 @@ const nextConfig: NextConfig = {
 };
 
 export default async function config(phase: string) {
-  if (phase === PHASE_DEVELOPMENT_SERVER && !nodeRuntime) {
+  if (phase === PHASE_DEVELOPMENT_SERVER && runtime === 'cloudflare') {
     await initOpenNextCloudflareForDev({
       configPath: 'wrangler.jsonc',
       persist: { path: '.wrangler/state/v3' },

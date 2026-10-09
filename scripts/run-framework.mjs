@@ -1,10 +1,9 @@
 import './sites-env.mjs';
 import { fileURLToPath } from 'node:url';
 const [command, ...args] = process.argv.slice(2);
-// Vercel cannot use Sites bindings or the Hostinger disk-backed database.
-// Fail at build time rather than deploy a site whose data routes fail at runtime.
 if (process.env.VERCEL === '1') {
-  throw new Error('Vercel: external database and private material storage must be configured with a Vercel runtime first. Sites D1/R2 bindings and the Hostinger local SQLite runtime cannot be deployed directly. See deploy/vercel/README.md.');
+  await import('./run-vercel.mjs');
+  process.exit(process.exitCode ?? 0);
 }
 if (command === 'dev') {
   process.env.NODE_ENV = 'development';

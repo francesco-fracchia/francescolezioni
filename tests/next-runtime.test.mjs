@@ -51,6 +51,7 @@ test('Next runtime bindings are lazy and stay inside each request', async () => 
   };
   try {
     const source = (await readFile(new URL('../lib/runtime-env.ts', import.meta.url), 'utf8'))
+      .replace("import { getVercelResources } from '@/lib/vercel/runtime.mjs';", 'const getVercelResources = () => { throw new Error("Unexpected Vercel runtime"); };')
       .replace("import { getNodeResources } from '@/lib/node/runtime.mjs';", 'const getNodeResources = () => { throw new Error("Unexpected Node runtime"); };')
       .replace("import { getCloudflareContext } from '@opennextjs/cloudflare';", 'const getCloudflareContext = globalThis.__nextRuntimeContext;');
     const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;

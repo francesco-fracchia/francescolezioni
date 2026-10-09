@@ -1,27 +1,53 @@
 # Passaggio a Vercel
 
-Stato: sorgenti preparati per GitHub; **adattamento Vercel ancora da completare**, nessun progetto distribuito e nessun servizio acquistato.
+La build Next.js ora è compatibile con Vercel. **Il primo deploy mostra “Sito in preparazione”**: non accetta prenotazioni, non apre gli account e non crea un database sul disco effimero delle funzioni. Il Site esistente rimane privato e separato.
 
-L'app usa Next.js App Router. Gli account sono propri, con email/password; le regole di calendario, corsi, pacchetti e inviti sono già implementate. La presenza di Next.js non rende automaticamente compatibili il database e l'archivio dei file con ogni hosting.
+## Importazione e build
 
-## Prima di importare e distribuire
+Repository: https://github.com/francesco-fracchia/francescolezioni
 
-1. Verificare il piano: Hobby è riservato all'uso personale non commerciale; per il sito delle lezioni serve un piano adatto all'attività. Pro parte da 20 USD/mese, oltre a imposte ed eventuali consumi aggiuntivi. Nessun abbonamento è stato attivato.
-2. Scegliere il database remoto e l'archivio privato dei materiali. Una possibilità da valutare è D1 e R2 in un account Cloudflare del titolare: le migrazioni e i trigger esistenti sono già per D1. Le risorse del Site privato non appartengono automaticamente a questo account e non vanno considerate trasferite.
-3. Implementare e verificare l'adapter remoto: transazioni atomiche per prenotazioni/saldi, sessioni, accesso ai file e gestione degli errori. Non sostituire `batch` con richieste separate non atomiche.
-4. Adeguare gli upload: le funzioni Vercel hanno un limite di 4,5 MB al corpo delle richieste. I file più grandi devono essere caricati direttamente nell'archivio privato tramite autorizzazione temporanea, poi verificati dal server prima di essere associati a un corso o a un compito. Servono controlli su ruolo, destinatario, dimensione, contenuto e scadenza; niente bucket pubblico.
-5. Collaudare build Vercel, login, isolamento tra studenti, calendario concorrente, upload/download e persistenza dopo un nuovo deploy. Solo dopo trasferire dati operativi e collegare il dominio.
+- Framework: **Next.js**. Root directory: radice della repository.
+- Installazione: `npm ci`. Build: `npm run build`. Output directory: predefinita Next.js.
+- Node: serie **24** oppure **22.16+** della serie 22.
+- Non usare i comandi `build:sites` o `build:hostinger` su Vercel.
 
-La build attuale si interrompe esplicitamente su Vercel: evita di distribuire per errore la configurazione Sites, priva dei binding, oppure il runtime Hostinger che conserva SQLite sul disco. Non usare `build:hostinger`, `APP_DATA_DIR` o `/tmp` come database di produzione Vercel.
+`VERCEL=1` seleziona automaticamente il runtime remoto. Per verificare la sola build fuori da Vercel: `npm run build:vercel`. La build non richiede credenziali e non applica migrazioni, crea account o trasferisce dati.
 
-## GitHub e impostazioni finali
+## Servizi dati
 
-Repository indicata: https://github.com/francesco-fracchia/francescolezioni
+Il runtime remoto mantiene il contratto D1 già usato dalle migrazioni e dai trigger della piattaforma:
 
-I sorgenti per la repository pubblica devono escludere `.env*`, `.dev.vars*`, database, backup, materiali privati, `.openai`, `.vercel`, stato locale e `PASSAGGIO_CHAT.md`. La copia iniziale conserva il codice e i test senza pubblicare la cronologia del workspace o gli appunti interni.
+- **Cloudflare D1**, via API HTTPS con query parametrizzate e batch inviati in una sola richiesta. Nessuna ripetizione automatica delle scritture dal risultato incerto.
+- **Cloudflare R2**, tramite SDK S3, bucket privato, download autorizzati dal server e intervalli per PDF/video. Nessun URL pubblico ai materiali.
 
-Una volta completato l'adattamento: importare la repository, scegliere Next.js, configurare le variabili segrete solo nel pannello Vercel e separare database/archivi di anteprima e produzione. Non collegare gli stessi dati operativi alle anteprime di ogni branch.
+Configurazione di esempio: `deploy/vercel/runtime.env.example`. Le sei variabili dei servizi vanno aggiunte nel pannello Vercel: `CF_ACCOUNT_ID`, `CF_D1_DATABASE_ID`, `CF_D1_API_TOKEN`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`. Token e chiavi sono segreti server, senza prefisso `NEXT_PUBLIC_`; limitarli al database e al bucket necessari. Usare risorse distinte per Production e Preview. Non collegare i dati operativi alle anteprime dei branch.
 
-Il dominio può essere registrato su Hostinger e collegato a Vercel tramite i record mostrati dal progetto Vercel. Il dominio definitivo non è ancora confermato. Il Site esistente resta privato; email e pagamenti reali restano disattivati. La pubblicazione del codice su GitHub non pubblica la piattaforma o i suoi dati.
+Le risorse del Site privato non vengono trasferite né diventano accessibili aggiungendo la repository. Occorre predisporre D1/R2 nell'account del titolare, applicare in ordine le migrazioni in `drizzle`, trasferire dati e oggetti mantenendo gli identificativi e predisporre il tutor con password propria. Non esistono account amministrativi o password predefiniti.
 
-Fonti: [Next.js su Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs), [Hobby](https://vercel.com/docs/plans/hobby), [Pro](https://vercel.com/docs/plans/pro-plan), [limiti delle funzioni](https://vercel.com/docs/functions/limitations), [API D1](https://developers.cloudflare.com/api/resources/d1/subresources/database/methods/query/), [R2 S3](https://developers.cloudflare.com/r2/get-started/s3/).
+## Stato e apertura del runtime
+
+Anche con le credenziali presenti, `VERCEL_RUNTIME_READY` resta **0**. Portarlo a `1` solo dopo il collaudo remoto delle migrazioni, degli accessi e dei file. Senza questa conferma le pagine operative mostrano la preparazione, le API restituiscono 503, robots e sitemap escludono l'indicizzazione. La pagina di preparazione e le sue risorse sono accessibili per verificare il deploy.
+
+Dopo il collaudo mantenere `SITE_VISIBILITY=private`: l'accesso alle pagine operative richiede una sessione tutor valida. Le identità e gli header ChatGPT non autorizzano questo ambiente. `PUBLIC_SITE_INDEXING=false`, `NOTIFICATIONS_MODE=preview` e `PAYMENT_LIVE_ENABLED=0` mantengono indicizzazione, invio email e pagamenti reali disattivati. Nei deploy non Production invio reale e Stripe sono esclusi anche dal runtime. L'apertura pubblica è un passaggio separato dal deploy di prova.
+
+## Da completare prima dell'uso operativo
+
+1. Provisioning del database e dell'archivio privato; migrazioni e importazione controllata; primo account tutor indipendente.
+2. **Upload diretti autorizzati**: Vercel limita il corpo delle richieste a 4,5 MB. Gli upload attuali passano dal server (materiali fino a 50 MB, compiti fino a 10 MB) e i file grandi non sono ancora utilizzabili su Vercel. Il supporto agli stream nell'adapter non elimina il limite della piattaforma. Servono autorizzazioni temporanee, verifica di ruolo/destinatario/dimensione/contenuto e finalizzazione server; il bucket deve rimanere privato.
+3. Verifiche sul provider reale: concorrenza e rollback delle prenotazioni/saldi, login e isolamento tra studenti, upload/download, range video, errori di rete e persistenza dopo un nuovo deploy. I test locali dell'adapter usano un trasporto simulato e **non certificano un collegamento Cloudflare reale**.
+4. Verifica del piano Vercel adatto all'attività, dominio definitivo e successiva apertura autorizzata. Nessun servizio, piano o dominio è stato acquistato da questi script.
+
+## Verifica locale
+
+```sh
+npm ci
+npm test
+npm run build:vercel
+npx tsc --noEmit
+```
+
+Eseguire il controllo TypeScript dopo la build, non contemporaneamente: Next rigenera `.next/types`. Per il controllo HTTP della preparazione, `npm run start:vercel -- --hostname 127.0.0.1 --port 5186`, senza configurazione dei servizi. Le pagine operative devono mostrare la preparazione, le API 503 e robots `Disallow: /`.
+
+La copia GitHub esclude `.env*`, `.dev.vars*`, database, backup, materiali privati, `.openai`, `.vercel`, stato locale e `PASSAGGIO_CHAT.md`. Non pubblicare la cronologia privata del workspace. Il dominio può rimanere registrato su Hostinger e puntare ai record indicati da Vercel, dopo la scelta del nome e il collaudo.
+
+Fonti: [Next.js su Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs), [Hobby](https://vercel.com/docs/plans/hobby), [limiti delle funzioni](https://vercel.com/docs/functions/limitations), [API D1](https://developers.cloudflare.com/api/resources/d1/subresources/database/methods/query/), [R2 S3](https://developers.cloudflare.com/r2/get-started/s3/).

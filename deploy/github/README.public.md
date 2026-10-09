@@ -8,7 +8,7 @@ Next.js App Router, React, TypeScript. Il codice comprende sito pubblico, accoun
 
 - **Sites/Cloudflare**: runtime con binding D1 e R2 e migrazioni in `drizzle`. Il Site attuale rimane privato.
 - **Hostinger/VPS**: runtime Node indipendente, SQLite e materiali su disco privato persistente. Istruzioni in `deploy/hostinger/README.md`.
-- **Vercel**: Next.js è supportato, ma l'adattamento di database e materiali è ancora da completare. Consultare `deploy/vercel/README.md` prima di importare il progetto. Il codice impedisce la build Vercel con il runtime attuale per evitare una distribuzione non funzionante.
+- **Vercel**: build Next.js compatibile, adapter remoto per D1/R2 e pagina di preparazione finché i servizi non sono pronti. L’ambiente operativo resta chiuso. Provisioning, collaudo remoto e upload diretti dei file grandi sono ancora da completare: vedere `deploy/vercel/README.md`.
 
 Questa repository contiene sorgenti e test, senza credenziali, dati degli studenti, materiali caricati o cronologia privata del workspace. Non contiene un database inizializzato né account amministrativi predefiniti.
 

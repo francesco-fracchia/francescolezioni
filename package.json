@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": "^22.16.0 || >=24.0.0"
+    "node": "^22.16.0 <23 || 24.x"
   },
   "scripts": {
     "install:ci": "node scripts/install-ci.mjs",
@@ -20,9 +20,13 @@
     "start:hostinger": "node scripts/run-hostinger.mjs start",
     "db:hostinger": "node scripts/hostinger-database.mjs",
     "package:hostinger": "node scripts/package-hostinger.mjs",
-    "materials:hostinger": "node scripts/hostinger-materials.mjs"
+    "materials:hostinger": "node scripts/hostinger-materials.mjs",
+    "build:vercel": "node scripts/run-vercel.mjs build",
+    "dev:vercel": "node scripts/run-vercel.mjs dev",
+    "start:vercel": "node scripts/run-vercel.mjs start"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1148.0",
     "@base-ui/react": "^1.7.0",
     "@hookform/resolvers": "^5.7.1",
     "@opennextjs/cloudflare": "1.20.9",

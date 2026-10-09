@@ -20,7 +20,7 @@ const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   // Outside Sites these headers are ordinary client input, never an identity.
-  if (process.env.APP_RUNTIME === 'node') return null;
+  if (process.env.APP_RUNTIME === 'node' || process.env.APP_RUNTIME === 'vercel') return null;
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
