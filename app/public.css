@@ -202,28 +202,28 @@
 @media(max-width:780px){.home-guide{padding-top:28px}}
 @media(max-width:560px){.guide-subjects>div{grid-template-columns:1fr}.guide-subjects button{min-height:76px;padding:14px}.hero-formats{margin:24px 0}}
 
-/* Accenti per distinguere scelta, inviti e sede; blu conservato per la navigazione. */
-.public-shell{--sage-ink:#245c43;--sage-paper:#edf5ef;--violet-ink:#65458c;--violet-paper:#f3eef9;--warm-ink:#865b32;--warm-paper:#fcf4e9}
+/* Accenti verdi discreti; inviti e avvisi restano nella palette blu. */
+.public-shell{--sage-ink:#245c43;--sage-paper:#edf5ef;--accent-ink:#376eb9;--accent-paper:#edf3ff}
 .public-shell .study-guide{background:var(--sage-paper);border-color:#cfddd1}
 .study-guide .subject-audience{color:var(--sage-ink)}
 .public-shell .study-guide h2,.study-guide h3{color:#173f36}
 .public-shell .guide-options button{border-color:#b6c9be;color:#245c43}
 .public-shell .guide-options button[aria-pressed=true]{background:#245c43;border-color:#245c43;color:white}
 .public-shell .study-guide .button.dark{background:#245c43;border-color:#245c43;color:white}
-.public-shell .referral-highlight{background:var(--violet-paper);border-color:#ddd0ee}
-.referral-highlight .public-card-label,.referral-highlight-rewards article svg{color:var(--violet-ink)}
-.referral-highlight h2,.referral-highlight-rewards article strong{color:#493169}
-.referral-highlight-rewards article{border-color:#ddd0ee}
+.public-shell .referral-highlight{background:var(--accent-paper);border-color:#d4deef}
+.referral-highlight .public-card-label,.referral-highlight-rewards article svg{color:var(--accent-ink)}
+.referral-highlight h2,.referral-highlight-rewards article strong{color:#0f2d5b}
+.referral-highlight-rewards article{border-color:#d4deef}
 .home-explore article:first-child{background:#f1f7f3;border-color:#d4e2d8}
 .home-explore article:first-child .public-card-label{color:#245c43}
-.home-explore article:last-child{background:var(--warm-paper);border-color:#e7d9c9}
-.home-explore article:last-child .public-card-label{color:var(--warm-ink)}
-.home-help .contact-prompts>div{border-color:#d4b38f}
-.home-help .contact-prompts dt{color:#79502d}
+.home-explore article:last-child{background:#f7faff;border-color:#d4deef}
+.home-explore article:last-child .public-card-label{color:#406aa5}
+.home-help .contact-prompts>div{border-color:#b4c9ec}
+.home-help .contact-prompts dt{color:#406aa5}
 .public-shell .ai-approach .reading-emphasis{border-color:#7da78a;color:#245c43}
 .subject-comparison article{border-color:#a9c9b4}
 .subject-comparison svg{color:#34785a}
-.reading-callout{background:#fcf4e9;border-color:#d4b38f}
+.reading-callout{background:#f7faff;border-color:#b4c9ec}
 .public-shell .group-price{background:#f1f7f3;border-color:#c6d9cb}
 .public-shell .group-price .price,.public-shell .group-price h2{color:#245c43}
 .public-shell .public-footer{background:#122b43;color:#eaf0f6;border-color:#263f56;padding:48px 0 95px}
@@ -261,13 +261,12 @@
 
 .public-shell .public-breadcrumbs{position:static;background:transparent;box-shadow:none;border:0;border-radius:0}
 
-.site-preview-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(24px,calc((100vw - 1200px)/2));background:#fff7e6;color:#725319;border-bottom:1px solid #ebdec0;font-size:12px}.site-preview-bar>div{display:flex;align-items:center;gap:10px}.site-preview-bar p{margin:0;line-height:1.5}.site-preview-bar p strong{display:block;font-weight:600}.site-preview-bar p span{display:block;color:#8a7143}.site-preview-bar button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 11px;min-height:40px;background:#fffdf8;border:1px solid #e1d2af;border-radius:8px;color:#725319;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer}.site-preview-bar button:hover{background:#f5ebd5}.site-preview-bar button:disabled{opacity:.6;cursor:wait}.site-preview-bar>p[role=alert]{color:#a52c37}@media(max-width:480px){.site-preview-bar{padding:11px 16px;align-items:start;flex-wrap:wrap;gap:7px 12px}.site-preview-bar p span{font-size:11px}.site-preview-bar button{font-size:11px;min-height:40px}}
+.site-preview-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(24px,calc((100vw - 1200px)/2));background:#edf2fa;color:#0f2d5b;border-bottom:1px solid #d4deef;font-size:12px}.site-preview-bar>div{display:flex;align-items:center;gap:10px}.site-preview-bar p{margin:0;line-height:1.5}.site-preview-bar p strong{display:block;font-weight:600}.site-preview-bar p span{display:block;color:#52647c}.site-preview-bar button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 11px;min-height:40px;background:#ffffff;border:1px solid #b4c9ec;border-radius:8px;color:#0f2d5b;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer}.site-preview-bar button:hover{background:#e2ebfa}.site-preview-bar button:disabled{opacity:.6;cursor:wait}.site-preview-bar>p[role=alert]{color:#a52c37}@media(max-width:480px){.site-preview-bar{padding:11px 16px;align-items:start;flex-wrap:wrap;gap:7px 12px}.site-preview-bar p span{font-size:11px}.site-preview-bar button{font-size:11px;min-height:40px}}
 
 /* Home: first contact, lesson formats and a real interactive example. */
 .home-tutor{display:grid;grid-template-columns:minmax(220px,.65fr) minmax(0,1.35fr);gap:70px;align-items:center;padding-block:70px}
 .home-tutor-photo{max-width:340px;position:relative;margin-inline:auto;width:100%}
 .home-tutor-photo img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:center 30%;border-radius:24px;background:#edf3ff}
-.home-tutor-photo>span{position:absolute;bottom:16px;left:16px;right:16px;background:#ffffffed;padding:12px 16px;border-radius:12px;font-size:13px;text-align:center}
 .home-tutor h2,.home-section-heading h2,.home-platform h2,.home-parent-questions h2{font-size:clamp(1.9rem,3vw,2.7rem);line-height:1.15;margin:0 0 22px}
 .home-tutor p{font-size:17px;max-width:660px}
 .home-tutor-facts{display:flex;flex-wrap:wrap;gap:12px 25px;list-style:none;padding:0;margin:24px 0}

@@ -15,7 +15,7 @@ export default function Landing({open}:{open:OpenDialog}){
   <section className="hero wrap marketing-hero">
    <div className="hero-copy">
     <h1>Ripetizioni di matematica<br/><span>e informatica</span></h1>
-    <p>Se un esercizio non ti torna o il codice non funziona, partiamo da lì. Ti spiego i passaggi, poi provi tu. E quando c’è un dubbio ci fermiamo.</p>
+    <p>Lavoriamo sugli esercizi e sul codice che stai affrontando a scuola o all’università, cercando di capire i passaggi che ti mettono in difficoltà. Quando qualcosa non è chiaro, lo riprendiamo con altri esempi e proviamo insieme.</p>
     <div className="hero-formats">
      <div><MapPin size={19} aria-hidden="true"/><span><strong>Lezioni in presenza a Lodi</strong><small>Studio in {studio.address}</small></span></div>
      <div><Monitor size={19} aria-hidden="true"/><span><strong>Lezioni in videochiamata</strong><small>Lavagna digitale e schermo condiviso</small></span></div>
@@ -26,11 +26,11 @@ export default function Landing({open}:{open:OpenDialog}){
   </section>
   <div className="wrap home-guide"><StudyGuide/></div>
   <section className="wrap home-tutor" aria-labelledby="home-tutor-title">
-   <div className="home-tutor-photo"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} loading="lazy"/><span>Il tuo insegnante, dal primo incontro.</span></div>
+   <div className="home-tutor-photo"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} loading="lazy"/></div>
    <div>
-    <p className="subject-audience">Ciao, sono Francesco.</p><h2 id="home-tutor-title">Puoi chiedermi di rispiegare.</h2>
-    <p>Sono laureato in Informatica e frequento la magistrale. Seguo ragazzi delle superiori e universitari da diversi anni; ho lavorato anche con molti ragazzi con DSA.</p>
-    <p>Puoi farmi domande o interrompermi. Cerchiamo il passaggio che crea difficoltà, senza dare per scontato che le basi siano già chiare.</p>
+    <h2 id="home-tutor-title">Ciao, sono Francesco</h2>
+    <p>Sono laureato in Informatica e sto frequentando la magistrale. Da diversi anni do ripetizioni a ragazzi delle superiori e studenti universitari, e nel tempo ho seguito anche molti ragazzi con DSA.</p>
+    <p>Essendo ancora studente, conosco bene le preoccupazioni prima di una verifica o di un esame. Mi piace che a lezione ci si possa parlare tranquillamente e chiedere di rispiegare anche quello che sembra più semplice, perché spesso una difficoltà nasce proprio da un passaggio rimasto poco chiaro.</p>
     <ul className="home-tutor-facts"><li><GraduationCap size={20} aria-hidden="true"/>Superiori e università</li><li><NotebookPen size={20} aria-hidden="true"/>Esercizi del tuo programma</li></ul>
     <div className="actions"><a className="text-link" href="/francesco">Qualcosa in più su di me<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
    </div>
@@ -39,7 +39,7 @@ export default function Landing({open}:{open:OpenDialog}){
   <LessonFormats open={open}/>
   <section className="home-platform-band">
    <div className="wrap home-platform">
-    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Gli esercizi, con i miei commenti.</h2><p>Ho costruito un’area studente in cui ritrovare materiali, consegne e correzioni. Se concordiamo del lavoro da casa, puoi consegnarlo qui e rileggere i passaggi da riprendere.</p><p className="reading-note">Il lavoro tra le lezioni si decide insieme. Accessi e contenuti sono in preparazione per l’apertura.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
+    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Esercizi e materiali nell’area studente</h2><p>Ho costruito una piattaforma per raccogliere il lavoro che facciamo insieme. Se durante le lezioni decidiamo di aggiungere qualche esercizio da svolgere a casa, potrai consegnarlo nella tua area e ritrovare lì i materiali e le mie correzioni.</p><p className="reading-note">L’uso della piattaforma e il lavoro da casa dipendono da quello che concordiamo. Sto preparando gli accessi e i contenuti per l’apertura.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
     <PlatformExample/>
    </div>
   </section>
