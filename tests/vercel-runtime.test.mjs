@@ -7,6 +7,7 @@ import { createRemoteDatabase } from '../lib/vercel/database.mjs';
 import { createRemoteBucket } from '../lib/vercel/bucket.mjs';
 import { vercelResourcesConfigured, vercelRuntimeReady } from '../lib/vercel/runtime.mjs';
 import { privateAccessAllowed } from '../lib/node/private-access.mjs';
+import { createPreviewToken, previewAllowed, previewPathAllowed } from '../lib/site-preview.mjs';
 
 const accountId = 'a'.repeat(32), databaseId = '00000000-0000-4000-8000-000000000001';
 test('Vercel preview cannot send real email or payments even with production configuration', async () => {
@@ -107,7 +108,7 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
   assert.equal(vercelRuntimeReady({ VERCEL_RUNTIME_READY: '1' }), false);
   assert.equal(vercelRuntimeReady({ ...credentials, VERCEL_RUNTIME_READY: '1' }), true);
   let configured = false;
-  globalThis.__vercelProxy = { configured: () => configured, privateAccessAllowed };
+  globalThis.__vercelProxy = { configured: () => configured, privateAccessAllowed, previewAllowed, previewPathAllowed };
   const source = (await readFile(new URL('../proxy.ts', import.meta.url), 'utf8'))
     .replace(/import \{ NextResponse, type NextRequest \} from 'next\/server';/, `const NextResponse = {
       next: options => ({ kind: 'next', options }),
@@ -117,10 +118,11 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     };`)
     .replace("import { getNodeResources } from '@/lib/node/runtime.mjs';", 'const getNodeResources = () => { throw Error("No local data on Vercel"); };')
     .replace("import { privateAccessAllowed } from './lib/node/private-access.mjs';", 'const privateAccessAllowed = globalThis.__vercelProxy.privateAccessAllowed;')
-    .replace("import { getVercelResources, vercelRuntimeReady } from '@/lib/vercel/runtime.mjs';", 'const vercelRuntimeReady = globalThis.__vercelProxy.configured; const getVercelResources = () => ({DB:{prepare(){throw Error("No session query expected");}}});');
+    .replace("import { getVercelResources, vercelRuntimeReady } from '@/lib/vercel/runtime.mjs';", 'const vercelRuntimeReady = globalThis.__vercelProxy.configured; const getVercelResources = () => ({DB:{prepare(){throw Error("No session query expected");}}});')
+    .replace("import { previewAllowed, previewPathAllowed } from '@/lib/site-preview.mjs';", 'const {previewAllowed,previewPathAllowed} = globalThis.__vercelProxy;');
   const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;
   const { proxy } = await import('data:text/javascript;base64,' + Buffer.from(compiled).toString('base64'));
-  const runtime = process.env.APP_RUNTIME, visibility = process.env.SITE_VISIBILITY;
+  const runtime = process.env.APP_RUNTIME, visibility = process.env.SITE_VISIBILITY, previewPassword = process.env.SITE_PREVIEW_PASSWORD;
   process.env.APP_RUNTIME = 'vercel';
   delete process.env.SITE_VISIBILITY;
   try {
@@ -134,17 +136,30 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     assert.equal(api.status, 503);
     const staticResponse = await proxy(new Request('https://site.example/_next/static/test.js'));
     assert.equal(staticResponse.kind, 'next');
+    process.env.SITE_PREVIEW_PASSWORD = 'fixture-preview-access-not-a-real-credential';
+    const token = createPreviewToken();
+    const preview = await proxy(new Request('https://site.example/prezzi', {headers:{cookie:'ff_site_preview='+token+'; ff_session='+'a'.repeat(43), 'x-ff-site-preview':'forged'}}));
+    assert.equal(preview.kind, 'next');
+    assert.equal(preview.options.request.headers.get('x-ff-site-preview'), '1');
+    assert.equal(preview.options.request.headers.get('cookie'), null);
+    assert.match(preview.options.headers['X-Robots-Tag'], /noindex/);
+    const forbiddenPreviewAPI = await proxy(new Request('https://site.example/api/incontri', {headers:{cookie:'ff_site_preview='+token}}));
+    assert.equal(forbiddenPreviewAPI.status, 503);
+    assert.equal((await proxy(new Request('https://site.example/studente', {headers:{cookie:'ff_site_preview='+token}}))).kind, 'redirect');
     configured = true;
     const forged = await proxy(new Request('https://site.example/gestione', { headers: { 'oai-authenticated-user-email': 'forged@example.com' } }));
     assert.equal(forged.kind, 'redirect');
     assert.equal(forged.url, 'https://site.example/accesso');
-    const login = await proxy(new Request('https://site.example/api/accesso', { headers: { 'cf-connecting-ip': 'spoofed', 'oai-authenticated-user-id': 'spoofed' } }));
+    const login = await proxy(new Request('https://site.example/api/accesso', { headers: { 'cf-connecting-ip': 'spoofed', 'oai-authenticated-user-id': 'spoofed', 'x-ff-site-preview': 'forged' } }));
     assert.equal(login.kind, 'next');
     assert.equal(login.options.request.headers.get('cf-connecting-ip'), null);
     assert.equal(login.options.request.headers.get('oai-authenticated-user-id'), null);
+    assert.equal(login.options.request.headers.get('x-ff-site-preview'), null);
+    assert.equal((await proxy(new Request('https://site.example/api/gestione/studenti', {headers:{cookie:'ff_site_preview='+token}}))).status, 503);
   } finally {
     if (runtime === undefined) delete process.env.APP_RUNTIME; else process.env.APP_RUNTIME = runtime;
     if (visibility === undefined) delete process.env.SITE_VISIBILITY; else process.env.SITE_VISIBILITY = visibility;
+    if (previewPassword === undefined) delete process.env.SITE_PREVIEW_PASSWORD; else process.env.SITE_PREVIEW_PASSWORD = previewPassword;
     delete globalThis.__vercelProxy;
   }
 });

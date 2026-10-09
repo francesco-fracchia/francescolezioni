@@ -30,6 +30,16 @@ Anche con le credenziali presenti, `VERCEL_RUNTIME_READY` resta **0**. Portarlo 
 
 Dopo il collaudo mantenere `SITE_VISIBILITY=private`: l'accesso alle pagine operative richiede una sessione tutor valida. Le identità e gli header ChatGPT non autorizzano questo ambiente. `PUBLIC_SITE_INDEXING=false`, `NOTIFICATIONS_MODE=preview` e `PAYMENT_LIVE_ENABLED=0` mantengono indicizzazione, invio email e pagamenti reali disattivati. Nei deploy non Production invio reale e Stripe sono esclusi anche dal runtime. L'apertura pubblica è un passaggio separato dal deploy di prova.
 
+## Pagina di attesa e anteprima per il proprietario
+
+I visitatori vedono `/preparazione`, con la presentazione dell’attività, un collegamento WhatsApp e **Accesso riservato** nel footer. Da lì si apre `/anteprima`.
+
+Per vedere il sito completo su Vercel durante i preparativi, aggiungere **`SITE_PREVIEW_PASSWORD`** nelle variabili del progetto, come segreto, con una password riservata di almeno **20 caratteri** (massimo 256). Non inviarla in chat o inserirla nel repository. Impostarla nell’ambiente interessato e avviare un nuovo deploy. Production e Preview devono usare valori distinti. L’accesso resta indisponibile quando la password non è configurata; non esiste una password predefinita.
+
+La sessione di anteprima dura quattro ore, usa un cookie HttpOnly/SameSite Strict/Secure firmato e si revoca cambiando la password. **Esci dall’anteprima** cancella il cookie. La sessione permette soltanto le pagine commerciali e le immagini pubbliche: non abilita area tutor/studente, account, richieste, prenotazioni, pagamenti o file protetti. Le API operative rimangono chiuse anche quando i servizi sono configurati. Nessun dato dimostrativo viene scritto al database. Il calendario mostra uno stato di preparazione, anziché simulare disponibilità o produrre errori di caricamento.
+
+Sul Mac, con `npm run start:vercel -- --hostname 127.0.0.1 --port 5186`, `/anteprima` offre **Apri anteprima locale**. Questa scorciatoia funziona solo su loopback, fuori dall’ambiente Vercel; non accetta cookie locali nei deploy Vercel. Tenere il server locale vincolato a `127.0.0.1`. Il sito pubblico conserva la sua navigazione e mostra una barra che segnala l’anteprima. Noindex e no-store si applicano anche all’anteprima autenticata.
+
 ## Da completare prima dell'uso operativo
 
 1. Provisioning del database e dell'archivio privato; migrazioni e importazione controllata; primo account tutor indipendente.

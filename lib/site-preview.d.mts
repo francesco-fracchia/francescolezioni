@@ -1,0 +1,11 @@
+export const previewCookieName: string;
+export const previewLifetime: number;
+export const previewHeaders: Record<string, string>;
+export function localPreviewAllowed(request: { url: string }, config?: NodeJS.ProcessEnv): boolean;
+export function previewConfigured(config?: NodeJS.ProcessEnv): boolean;
+export function validPreviewPassword(value: unknown, config?: NodeJS.ProcessEnv): boolean;
+export function createPreviewToken(config?: NodeJS.ProcessEnv, now?: number): string;
+export function previewAllowed(request: Request, config?: NodeJS.ProcessEnv, now?: number): boolean;
+export function previewCookie(request: Request, token: string | null): string;
+export function previewOriginAllowed(request: Request): boolean;
+export function previewPathAllowed(path: string): boolean;
