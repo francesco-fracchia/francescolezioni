@@ -1,0 +1,22 @@
+[Unit]
+Description=Lezioni private - Next.js
+After=network.target
+
+[Service]
+Type=simple
+User=ff-lessons
+Group=ff-lessons
+WorkingDirectory=/srv/ff-lessons/current
+EnvironmentFile=/etc/ff-lessons.env
+ExecStart=/usr/bin/node /srv/ff-lessons/current/scripts/start-hostinger.mjs
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ff-lessons /srv/ff-lessons/current/.next/cache
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,3 @@
+"use client";
+import {useState} from 'react';
+export default function SubjectTopics({school,university}:{school:readonly string[];university:readonly string[]}){const [level,setLevel]=useState('school');return <><div className="guide-options" role="group" aria-label="Livello degli argomenti"><button aria-pressed={level==='school'} onClick={()=>setLevel('school')}>Scuole superiori</button><button aria-pressed={level==='university'} onClick={()=>setLevel('university')}>Università</button></div><ul className="public-topic-list" aria-live="polite">{(level==='school'?school:university).map(topic=><li key={topic}>{topic}</li>)}</ul></>;}

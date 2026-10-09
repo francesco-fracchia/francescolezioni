@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import {readFile,readdir} from 'node:fs/promises';
+import {DatabaseSync} from 'node:sqlite';
+import ts from 'typescript';
+const sql=new DatabaseSync(':memory:');for(const file of (await readdir(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())sql.exec(await readFile(new URL('../drizzle/'+file,import.meta.url),'utf8'));
+let owner=false,user=null,beforeWrite=null;
+const db={prepare(query){const bind=(...args)=>({async first(){return sql.prepare(query).get(...args)||null;},async all(){return {results:sql.prepare(query).all(...args)};},async run(){if(beforeWrite&&/^(INSERT|UPDATE)/.test(query)){const hook=beforeWrite;beforeWrite=null;hook();}const r=sql.prepare(query).run(...args);return {meta:{changes:Number(r.changes)}};}});return {bind,...bind()};}};
+globalThis.__study={bookingDb:()=>db,isRequestOwner:async()=>owner,getAccount:async()=>user};
+async function compile(path,replace=s=>s){const source=replace(await readFile(new URL('../'+path,import.meta.url),'utf8')).replace("import { bookingDb } from '@/lib/booking/runtime';",'const {bookingDb}=globalThis.__study;').replace("import { isRequestOwner } from '@/lib/request-admin';",'const {isRequestOwner}=globalThis.__study;').replace("import { getAccount } from '@/lib/auth/session';",'const {getAccount}=globalThis.__study;').replace("from 'zod'",'from '+JSON.stringify(import.meta.resolve('zod')));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
+const access=await compile('lib/learning/access.ts'),data=await compile('lib/study/data.ts');const replace=s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/study/data'",'from '+JSON.stringify(data));
+const admin=await import(await compile('app/api/gestione/piani/route.ts',replace)),student=await import(await compile('app/api/studente/piano/route.ts',replace));
+const base='https://site.example',now=new Date().toISOString(),past=new Date(Date.now()-86400000).toISOString(),future=new Date(Date.now()+86400000).toISOString(),bookingPast=new Date(Date.now()-172800000).toISOString(),[a,b,c,lesson,slot,booking]=Array.from({length:6},()=>crypto.randomUUID());
+for(const [id,name] of [[a,'Anna'],[b,'Bruno'],[c,'Carla']])sql.prepare("INSERT INTO students(id,name,email,notes,created_at,updated_at) VALUES(?,?,?,'PRIVATE REGISTRY NOTE',?,?)").run(id,name,id+'@example.test',now,now);
+sql.prepare("INSERT INTO accounts(id,email,name,role,password_hash,must_change_password,created_at,updated_at) VALUES('parent','parent@example.test','Parent','guardian','test-only',0,?,?)").run(now,now);
+for(const id of [a,b])sql.prepare("INSERT INTO account_student_access(account_id,student_id,created_at) VALUES('parent',?,?)").run(id,now);
+sql.prepare("INSERT INTO scheduled_lessons(id,series_id,name,email,subject,starts_at,ends_at,mode,notes,status,created_at,group_id) VALUES(?,?,'SECRET GROUP','secret@example.test','Analisi 1',?,?,'Online','PRIVATE LESSON NOTE','planned',?,'group-original')").run(lesson,lesson,past,past,now);
+for(const [id,name] of [[a,'Anna'],[b,'Bruno']])sql.prepare("INSERT INTO lesson_payments(id,lesson_id,access_token,student_id,name,email,amount,status,created_at) VALUES(?,?,'SECRET TOKEN',?,?,?,1500,'manual_paid',?)").run(crypto.randomUUID(),lesson,id,name,id+'@example.test',now);
+sql.prepare("INSERT INTO group_members(group_id,student_id) VALUES('group-original',?)").run(c);
+sql.prepare("INSERT INTO booking_slots(id,starts_at,ends_at,mode,status) VALUES(?,?,?,'Online','booked')").run(slot,bookingPast,bookingPast);
+sql.prepare("INSERT INTO bookings(id,slot_id,access_token,name,email,subject,student_id,status,created_at) VALUES(?,?,'BOOKING TOKEN','Anna','private@example.test','Matematica',?,'confirmed',?)").run(booking,slot,a,now);
+const req=(path,method='GET',body,origin=base)=>new Request(base+path,{method,headers:{Origin:origin,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+const plan=(studentId=a,status='draft')=>({kind:'plan',id:crypto.randomUUID(),studentId,version:null,title:'Preparazione verifica',subject:'Matematica',objective:'Risolvere equazioni con autonomia',targetDate:'2026-11-10',startingPoint:'Prerequisiti da consolidare',topics:'Equazioni e disequazioni',nextSteps:'Ripasso e due esercizi',status});
+const summary=(studentId=a,kind='lesson',appointmentId=lesson,status='draft')=>({kind:'summary',id:crypto.randomUUID(),studentId,version:null,appointmentKind:kind,appointmentId,title:'Riepilogo personale',topics:'Equazioni affrontate insieme',practice:'Esercizi 1–3',nextSteps:'Portare i dubbi',status});
+const send=p=>admin.POST(req('/api/gestione/piani','POST',p));
+const read=id=>student.GET(req('/api/studente/piano?studente='+id));
+try{
+ assert.equal((await admin.GET(req('/api/gestione/piani'))).status,403);assert.equal((await send(plan())).status,403);assert.equal((await read(a)).status,401);
+ owner=true;assert.equal((await admin.POST(req('/api/gestione/piani','POST',plan(),'https://evil.example'))).status,403);
+ const published=plan(a,'published'),draft=plan(),archived=plan(a,'archived'),other=plan(b,'published');for(const p of [published,draft,archived,other])assert.equal((await send(p)).status,200);
+ assert.equal((await send(published)).status,200);assert.equal(sql.prepare('SELECT count(*) n FROM study_plans WHERE id=?').get(published.id).n,1);
+ assert.equal((await send({...published,objective:'Changed',version:null})).status,409);
+ assert.equal((await send({...plan(),targetDate:'2026-02-30'})).status,400);assert.equal((await send({...plan(),objective:''})).status,400);
+ user={id:'parent',auth_version:0,must_change_password:0};owner=false;
+ let r=await read(a),d=await r.json();assert.equal(r.status,200);assert.equal(r.headers.get('Cache-Control'),'private, no-store');assert.equal(d.plans.length,1);assert.equal(d.plans[0].id,published.id);assert.equal((await read(c)).status,403);assert.equal((await student.GET(req('/api/studente/piano?anteprima='+a))).status,403);
+ owner=true;assert.equal((await student.GET(req('/api/studente/piano?anteprima='+a))).status,200);assert.equal((await (await admin.GET(req('/api/gestione/piani?studente='+a))).json()).plans.length,3);
+ const aSummary=summary(a,'lesson',lesson,'published'),bSummary={...summary(b,'lesson',lesson,'published'),topics:'Bruno-only explanation'};for(const p of [aSummary,bSummary])assert.equal((await send(p)).status,200);
+ assert.equal((await send(summary(a))).status,409);assert.equal((await send(summary(c,'lesson',lesson,'published'))).status,403); // Present group membership is not historical participation.
+ const bookingSummary=summary(a,'booking',booking,'draft');assert.equal((await send(bookingSummary)).status,200);
+ sql.prepare("UPDATE bookings SET status='pending' WHERE id=?").run(booking);assert.equal((await send({...bookingSummary,version:0,status:'published'})).status,409);sql.prepare("UPDATE bookings SET status='confirmed' WHERE id=?").run(booking);assert.equal((await send({...bookingSummary,version:0,status:'published'})).status,200);
+ assert.equal((await send({...bookingSummary,version:1,appointmentKind:'lesson',appointmentId:lesson})).status,409);
+ sql.prepare('UPDATE scheduled_lessons SET starts_at=?,ends_at=? WHERE id=?').run(future,future,lesson);assert.equal((await send({...aSummary,version:0})).status,409);sql.prepare('UPDATE scheduled_lessons SET starts_at=?,ends_at=? WHERE id=?').run(past,past,lesson);
+ beforeWrite=()=>sql.prepare("UPDATE scheduled_lessons SET status='cancelled' WHERE id=?").run(lesson);assert.equal((await send({...aSummary,version:0,topics:'Concurrent publication'})).status,409);assert.equal(sql.prepare('SELECT topics FROM lesson_summaries WHERE id=?').get(aSummary.id).topics,aSummary.topics);
+ assert.equal((await send({...aSummary,version:0,status:'draft'})).status,200);sql.prepare("UPDATE scheduled_lessons SET status='planned' WHERE id=?").run(lesson);assert.equal((await send({...aSummary,version:1,status:'published'})).status,200);
+ owner=false;d=await (await read(a)).json();assert.equal(d.summaries.length,2);const serialized=JSON.stringify(d);for(const secret of ['PRIVATE REGISTRY NOTE','PRIVATE LESSON NOTE','SECRET GROUP','SECRET TOKEN','BOOKING TOKEN','Bruno-only explanation','private@example.test'])assert.ok(!serialized.includes(secret),secret);
+ assert.equal((await (await read(b)).json()).summaries[0].topics,bSummary.topics);
+ owner=true;assert.equal((await send({...published,version:0,objective:'Updated objective'})).status,200);assert.equal((await send({...published,version:0,objective:'Stale overwrite'})).status,409);assert.equal(sql.prepare('SELECT objective FROM study_plans WHERE id=?').get(published.id).objective,'Updated objective');
+ assert.equal((await send({...published,version:1,studentId:b})).status,404);assert.equal((await send({...published,version:1,status:'archived'})).status,200);
+ owner=false;assert.equal((await (await read(a)).json()).plans.length,0);
+ sql.prepare("UPDATE account_student_access SET status='revoked' WHERE student_id=?").run(a);assert.equal((await read(a)).status,403);sql.prepare("UPDATE account_student_access SET status='active' WHERE student_id=?").run(a);
+ sql.prepare("UPDATE students SET status='archived' WHERE id=?").run(a);assert.equal((await read(a)).status,403);owner=true;assert.equal((await send(plan())).status,409);assert.equal((await (await admin.GET(req('/api/gestione/piani?studente='+a))).json()).summaries.length,2);
+ sql.prepare("UPDATE students SET status='active' WHERE id=?").run(a);const raced=plan();beforeWrite=()=>sql.prepare("UPDATE students SET status='archived' WHERE id=?").run(a);assert.equal((await send(raced)).status,409);assert.equal(sql.prepare('SELECT id FROM study_plans WHERE id=?').get(raced.id),undefined);
+ owner=false;user={id:'parent',auth_version:0,must_change_password:1};assert.equal((await read(b)).status,403);
+ console.log('PASS: tutor-only writes, CSRF, persistent personal plans, draft/archive isolation, parent selection, historical group participation, private-field exclusion, lesson publication safeguards, immutable links, duplicate prevention, version conflicts and concurrent archive/cancellation guards.');
+}finally{delete globalThis.__study;sql.close();}

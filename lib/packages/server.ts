@@ -1,0 +1,4 @@
+import { bookingDb } from '@/lib/booking/runtime';
+export const packageRemainingSql="k.units-(SELECT COUNT(*) FROM package_uses x WHERE x.package_id=k.id AND x.status='applied')";
+export async function packagesFor(studentId:string){return (await bookingDb().prepare(`SELECT k.id,k.live_mode,k.amount,k.units,k.unit_amount,k.status,k.payment_method,k.paid_at,k.created_at,${packageRemainingSql} AS remaining FROM lesson_packages k WHERE k.student_id=? ORDER BY k.created_at DESC,k.id LIMIT 201`).bind(studentId).all()).results;}
+export async function usesFor(studentId:string){return (await bookingDb().prepare(`SELECT x.id,x.package_id,x.status,l.subject,l.starts_at,l.status AS lesson_status FROM package_uses x JOIN lesson_packages k ON k.id=x.package_id JOIN lesson_payments p ON p.id=x.payment_id JOIN scheduled_lessons l ON l.id=p.lesson_id WHERE k.student_id=? ORDER BY l.starts_at DESC,x.id LIMIT 201`).bind(studentId).all()).results;}

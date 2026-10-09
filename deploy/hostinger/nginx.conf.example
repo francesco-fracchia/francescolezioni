@@ -1,0 +1,15 @@
+# Replace DOMINIO-DA-SCEGLIERE.it; activate HTTPS with Certbot before opening it.
+# Certbot can add the TLS certificate and HTTP-to-HTTPS redirect to this block.
+server {
+    listen 80;
+    server_name DOMINIO-DA-SCEGLIERE.it;
+    client_max_body_size 64m;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 90s;
+        proxy_buffering off;
+    }
+}

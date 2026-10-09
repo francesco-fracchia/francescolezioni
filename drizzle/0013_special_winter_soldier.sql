@@ -1,0 +1,1 @@
+ALTER TABLE `matching_proposals` ADD `approval_key` text;

@@ -1,0 +1,1 @@
+ALTER TABLE `bookings` ADD `checkout_expires_at` integer;

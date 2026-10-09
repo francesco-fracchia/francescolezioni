@@ -1,0 +1,1 @@
+ALTER TABLE `lesson_packages` ADD `live_mode` integer DEFAULT 0 NOT NULL;

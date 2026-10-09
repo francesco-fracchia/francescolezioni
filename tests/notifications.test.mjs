@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {readFile,readdir} from 'node:fs/promises';
+import {DatabaseSync} from 'node:sqlite';
+import ts from 'typescript';
+const db=new DatabaseSync(':memory:');
+for(const f of (await readdir(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())db.exec(await readFile(new URL('../drizzle/'+f,import.meta.url),'utf8'));
+const binding={prepare(sql){const prepare={bind(...args){return {async first(){return db.prepare(sql).get(...args)||null;},async all(){return {results:db.prepare(sql).all(...args)};},async run(){return {meta:db.prepare(sql).run(...args)};},_sql:sql,_args:args};}};return {...prepare,...prepare.bind()};},async batch(statements){db.exec('BEGIN');try{const results=statements.map(s=>({meta:db.prepare(s._sql).run(...s._args)}));db.exec('COMMIT');return results;}catch(e){db.exec('ROLLBACK');throw e;}}};
+const env={NOTIFICATIONS_MODE:'preview',EMAIL_FROM:'Francesco <info@francescofracchia.it>',RESEND_API_KEY:'re_unit_test',EMAIL_REPLY_TO:'info@francescofracchia.it'};
+globalThis.__noticeTests={env,bookingDb:()=>binding,paymentConfig:()=>({origin:'https://site.example'})};
+async function compile(name,replace){const source=replace(await readFile(new URL('../lib/notifications/'+name+'.ts',import.meta.url),'utf8'));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ES2022,target:ts.ScriptTarget.ES2022}}).outputText).toString('base64');}
+const messageUrl=await compile('message',s=>s);
+const runtimeUrl=await compile('runtime',s=>s.replace("import { env } from '@/lib/runtime-env';",'const {env}=globalThis.__noticeTests;').replace("import { bookingDb } from '@/lib/booking/runtime';",'const {bookingDb}=globalThis.__noticeTests;'));
+const appointmentsUrl=await compile('appointments',s=>s.replace("import { bookingDb,paymentConfig } from '@/lib/booking/runtime';",'const {bookingDb,paymentConfig}=globalThis.__noticeTests;').replace("'./message'",JSON.stringify(messageUrl)).replace("'./runtime'",JSON.stringify(runtimeUrl)));
+const {noticeStatements}=await import(appointmentsUrl);const {flushNotifications}=await import(runtimeUrl);
+const start=new Date(Date.now()+4*3600000).toISOString();const now=new Date().toISOString();
+db.prepare("INSERT INTO scheduled_lessons(id,series_id,name,email,subject,starts_at,ends_at,mode,notes,status,created_at,payment_method,payment_status) VALUES('lesson','series','Group','a@example.com','Analisi 1',?,?,'Online','SECRET INTERNAL NOTE','planned',?,'online','awaiting')").run(start,start,now);
+for(const [id,name,email,token] of [['a','Anna','a@example.com','token-a'],['b','Bruno','b@example.com','token-b']]){db.prepare('INSERT INTO students(id,name,email,created_at,updated_at) VALUES(?,?,?,?,?)').run(id,name,email,now,now);db.prepare("INSERT INTO lesson_payments(id,lesson_id,access_token,student_id,name,email,amount,status,created_at) VALUES(?,'lesson',?,?,?,?,1500,'awaiting',?)").run(id,token,id,name,email,now);}
+let calls=[];let fail=false;const originalFetch=globalThis.fetch;
+globalThis.fetch=async(url,options)=>{assert.equal(url,'https://api.resend.com/emails');calls.push({key:options.headers['Idempotency-Key'],payload:options.body});return new Response(JSON.stringify(fail?{message:'failure'}:{id:'provider-'+calls.length}),{status:fail?503:200});};
+try{
+ await binding.batch(await noticeStatements('lesson','lesson','reserved',0,{},"status='planned'"));await binding.batch(await noticeStatements('lesson','lesson','reserved',0,{},"status='planned'"));
+ const rows=db.prepare('SELECT * FROM notifications ORDER BY recipient').all();assert.equal(rows.length,2);assert.ok(rows.every(r=>r.status==='prepared'));assert.ok(rows[0].body.includes('15 €'));assert.ok(rows[0].body.includes('token-a'));assert.ok(!rows[0].body.includes('token-b'));assert.ok(!rows[0].body.includes('b@example.com'));assert.ok(!rows[0].body.includes('SECRET'));assert.equal((await flushNotifications()).ready,false);assert.equal(calls.length,0);
+ env.NOTIFICATIONS_MODE='live';await flushNotifications();assert.equal(calls.length,0); // Enabling sending never releases historical previews.
+ db.prepare("UPDATE notifications SET status='queued'").run();await Promise.all([flushNotifications(),flushNotifications()]);assert.equal(calls.length,2);assert.equal(db.prepare("SELECT COUNT(*) AS n FROM notifications WHERE status='sent'").get().n,2);assert.equal(new Set(calls.map(c=>c.key)).size,2);
+ const row=rows[0];db.prepare("UPDATE notifications SET status='queued',first_attempt_at=NULL WHERE id=?").run(row.id);fail=true;await flushNotifications([row.id]);assert.equal(db.prepare('SELECT status FROM notifications WHERE id=?').get(row.id).status,'failed');const first=calls.at(-1);fail=false;await flushNotifications([row.id]);assert.deepEqual(calls.at(-1),first);
+ db.prepare("UPDATE notifications SET status='queued',first_attempt_at=? WHERE id=?").run(new Date(Date.now()-24*3600000).toISOString(),row.id);const count=calls.length;await flushNotifications([row.id]);assert.equal(calls.length,count);assert.equal(db.prepare('SELECT status FROM notifications WHERE id=?').get(row.id).status,'manual_review');
+ db.prepare("UPDATE notifications SET status='queued',first_attempt_at=NULL WHERE id=?").run(rows[1].id);db.prepare("UPDATE students SET notifications=0 WHERE id='b'").run();await flushNotifications([rows[1].id]);assert.equal(calls.length,count);assert.equal(db.prepare('SELECT status FROM notifications WHERE id=?').get(rows[1].id).status,'suppressed');
+ db.prepare("UPDATE notifications SET status='queued',first_attempt_at=NULL WHERE id=?").run(row.id);db.prepare("UPDATE scheduled_lessons SET version=1 WHERE id='lesson'").run();await flushNotifications([row.id]);assert.equal(calls.length,count);assert.equal(db.prepare('SELECT status FROM notifications WHERE id=?').get(row.id).status,'superseded');
+ console.log('Private templates, event deduplication, preview isolation, concurrent delivery, stable retries and stale-event suppression: PASS');
+}finally{globalThis.fetch=originalFetch;delete globalThis.__noticeTests;db.close();}

@@ -1,0 +1,34 @@
+import { z } from 'zod';
+import type { StudentAppointment } from '@/lib/learning/types';
+import { bookingDb } from '@/lib/booking/runtime';
+import { authorizedMaterial,failure,LearningError,privateHeaders,sameOrigin,studentScope } from '@/lib/learning/access';
+export async function GET(request:Request){try{
+ const scope=await studentScope(request);const selected=new URL(request.url).searchParams.get('studente')||scope.students[0]?.id;
+ if(!selected)return Response.json({students:[],selected:null,preview:scope.preview,courses:[],modules:[],materials:[],lessons:[],bookings:[]},{headers:privateHeaders});
+ if(!scope.students.some(s=>s.id===selected))throw new LearningError('Accesso non consentito.',403);
+ const db=bookingDb(),now=new Date().toISOString();const [courses,modules,materials,lessons,bookings,nextLesson,nextBooking]=await Promise.all([
+ db.prepare("SELECT c.id,c.title,c.subject,c.description,c.status FROM courses c JOIN course_enrollments e ON e.course_id=c.id WHERE e.student_id=? AND e.status='active' AND c.status='published' ORDER BY c.title,c.id").bind(selected).all(),
+ db.prepare("SELECT u.id,u.course_id,u.title,u.position FROM course_modules u JOIN courses c ON c.id=u.course_id JOIN course_enrollments e ON e.course_id=c.id WHERE e.student_id=? AND e.status='active' AND c.status='published' ORDER BY u.position,u.id").bind(selected).all(),
+ db.prepare("SELECT m.id,m.module_id,m.title,m.kind,m.body,m.filename,m.size,m.status,m.position,m.created_at,p.completed_at FROM course_materials m JOIN course_modules u ON u.id=m.module_id JOIN courses c ON c.id=u.course_id JOIN course_enrollments e ON e.course_id=c.id LEFT JOIN material_progress p ON p.material_id=m.id AND p.student_id=e.student_id WHERE e.student_id=? AND e.status='active' AND c.status='published' AND m.status='published' ORDER BY m.position,m.id").bind(selected).all(),
+ // Only the student's historical payment row is joined: current group membership
+ // cannot expose past lessons, other participants, names or group totals.
+ db.prepare(`SELECT l.id,l.subject,l.starts_at,l.ends_at,l.mode,l.status,CASE WHEN l.mode='Online' AND l.status='planned' AND l.ends_at>? THEN l.video_url ELSE NULL END AS video_url,l.payment_method,l.payment_status AS lesson_payment_status,p.id AS payment_id,p.amount,p.status AS payment_status,p.paid_at,COALESCE((SELECT SUM(x.amount) FROM referral_redemptions x WHERE x.payment_id=p.id AND x.status='applied'),0) AS credit_amount,(SELECT x.status FROM package_uses x WHERE x.payment_id=p.id AND (x.status='applied' OR (x.status='returned' AND l.status!='planned' AND p.amount=1900)) ORDER BY CASE x.status WHEN 'applied' THEN 0 ELSE 1 END,x.created_at DESC,x.id LIMIT 1) AS package_status FROM scheduled_lessons l LEFT JOIN lesson_payments p ON p.lesson_id=l.id AND p.student_id=? WHERE l.student_id=? OR p.student_id=? ORDER BY l.starts_at DESC,l.id LIMIT 201`).bind(now,selected,selected,selected).all(),
+ db.prepare("SELECT b.id,b.subject,b.status,s.starts_at,s.ends_at,s.mode,CASE WHEN s.mode='Online' AND b.status='confirmed' AND s.ends_at>? THEN b.video_url ELSE NULL END AS video_url FROM bookings b JOIN booking_slots s ON s.id=b.slot_id WHERE b.student_id=? ORDER BY s.starts_at DESC,b.id LIMIT 201").bind(now,selected).all(),
+ // The next confirmed lesson is independent of the capped history list.
+ db.prepare("SELECT l.id,l.subject,l.starts_at,l.ends_at,l.mode,l.status,CASE WHEN l.mode='Online' THEN l.video_url ELSE NULL END AS video_url FROM scheduled_lessons l WHERE l.status='planned' AND l.ends_at>? AND (l.student_id=? OR EXISTS(SELECT 1 FROM lesson_payments p WHERE p.lesson_id=l.id AND p.student_id=?)) ORDER BY l.starts_at,l.id LIMIT 1").bind(now,selected,selected).first<Omit<StudentAppointment,'kind'>>(),
+ db.prepare("SELECT b.id,b.subject,b.status,s.starts_at,s.ends_at,s.mode,CASE WHEN s.mode='Online' THEN b.video_url ELSE NULL END AS video_url FROM bookings b JOIN booking_slots s ON s.id=b.slot_id WHERE b.student_id=? AND b.status='confirmed' AND s.ends_at>? ORDER BY s.starts_at,b.id LIMIT 1").bind(selected,now).first<Omit<StudentAppointment,'kind'>>(),
+ ]);
+ const upcoming=[...(nextLesson?[{...nextLesson,kind:'lesson' as const}]:[]),...(nextBooking?[{...nextBooking,kind:'booking' as const}]:[])].sort((a,b)=>Date.parse(a.starts_at)-Date.parse(b.starts_at)||a.id.localeCompare(b.id));
+ return Response.json({students:scope.students,selected,preview:scope.preview,nextAppointment:upcoming[0]||null,courses:courses.results,modules:modules.results,materials:materials.results,lessons:lessons.results.slice(0,200),bookings:bookings.results.slice(0,200),truncated:lessons.results.length>200||bookings.results.length>200},{headers:privateHeaders});
+ }catch(e){return failure(e);}}
+export async function POST(request:Request){try{
+ sameOrigin(request);const raw=await request.text();if(raw.length>300)throw new LearningError('Dati troppo grandi.',413);
+ const p=z.object({studentId:z.string().uuid(),materialId:z.string().uuid(),completed:z.boolean()}).safeParse(JSON.parse(raw));if(!p.success)throw new LearningError('Dati non validi.');
+ const scope=await studentScope(request);if(scope.preview)throw new LearningError('L’anteprima è in sola lettura.',403);
+ if(!scope.students.some(s=>s.id===p.data.studentId)||!await authorizedMaterial(p.data.studentId,p.data.materialId))throw new LearningError('Materiale non disponibile.',403);
+ const {studentId,materialId,completed}=p.data;const db=bookingDb();
+ const permission=`SELECT 1 FROM course_materials m JOIN course_modules u ON u.id=m.module_id JOIN courses c ON c.id=u.course_id JOIN course_enrollments e ON e.course_id=c.id JOIN students s ON s.id=e.student_id JOIN account_student_access a ON a.student_id=s.id JOIN accounts actor ON actor.id=a.account_id WHERE m.id=? AND s.id=? AND e.status='active' AND s.status='active' AND c.status='published' AND m.status='published' AND a.status='active' AND a.account_id=? AND actor.status='active' AND actor.must_change_password=0 AND actor.auth_version=?`;
+ if(completed){const result=await db.prepare(`INSERT INTO material_progress(student_id,material_id,completed_at) SELECT ?,?,? WHERE EXISTS(${permission}) ON CONFLICT(student_id,material_id) DO UPDATE SET completed_at=excluded.completed_at`).bind(studentId,materialId,new Date().toISOString(),materialId,studentId,scope.userId,scope.authVersion).run();if(!result.meta.changes)throw new LearningError('Accesso aggiornato. Ricarica la pagina.',403);}
+ else await db.prepare(`DELETE FROM material_progress WHERE student_id=? AND material_id=? AND EXISTS(${permission})`).bind(studentId,materialId,materialId,studentId,scope.userId,scope.authVersion).run();
+ return Response.json({ok:true},{headers:privateHeaders});
+ }catch(e){return failure(e instanceof SyntaxError?new LearningError('Dati non validi.'):e);}}

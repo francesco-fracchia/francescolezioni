@@ -1,0 +1,8 @@
+'use client';
+import {useEffect,useState} from 'react';
+type Student={id:string;name:string;status:string};
+export default function PreviewPicker(){
+ const [students,setStudents]=useState<Student[]>([]),[selected,setSelected]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState(''),[truncated,setTruncated]=useState(false);
+ useEffect(()=>{const c=new AbortController();fetch('/api/gestione/anagrafica',{cache:'no-store',signal:c.signal}).then(async r=>{const d=await r.json() as {students:Student[];truncated:boolean;error?:string};if(!r.ok)throw Error(d.error||'Studenti non disponibili.');setStudents(d.students.filter(s=>s.status==='active'));setTruncated(d.truncated);}).catch(e=>{if(!c.signal.aborted)setError(e.message);}).finally(()=>{if(!c.signal.aborted)setLoading(false);});return()=>c.abort();},[]);
+ return <section className="student-preview-picker"><h2>Scegli uno studente</h2><p>Apri la sua area per controllare lezioni, compiti e materiali. Per questa anteprima non serve entrare con il suo account.</p>{error&&<p role="alert" className="error">{error}</p>}{loading?<p role="status">Caricamento studenti…</p>:students.length?<><label>Studente<select value={selected} onChange={e=>setSelected(e.target.value)}><option value="">Scegli una scheda</option>{students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>{selected&&<a className="button dark" href={'/studente?anteprima='+encodeURIComponent(selected)}>Apri anteprima</a>}{truncated&&<p>Per altre schede, usa la selezione in Corsi e materiali.</p>}</>:!error&&<p>Nessuna scheda attiva. <a href="/gestione/anagrafica">Registra uno studente</a> nell’area tutor.</p>}</section>;
+}

@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { DatabaseSync } from 'node:sqlite';
+import ts from 'typescript';
+const db=new DatabaseSync(':memory:');
+const files=(await import('node:fs/promises')).readdir;
+for(const f of (await files(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())db.exec((await readFile(new URL('../drizzle/'+f,import.meta.url),'utf8')).replaceAll('--> statement-breakpoint',''));
+let providerFail=false;const sessions=new Map();
+const binding={prepare(sql){const prepare={bind(...args){return {async first(){return db.prepare(sql).get(...args)||null;},async all(){return {results:db.prepare(sql).all(...args)};},async run(){return {meta:db.prepare(sql).run(...args)};},_sql:sql,_args:args};}};return {...prepare,...prepare.bind()};},async batch(statements){db.exec('BEGIN');try{const r=[];for(const s of statements){const result=db.prepare(s._sql).run(...s._args);r.push({meta:result});}db.exec('COMMIT');return r;}catch(e){db.exec('ROLLBACK');throw e;}}};
+globalThis.__lessonTests={bookingDb:()=>binding,paymentConfig:()=>({ready:true}),stripe:async(path)=>{if(providerFail)throw Error('Provider unavailable');const id=path.split('/')[2].split('?')[0];const s=sessions.get(id);assert.ok(s);if(path.endsWith('/expire'))s.status='expired';return s;}};
+async function compiled(name,replace){let source=await readFile(new URL('../lib/booking/'+name+'.ts',import.meta.url),'utf8');source=source.replace("import { noticeStatements,dispatchAppointmentNotices } from '@/lib/notifications/appointments';","const noticeStatements=async()=>[];const dispatchAppointmentNotices=async()=>({sent:0,ready:false});");source=replace(source);return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
+const policyUrl=await compiled('payment-policy',s=>s);
+const checkoutUrl=await compiled('lesson-checkout',s=>s.replace("import { bookingDb,paymentConfig,stripe } from './runtime';",'const {bookingDb,paymentConfig,stripe}=globalThis.__lessonTests;').replace("'./payment-policy'",JSON.stringify(policyUrl)));
+const {reconcileLessonPayment}=await import(checkoutUrl);
+const expireUrl=await compiled('lesson-payments',s=>s.replace("import { bookingDb } from './runtime';",'const {bookingDb}=globalThis.__lessonTests;').replace("'./lesson-checkout'",JSON.stringify(checkoutUrl)));
+const {expireUnpaidLessons}=await import(expireUrl);
+const now=Date.now();
+function lesson(id,start,people=1){db.prepare("INSERT INTO scheduled_lessons(id,series_id,name,email,subject,starts_at,ends_at,mode,notes,status,created_at,payment_method,payment_status) VALUES(?,?,?,?,?,?,?,?,?,'planned',?,'online','awaiting')").run(id,id,'Test','test@example.com','Matematica',new Date(start).toISOString(),new Date(start+55*60000).toISOString(),'Online','',new Date(now).toISOString());for(let i=0;i<people;i++){const pid=id+'-'+i;db.prepare("INSERT INTO lesson_payments(id,lesson_id,access_token,name,email,amount,status,stripe_session,created_at) VALUES(?,?,?,?,?,?,'pending',?,?)").run(pid,id,pid,'Test','test@example.com',people===1?2000:1500,pid,new Date(now).toISOString());sessions.set(pid,{id:pid,status:'open',payment_status:'unpaid',livemode:false,amount_total:people===1?2000:1500,currency:'eur',metadata:{lesson_payment_id:pid}});}db.prepare("INSERT INTO booking_slots(id,starts_at,ends_at,mode,status,booking_id) VALUES(?,?,?,'Online','scheduled',?)").run('manual-'+id,new Date(start).toISOString(),new Date(start+55*60000).toISOString(),id);}
+function reset(){db.exec('DELETE FROM booking_slots; DELETE FROM lesson_payments; DELETE FROM scheduled_lessons;');sessions.clear();}
+function pay(id,at=now){const s=sessions.get(id);s.status='complete';s.payment_status='paid';s.payment_intent={latest_charge:{created:Math.floor(at/1000)}};}
+lesson('on-time',now+3*3600000);pay('on-time-0');await reconcileLessonPayment('on-time-0');assert.equal(db.prepare('SELECT payment_status FROM scheduled_lessons WHERE id=?').get('on-time').payment_status,'paid');
+reset();lesson('late',now+45*60000);pay('late-0');await expireUnpaidLessons();assert.equal(db.prepare('SELECT payment_status,status FROM scheduled_lessons WHERE id=?').get('late').payment_status,'payment_review');assert.equal(db.prepare('SELECT status FROM booking_slots WHERE id=?').get('manual-late').status,'scheduled');
+reset();lesson('partial',now+45*60000,2);pay('partial-0',now-2*3600000);await expireUnpaidLessons();assert.equal(db.prepare('SELECT payment_status FROM scheduled_lessons WHERE id=?').get('partial').payment_status,'payment_review');assert.equal(sessions.get('partial-1').status,'expired');
+reset();lesson('unpaid',now+45*60000);await expireUnpaidLessons();assert.equal(db.prepare('SELECT status FROM scheduled_lessons WHERE id=?').get('unpaid').status,'expired');assert.equal(db.prepare('SELECT id FROM booking_slots WHERE id=?').get('manual-unpaid'),undefined);assert.equal(sessions.get('unpaid-0').status,'expired');
+reset();lesson('provider-down',now+45*60000);providerFail=true;await expireUnpaidLessons();assert.equal(db.prepare('SELECT status FROM scheduled_lessons WHERE id=?').get('provider-down').status,'planned');providerFail=false;
+console.log('On-time payment, late payment, partial group, safe expiry and provider outage: PASS');
+db.close();delete globalThis.__lessonTests;
