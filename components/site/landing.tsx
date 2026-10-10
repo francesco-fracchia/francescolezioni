@@ -24,6 +24,8 @@ export default function Landing({open}:{open:OpenDialog}){
    </div>
    <StudyGraphic/>
   </section>
+  <LessonFormats open={open}/>
+  <div className="wrap home-calendar"><AvailabilityPreview/></div>
   <div className="wrap home-guide"><StudyGuide/></div>
   <section className="wrap home-tutor" aria-labelledby="home-tutor-title">
    <div className="home-tutor-photo"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} loading="lazy"/></div>
@@ -34,8 +36,6 @@ export default function Landing({open}:{open:OpenDialog}){
     <div className="actions"><a className="text-link" href="/francesco">Chi sono<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
    </div>
   </section>
-  <LessonFormats open={open}/>
-  <div className="wrap home-calendar"><AvailabilityPreview/></div>
   <section className="home-platform-band">
    <div className="wrap home-platform">
     <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Esercizi e materiali nell’area studente</h2><p>Se concordiamo esercizi da fare a casa, puoi consegnarli nella tua area e ritrovare materiali e correzioni.</p><p className="reading-note">Accessi e contenuti in preparazione.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>

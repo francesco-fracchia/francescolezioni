@@ -4,7 +4,7 @@ import type {OpenDialog} from './types';
 
 export function LessonFormats({open}:{open:OpenDialog}){
  return <section className="wrap home-lesson-formats" aria-labelledby="lesson-formats-title">
-  <div className="home-section-heading"><div><p className="subject-audience">A Lodi oppure online · 55 minuti</p><h2 id="lesson-formats-title">Da solo o con i compagni</h2></div><a className="text-link" href="/prezzi">Prezzi e condizioni<ArrowRight size={18} aria-hidden="true"/></a></div>
+  <div className="home-section-heading"><div><p className="subject-audience">A Lodi oppure online · 55 minuti</p><h2 id="lesson-formats-title">Lezioni e prezzi</h2></div><a className="text-link" href="/prezzi">Prezzi e condizioni<ArrowRight size={18} aria-hidden="true"/></a></div>
   <div className="home-format-grid">
    <article className="home-format-individual">
     <h3 className="home-format-heading"><UserRound size={22} aria-hidden="true"/>Lezioni individuali</h3>
@@ -16,7 +16,7 @@ export function LessonFormats({open}:{open:OpenDialog}){
     <h3 className="home-format-heading"><Users size={22} aria-hidden="true"/>Lezioni di gruppo</h3>
     <p className="home-format-price"><strong>15 €</strong><span>a persona, per lezione · 55 minuti</span></p>
     <p className="home-format-group-size">Da 2 a 4 studenti</p>
-    <div className="actions"><button className="button dark" onClick={()=>open('group',undefined,true)}>Ho già un compagno</button><button className="text-link" onClick={()=>open('group')}>Cerco un gruppo<ArrowRight size={18} aria-hidden="true"/></button></div>
+    <div className="actions"><button className="button outline" onClick={()=>open('group',undefined,true)}>Ho già un compagno</button><button className="text-link" onClick={()=>open('group')}>Cerco un gruppo<ArrowRight size={18} aria-hidden="true"/></button></div>
    </article>
   </div>
  </section>;
