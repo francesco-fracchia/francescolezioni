@@ -4,17 +4,9 @@ import {useEffect,useRef,useState} from 'react';
 import {ArrowRight,ChevronDown,ChevronUp,Gift} from 'lucide-react';
 import {rewardAmount} from '@/lib/referrals/rules';
 
-const preferenceKey='ff-referral-banner-minimized';
-
 export default function ReferralBanner(){
- const [minimized,setMinimized]=useState<boolean|null>(null);
+ const [minimized,setMinimized]=useState(true);
  const toggle=useRef<HTMLButtonElement>(null),restoreFocus=useRef(false);
-
- useEffect(()=>{
-  let saved=window.matchMedia('(max-width:780px)').matches;
-  try{const preference=sessionStorage.getItem(preferenceKey);if(preference!==null)saved=preference==='1';}catch{/* The banner also works when storage is unavailable. */}
-  setMinimized(saved);
- },[]);
 
  useEffect(()=>{
   if(restoreFocus.current){toggle.current?.focus();restoreFocus.current=false;}
@@ -23,10 +15,7 @@ export default function ReferralBanner(){
  function change(next:boolean){
   restoreFocus.current=true;
   setMinimized(next);
-  try{sessionStorage.setItem(preferenceKey,next?'1':'0');}catch{/* Keep the preference in memory for this page. */}
  }
-
- if(minimized===null)return null;
 
  return <aside className={'referral-banner'+(minimized?' is-minimized':'')} aria-label="Bonus Invita un amico" onKeyDown={event=>{
   if(event.key==='Escape'&&!minimized){event.preventDefault();change(true);}

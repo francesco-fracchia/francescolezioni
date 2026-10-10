@@ -520,19 +520,19 @@
  .home-compact .home-format-grid .actions{gap:10px}
 }
 
-/* Compact referral promotion: separate from WhatsApp, with a remembered minimize control. */
-.referral-banner{position:fixed;right:max(24px,env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));z-index:85;width:360px;max-width:calc(100vw - 48px);padding:16px 20px 18px;background:#e7f0ff;border:1px solid #b4c9ec;border-radius:16px;box-shadow:0 8px 28px #0f2d5b20;color:#0f2d5b}
+/* Referral details open only on request; the initial prompt stays quiet. */
+.referral-banner{position:fixed;right:max(24px,env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));z-index:85;width:360px;max-width:calc(100vw - 48px);padding:14px 18px 16px;background:#fff;border:1px solid #d4deef;border-radius:12px;box-shadow:0 4px 18px #0f2d5b12;color:#0f2d5b}
 .referral-banner-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .referral-banner-heading h2{display:flex;align-items:center;gap:9px;margin:0;font-size:16px;line-height:1.4;font-weight:600}
 .referral-banner-heading h2 svg{color:#2459b3;flex-shrink:0}
 .referral-banner-minimize{display:grid;place-items:center;width:44px;min-height:44px;flex-shrink:0;padding:0;background:transparent;border:0;border-radius:8px;color:#2459b3;cursor:pointer}
 .public-shell .referral-banner-bonus{display:flex;flex-wrap:wrap;gap:8px 18px;margin:10px 0;font-size:12px;line-height:1.5;color:#2459b3}
 .referral-banner-bonus span{white-space:nowrap}
-.referral-banner-bonus strong{font-size:25px;font-weight:700;letter-spacing:-.035em}
+.referral-banner-bonus strong{font-size:22px;font-weight:700;letter-spacing:-.035em}
 .public-shell .referral-banner-note{font-size:12px;line-height:1.6;margin:0 0 10px;color:#3e5676}
 .referral-banner-link{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:4px}
-.referral-banner.is-minimized{width:auto;max-width:calc(100vw - 84px);padding:0;border:0;border-radius:26px;background:transparent;box-shadow:none}
-.referral-banner-toggle{display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:12px 16px;background:#2459b3;color:#fff;border:2px solid #fff;border-radius:26px;font-size:13px;font-weight:600;box-shadow:0 4px 16px #0f2d5b22;cursor:pointer}
+.referral-banner.is-minimized{width:auto;max-width:calc(100vw - 84px);padding:0;border:0;border-radius:10px;background:transparent;box-shadow:none}
+.referral-banner-toggle{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 12px;background:#fff;color:#406aa5;border:1px solid #d4deef;border-radius:10px;font-size:12px;font-weight:500;box-shadow:none;cursor:pointer}
 .public-shell:has([aria-modal=true]) .referral-banner{visibility:hidden}
-@media(hover:hover) and (pointer:fine){.referral-banner-minimize:hover{background:#d7e6fc}.referral-banner-toggle:hover{background:#1d478f}.referral-banner-link:hover{color:#2459b3}}
+@media(hover:hover) and (pointer:fine){.referral-banner-minimize:hover{background:#d7e6fc}.referral-banner-toggle:hover{background:#f4f7fc;color:#2459b3;border-color:#b4c9ec}.referral-banner-link:hover{color:#2459b3}}
 @media(max-width:780px){.referral-banner{right:max(12px,env(safe-area-inset-right));bottom:calc(76px + env(safe-area-inset-bottom));max-width:calc(100vw - 24px);padding:14px 18px 16px}.referral-banner.is-minimized{bottom:calc(12px + env(safe-area-inset-bottom));max-width:calc(100vw - 84px)}}
