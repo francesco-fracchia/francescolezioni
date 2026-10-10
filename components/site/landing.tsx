@@ -37,7 +37,7 @@ export default function Landing({open}:{open:OpenDialog}){
   </section>
   <section className="home-platform-band">
    <div className="wrap home-platform">
-    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Esercizi e materiali nell’area studente</h2><p>Se concordiamo esercizi da fare a casa, puoi consegnarli nella tua area e ritrovare materiali e correzioni.</p><p className="reading-note">Accessi e contenuti in preparazione.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
+    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><h2>Esercizi e correzioni</h2><p>Nell’area studente puoi consegnare gli esercizi concordati e ritrovare materiali e correzioni.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
     <PlatformExample/>
    </div>
   </section>
