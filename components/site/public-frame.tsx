@@ -5,6 +5,7 @@ import {Menu,X,CalendarDays,ChevronDown} from 'lucide-react';
 import {publicNavigation,publicLessonNavigation,isPublicPage,activePublicNavigation} from '@/lib/public-navigation';
 import WhatsAppIcon from './whatsapp-icon';
 import PublicFooter from './public-footer';
+import ReferralBanner from './referral-banner';
 import {publicBreadcrumbs} from '@/lib/public-pages';
 import {publicGraph,serializeJsonLd} from '@/lib/public-schema';
 import SitePreviewBar from './site-preview-bar';
@@ -25,5 +26,6 @@ export default function PublicFrame({children,origin,preview=false}:{children:Re
  {publicBreadcrumbs(path).length>0&&<nav className="wrap public-breadcrumbs" aria-label="Percorso di navigazione">{publicBreadcrumbs(path).map((item,i,items)=><span key={item.href}>{i>0&&<span aria-hidden="true"> / </span>}{i===items.length-1?<span aria-current="page">{item.label}</span>:<a href={item.href}>{item.label}</a>}</span>)}</nav>}
  <div id="public-content" tabIndex={-1}>{children}</div>
  <PublicFooter/>
+ {!menu&&!lessonsOpen&&!['/incontro','/contatti','/invita','/privacy','/prezzi'].includes(path)&&<ReferralBanner/>}
  <a className="whatsapp-floating" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer" aria-label="Scrivimi su WhatsApp, si apre in una nuova scheda"><WhatsAppIcon/><span>Scrivimi</span></a></div></SitePreviewContext.Provider>;
 }

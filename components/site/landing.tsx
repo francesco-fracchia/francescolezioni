@@ -1,7 +1,6 @@
 "use client";
 import {MapPin,Monitor,CalendarDays,ArrowRight,NotebookPen} from 'lucide-react';
 import StudyGraphic from './study-graphic';
-import ReferralHighlight from './referral-highlight';
 import StudyGuide from './study-guide';
 import AvailabilityPreview from './availability-preview';
 import PlatformExample from './platform-example';
@@ -42,7 +41,6 @@ export default function Landing({open}:{open:OpenDialog}){
     <PlatformExample/>
    </div>
   </section>
-  <div className="wrap"><ReferralHighlight/></div>
   <ParentQuestions/>
  </main>;
 }
