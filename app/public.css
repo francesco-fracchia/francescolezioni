@@ -395,3 +395,17 @@
  .exam-quick-summary{grid-template-columns:1.15fr .8fr 1fr;gap:8px;border-radius:10px}
  .exam-quick-summary strong{font-size:15px}
 }
+
+/* Home price cards: essential figures, full explanations on /prezzi. */
+.home-format-grid .home-format-price{margin:20px 0 18px;gap:8px 12px}
+.home-format-grid .home-format-price strong{color:#0f2d5b;font-size:48px}
+.home-format-grid .home-format-price span{font-size:13px}
+.home-format-grid article>.home-format-package{width:100%;padding:14px 16px;background:#f4f7fc;border:1px solid #d4deef;border-radius:12px;margin:0 0 24px}
+.home-format-package strong{display:block;color:#0f2d5b;font-size:21px;line-height:1.4}
+.home-format-package span{display:block;font-size:13px;color:#52647c;margin-top:4px;line-height:1.5}
+.home-format-grid article>.home-format-group-size{margin:0 0 24px;font-size:15px;color:#52647c}
+@media(max-width:480px){.home-format-grid .home-format-price{align-items:start;flex-direction:column;gap:5px}.home-format-grid .home-format-price strong{font-size:44px}}
+
+.referral-highlight-rewards article p{font-size:14px;margin:14px 0 0;line-height:1.6}
+.referral-highlight-rewards article small{display:block;color:#52647c;font-size:12px;line-height:1.5;margin-top:8px}
+.referral-highlight .referral-highlight-note{font-size:12px}

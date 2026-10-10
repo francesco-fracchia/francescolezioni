@@ -13,8 +13,8 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             <p className="duration">
               <Clock size={16} aria-hidden="true" /> 55 minuti
             </p></div><CardArt kind="individual" /></div>
-            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong><p>19 € per lezione, pagate insieme.</p><details><summary>Condizioni del pacchetto</summary><p>Concordiamo prima programma e condizioni. Dopo l’acquisto puoi fissare gli orari aperti. Il credito invito non si somma al pacchetto.</p></details></div><p>Il ritmo della lezione dipende da quello che ti serve. Possiamo fermarci su un passaggio e riprenderlo prima di andare avanti.</p>
-            <p>Lavoriamo sugli esercizi del tuo programma e organizziamo lo studio in base alla verifica o all’esame che devi preparare.</p>
+            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong><p>19 € per lezione, pagate insieme.</p><details><summary>Condizioni del pacchetto</summary><p>Concordiamo prima programma e condizioni. Dopo l’acquisto puoi fissare gli orari aperti. Il credito invito non si somma al pacchetto.</p></details></div><p>Se devi recuperare un argomento o preparare una verifica o un esame, seguiamo il tuo programma e ci fermiamo sugli esercizi che richiedono più tempo. Puoi scegliere un solo incontro oppure continuare con altre lezioni, a seconda di quello che ti serve.</p>
+            <p>Il ritmo della lezione dipende da quello che ti serve. Possiamo fermarci su un passaggio e riprenderlo prima di andare avanti.</p>
             <a className="button dark" href="/acquista">Singola lezione o pacchetto</a>
             <button className="text-link calendar-link" onClick={() => open("contact")}>Chiedi informazioni</button>
           </article>
@@ -53,5 +53,5 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
           Ogni lezione dura 55 minuti. Lascio 5 minuti tra un appuntamento e il successivo.
         </p>
       </section>
-      <section className="group-note wrap"><h2>Come trovare un gruppo</h2><p>Se non hai già un compagno, lasciami programma e disponibilità nella lista gratuita. Ti scrivo quando trovo studenti con una preparazione e orari compatibili. Per l’università controllo anche ateneo, docente e appello. Ricevi la proposta e decidi se partecipare. Può servire tempo per trovare persone compatibili, quindi l’iscrizione alla lista non garantisce che si formi un gruppo.</p></section>
+      <section className="group-note wrap"><h2>Come trovare un gruppo</h2><p>Se hai già dei compagni, possiamo accordarci per studiare insieme. Altrimenti lasciami programma e disponibilità nella lista gratuita. Ti scrivo quando trovo studenti con una preparazione e orari compatibili. Per l’università controllo anche ateneo, docente e appello. Ricevi la proposta e decidi se partecipare. Può servire tempo per trovare persone compatibili, quindi l’iscrizione alla lista non garantisce che si formi un gruppo.</p></section>
 </>;}

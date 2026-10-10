@@ -1,3 +1,12 @@
 import { Users, Gift } from 'lucide-react';
 import { rewardAmount } from '@/lib/referrals/rules';
-export default function ReferralHighlight(){return <section className="referral-highlight" aria-labelledby="referral-highlight-title"><div><span className="public-card-label"><Gift size={19} aria-hidden="true"/>Invita un amico</span><h2 id="referral-highlight-title">Un credito per te e per l’amico che inviti</h2><p>Se inviti un amico che non ha ancora fatto lezione con me, dopo i primi incontri pagati potete ricevere entrambi un credito da usare sulle lezioni successive.</p><a className="text-link" href="/invita">Come funziona e tutte le condizioni</a></div><div className="referral-highlight-rewards"><article><strong>{rewardAmount('individual')/100} € a testa</strong><p>Ricevete questo credito quando il tuo amico ha svolto e pagato tre lezioni individuali.</p></article><article><Users size={21} aria-hidden="true"/><strong>{rewardAmount('group')/100} € a testa</strong><p>Se invece svolgete e pagate entrambi tre lezioni di gruppo insieme, ricevete questo credito da usare solo sui gruppi.</p></article><p className="referral-highlight-note">L’amico deve essere un nuovo studente e indicare il codice prima della prima lezione a pagamento. Si riceve uno dei due premi e il credito resta valido per 12 mesi, con un utilizzo massimo di 5 € a persona per lezione. Non si somma ad altri sconti o al pacchetto.</p></div></section>;}
+export default function ReferralHighlight(){
+ return <section className="referral-highlight" aria-labelledby="referral-highlight-title">
+  <div><span className="public-card-label"><Gift size={19} aria-hidden="true"/>Invita un amico</span><h2 id="referral-highlight-title">Un credito per entrambi</h2><a className="text-link" href="/invita">Uso del credito e condizioni</a></div>
+  <div className="referral-highlight-rewards">
+   <article><strong>{rewardAmount('individual')/100} € a testa</strong><p>Dopo le prime 3 lezioni individuali svolte e pagate dal tuo amico.</p></article>
+   <article><Users size={21} aria-hidden="true"/><strong>{rewardAmount('group')/100} € a testa</strong><p>Dopo 3 lezioni di gruppo insieme, svolte e pagate da entrambi.</p><small>Credito da usare sui gruppi.</small></article>
+   <p className="referral-highlight-note">Solo per nuovi studenti invitati. Un solo premio, da usare sulle lezioni successive.</p>
+  </div>
+ </section>;
+}
