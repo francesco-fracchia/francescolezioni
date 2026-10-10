@@ -6,12 +6,14 @@ import type {
   Assessment,
   DialogKind,
   OpenDialog,
+  GroupSize,
 } from "@/components/site/types";
 
 export default function Home() {
   const [dialog, setDialog] = useState<DialogKind | null>(null);
   const [subject, setSubject] = useState("Matematica");
   const [hasCompanion, setHasCompanion] = useState(false);
+  const [groupSize, setGroupSize] = useState<GroupSize>(2);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
 
@@ -22,10 +24,11 @@ export default function Home() {
 
   const closeDialog = useCallback(() => setDialog(null), []);
 
-  const open: OpenDialog = (kind, selectedSubject, companion = false) => {
+  const open: OpenDialog = (kind, selectedSubject, companion = false, size = 2) => {
     returnFocus.current = document.activeElement as HTMLElement;
     setSubject(selectedSubject || "Matematica");
     setHasCompanion(companion);
+    setGroupSize(size);
     setDialog(kind);
   };
 
@@ -37,6 +40,7 @@ export default function Home() {
           kind={dialog}
           subject={subject}
           hasCompanion={hasCompanion}
+          groupSize={groupSize}
           assessment={assessment}
           setAssessment={setAssessment}
           setKind={setDialog}

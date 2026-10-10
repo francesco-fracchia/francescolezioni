@@ -3,18 +3,22 @@ import { useRef, useState, type FormEvent } from "react";
 import { Check } from "lucide-react";
 import { studioCopy } from "@/lib/public-offer";
 import { schoolSubjects, universitySubjects } from "@/lib/catalog";
-import type { Assessment, RequestKind as Kind } from "./types";
+import {useSitePreview} from "./site-preview-context";
+import type { Assessment, RequestKind as Kind, GroupSize } from "./types";
 export default function RequestForm({
   kind,
   subject,
   assessment,
   hasCompanion = false,
+  initialGroupSize = 2,
 }: {
   kind: Kind;
   subject: string;
   assessment: Assessment | null;
   hasCompanion?: boolean;
+  initialGroupSize?: GroupSize;
 }) {
+  const preview = useSitePreview();
   const [studentType, setStudentType] = useState(
     universitySubjects.includes(subject) ? "Università" : "Superiori",
   );
@@ -40,6 +44,7 @@ export default function RequestForm({
   };
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (preview) return;
     const invalid = Array.from(e.currentTarget.querySelectorAll<HTMLInputElement>('input,select,textarea')).find(el => !el.checkValidity());
     if (invalid) { const section = invalid.closest('[data-step]'); setStep(Number(section?.getAttribute('data-step') || 3)); setTimeout(() => invalid.reportValidity(), 0); return; }
     const f = new FormData(e.currentTarget);
@@ -235,7 +240,7 @@ export default function RequestForm({
             <>
               <label className="full">
                 Numero di studenti preferito
-                <select name="groupSize">
+                <select name="groupSize" defaultValue={initialGroupSize===2?'Coppia':`Fino a ${initialGroupSize} studenti`}>
                   <option>Coppia</option>
                   <option>Fino a 3 studenti</option>
                   <option>Fino a 4 studenti</option>
@@ -286,9 +291,10 @@ export default function RequestForm({
           </p>
         )}
         </section>
+        {preview&&<p className="form-note" role="status">Stai consultando l’anteprima. Puoi provare il modulo, ma l’invio delle richieste sarà disponibile all’apertura del sito.</p>}
         <div className="wizard-actions">{step>0&&<button type="button" className="button outline" onClick={()=>setStep(step-1)}>Indietro</button>}{step<3?<button type="button" className="button dark" onClick={next}>Continua</button>:<button
           className="button dark"
-          disabled={state === "saving"}
+          disabled={preview || state === "saving"}
           type="submit"
         >
           {state === "saving"

@@ -1,14 +1,6 @@
 import {ArrowRight,ChevronDown,UserRound,Users} from 'lucide-react';
 import {faqEntries} from '@/lib/public-faq';
-import WhatsAppIcon from './whatsapp-icon';
 import type {OpenDialog} from './types';
-
-export function FirstSteps(){
- return <section className="wrap home-first-steps home-start-reading" aria-labelledby="first-steps-title">
-  <div><p className="subject-audience">Il primo incontro è gratuito</p><h2 id="first-steps-title">Prima di iniziare le lezioni</h2><p>Puoi prenotare dal calendario 15 minuti per raccontarmi cosa devi preparare. Guardiamo il programma, gli esercizi che ti creano difficoltà e quanto tempo manca alla verifica o all’esame, così ci facciamo un’idea di come organizzare le lezioni.</p><p>Ti propongo da dove cominciare e valutiamo se lavorare individualmente o con compagni che stanno studiando gli stessi argomenti. Poi sei tu a decidere se proseguire. Questi 15 minuti servono a conoscerci, non sono una lezione di prova.</p><a className="text-link" href="/incontro">Scegli un orario per l’incontro<ArrowRight size={18} aria-hidden="true"/></a></div>
-  <aside><h3>Cosa puoi mostrarmi</h3><p>Il programma della materia e qualche esercizio o verifica sono sufficienti per cominciare. Non serve che tu abbia già capito dove nasce la difficoltà.</p><p>Se mi contatti per tuo figlio, puoi partecipare anche tu. Durante le lezioni partiremo da questi materiali, alternando spiegazioni ed esercizi svolti dallo studente.</p></aside>
- </section>;
-}
 
 export function LessonFormats({open}:{open:OpenDialog}){
  return <section className="wrap home-lesson-formats" aria-labelledby="lesson-formats-title">
@@ -26,7 +18,7 @@ const parentQuestions = ['Posso contattarti per mio figlio?','Segui anche ragazz
 
 export function ParentQuestions(){
  return <section className="wrap home-parent-questions" aria-labelledby="parent-questions-title">
-  <div><p className="subject-audience">Per studenti e genitori</p><h2 id="parent-questions-title">Prima di scrivermi</h2><p>Quando mi scrivi, dimmi la classe o l’esame e la materia su cui vorresti lavorare. Non serve avere già un elenco preciso degli argomenti da riprendere, possiamo capirlo insieme guardando il programma e gli esercizi.</p><a className="button dark" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>Scrivimi su WhatsApp</a><a className="text-link home-all-questions" href="/domande">Pagamenti, cancellazioni e altre informazioni<ArrowRight size={18} aria-hidden="true"/></a></div>
+  <div><p className="subject-audience">Per studenti e genitori</p><h2 id="parent-questions-title">Domande sulle lezioni</h2><a className="text-link home-all-questions" href="/domande">Pagamenti, cancellazioni e altre informazioni<ArrowRight size={18} aria-hidden="true"/></a></div>
   <div className="home-parent-faq">{parentQuestions.map(question=>{
    const entry=faqEntries.find(([title])=>title===question);
    return entry?<details key={question}><summary>{entry[0]}<ChevronDown size={19} aria-hidden="true"/></summary><p>{entry[1]}</p></details>:null;

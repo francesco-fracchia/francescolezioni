@@ -6,12 +6,13 @@ import LevelTest from "./level-test";
 import ContactForm from "./contact-form";
 import RequestForm from "./request-form";
 import ConsultationBooking from "./consultation-booking";
-import type { Assessment, DialogKind } from "./types";
+import type { Assessment, DialogKind, GroupSize } from "./types";
 
 type Props = {
   kind: DialogKind;
   subject: string;
   hasCompanion: boolean;
+  groupSize?: GroupSize;
   assessment: Assessment | null;
   setAssessment: (assessment: Assessment) => void;
   setKind: (kind: DialogKind) => void;
@@ -23,6 +24,7 @@ export default function SiteDialog({
   kind,
   subject,
   hasCompanion,
+  groupSize = 2,
   assessment,
   setAssessment,
   setKind,
@@ -103,6 +105,7 @@ export default function SiteDialog({
             subject={subject}
             assessment={assessment}
             hasCompanion={hasCompanion}
+            initialGroupSize={groupSize}
           />
         )}
       </section>

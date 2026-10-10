@@ -329,3 +329,69 @@
 .public-shell :is(.reading-callout,.conversation-panel,.exam-estimate,.example-answer){background:#f4f7fc}
 .public-shell :is(.review,.recover){color:#52647c;background:#f4f7fc}
 @media(max-width:780px){.home-start-reading{grid-template-columns:1fr;gap:28px;padding-block:32px 45px}.home-start-reading aside{border-left:0;border-top:1px solid #dce2ed;padding:22px 0 0}.home-start-reading p{font-size:16px}.home-format-heading{align-items:start}}
+
+/* Direct lesson links and shorter public reading flow. */
+.public-lessons-menu{position:relative;flex-shrink:0}
+.public-lessons-trigger{display:flex;align-items:center;gap:3px}
+.public-lessons-trigger>a{padding:10px 0;white-space:nowrap}
+.public-lessons-trigger>a[aria-current=page]{color:#2459b3;box-shadow:inset 0 -2px #2459b3;font-weight:700}
+.public-lessons-trigger>button{display:grid;place-items:center;border:0;background:transparent;color:inherit;cursor:pointer;min-height:40px;width:28px;border-radius:6px}
+.public-lessons-trigger>button[aria-expanded=true] svg{transform:rotate(180deg)}
+.public-lesson-links{display:none;position:absolute;top:calc(100% + 14px);left:-18px;width:280px;padding:8px;background:#fff;border:1px solid #d4deef;border-radius:14px;box-shadow:0 14px 36px #0f2d5b20}
+.public-lesson-links.is-open{display:block}
+.public-lesson-links>a{display:block;padding:13px 12px;border-radius:8px}
+.public-lesson-links strong{display:block;font-size:14px}
+.public-lesson-links small{display:block;font-size:12px;color:#52647c;margin-top:4px;line-height:1.5}
+.public-lesson-links>a:hover{background:#edf3ff}
+.public-lessons-trigger>button:focus-visible,.graphic-explanation summary:focus-visible,.meeting-details summary:focus-visible{outline:2px solid #598ae1;outline-offset:3px}
+.home-compact .graphic-explanation{padding:14px 16px}
+.graphic-explanation summary{font-size:13px;line-height:1.5;cursor:pointer;color:inherit}
+.graphic-explanation p{margin-top:12px}
+.home-calendar{padding-block:24px 44px}
+.meeting-details{border-top:1px solid #ffffff38;border-bottom:1px solid #ffffff38;padding:14px 0;margin:20px 0}
+.meeting-details summary{cursor:pointer;font-size:14px;line-height:1.5;color:#fff}
+.availability-preview .meeting-details p{font-size:14px;margin-bottom:0}
+.availability-preview .reading-note{font-size:13px;line-height:1.6}
+.public-prices .public-intro{padding-bottom:22px}
+.price-card-heading{display:grid;grid-template-columns:minmax(0,1fr) 100px;align-items:center;gap:16px;margin-bottom:20px}
+.price-card-heading .card-art{width:100%;height:110px;min-height:0;margin:0}
+.price-card-heading .price{font-size:clamp(44px,5vw,70px);margin-top:16px}
+.price-card-heading .duration{flex-wrap:wrap;font-size:13px;gap:7px;margin-bottom:0}
+.public-shell .package-price-note{background:#f4f7fc;border:1px solid #d4deef;border-radius:12px;padding:16px;margin:0 0 24px}
+.package-price-note>span{display:block;color:#52647c;font-size:13px}
+.package-price-note>strong{display:block;font-size:24px;margin-top:6px;line-height:1.4}
+.public-shell .package-price-note p{font-size:14px;margin:6px 0 0}
+.package-price-note details{margin-top:12px}
+.package-price-note summary{font-size:13px;cursor:pointer;line-height:1.5}
+.exam-quick-summary{position:sticky;top:88px;z-index:20;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:20px;background:#fff;border:1px solid #b4c9ec;border-radius:12px;padding:18px 20px;margin:0 0 28px;box-shadow:0 4px 16px #0f2d5b0a}
+.exam-quick-summary span{display:block;font-size:12px;color:#52647c;line-height:1.5}
+.exam-quick-summary strong{display:block;font-size:20px;line-height:1.5;margin-top:3px}
+@media(max-width:900px){
+ .public-lessons-trigger>a{padding:12px;font-weight:600}.public-lessons-trigger>button{display:none}
+ .public-lesson-links,.public-lesson-links.is-open{display:grid;position:static;grid-template-columns:repeat(3,minmax(0,1fr));width:auto;gap:6px;margin:0 12px 12px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+ .public-lesson-links>a{padding:12px 10px;border:1px solid #d4deef;background:#fff}.public-lesson-links strong{font-size:13px}.public-lesson-links small{font-size:11px}
+ .exam-quick-summary{top:80px}
+}
+@media(max-width:780px){
+ .public-shell .home-compact .hero{gap:22px;padding-top:24px;padding-bottom:36px}
+ .home-compact .hero-copy>p{font-size:16px;line-height:1.65}
+ .home-compact .study-scene{padding-block:16px}
+ .home-compact .study-window>svg{max-height:190px}
+ .home-compact .code-example{min-height:0}
+ .home-compact .graph-control{padding-bottom:12px}
+ .home-compact .hero-formats{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0}
+ .hero-formats>div{gap:8px}.hero-formats strong{font-size:13px}.public-shell .hero-formats small{font-size:12px}
+ .home-calendar{padding-block:10px 32px}
+ .exam-quick-summary{gap:12px;padding:14px;margin-bottom:24px}
+ .exam-quick-summary strong{font-size:17px}.exam-quick-summary span{font-size:11px}
+ .whatsapp-floating{width:48px;height:48px;left:max(12px,env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom))}
+}
+@media(max-width:480px){
+ .price-card-heading{grid-template-columns:minmax(0,1fr) 70px;gap:10px}
+ .price-card-heading .card-art{height:85px}
+ .public-prices .price-card h2{font-size:22px}
+ .price-card-heading .price{font-size:48px}
+ .price-card-heading .price span{font-size:12px}
+ .exam-quick-summary{grid-template-columns:1.15fr .8fr 1fr;gap:8px;border-radius:10px}
+ .exam-quick-summary strong{font-size:15px}
+}
