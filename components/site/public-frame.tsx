@@ -27,5 +27,5 @@ export default function PublicFrame({children,origin,preview=false}:{children:Re
  <div id="public-content" tabIndex={-1}>{children}</div>
  <PublicFooter/>
  {!menu&&!lessonsOpen&&!['/incontro','/contatti','/invita','/privacy','/prezzi'].includes(path)&&<ReferralBanner/>}
- <a className="whatsapp-floating" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer" aria-label="Scrivimi su WhatsApp, si apre in una nuova scheda"><WhatsAppIcon/><span>Scrivimi</span></a></div></SitePreviewContext.Provider>;
+ <a className="whatsapp-floating" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer" aria-label="Scrivimi su WhatsApp, si apre in una nuova scheda"><WhatsAppIcon/></a></div></SitePreviewContext.Provider>;
 }
