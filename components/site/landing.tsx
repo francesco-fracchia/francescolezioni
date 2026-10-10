@@ -29,17 +29,16 @@ export default function Landing({open}:{open:OpenDialog}){
    <div className="home-tutor-photo"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} loading="lazy"/></div>
    <div>
     <h2 id="home-tutor-title">Ciao, sono Francesco</h2>
-    <p>Sono laureato in Informatica e sto frequentando la magistrale. Da diversi anni do ripetizioni a ragazzi delle superiori e studenti universitari, e nel tempo ho seguito anche molti ragazzi con DSA.</p>
-    <p>Essendo ancora studente, so cosa significa passare ore su un argomento e continuare ad avere dubbi. Per questo cerco di mettere i ragazzi a proprio agio, lasciando il tempo di fare domande e provare gli esercizi. Se una spiegazione non basta, la riprendiamo in un altro modo, senza dare per scontato che le basi siano già chiare.</p>
+    <p>Sono laureato in Informatica e frequento la magistrale. Da diversi anni do ripetizioni a studenti delle superiori e dell’università, anche con DSA. A lezione puoi chiedermi di rispiegare un passaggio senza sentirti in imbarazzo.</p>
 
-    <div className="actions"><a className="text-link" href="/francesco">Qualcosa in più su di me<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
+    <div className="actions"><a className="text-link" href="/francesco">Chi sono<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
    </div>
   </section>
   <LessonFormats open={open}/>
   <div className="wrap home-calendar"><AvailabilityPreview/></div>
   <section className="home-platform-band">
    <div className="wrap home-platform">
-    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Esercizi e materiali nell’area studente</h2><p>Ho costruito una piattaforma per raccogliere il lavoro che facciamo insieme. Se durante le lezioni decidiamo di aggiungere qualche esercizio da svolgere a casa, potrai consegnarlo nella tua area e ritrovare lì i materiali e le mie correzioni.</p><p className="reading-note">L’uso della piattaforma e il lavoro da casa dipendono da quello che concordiamo. Sto preparando gli accessi e i contenuti per l’apertura.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
+    <div className="home-platform-copy"><span className="public-icon-badge"><NotebookPen aria-hidden="true"/></span><p className="subject-audience">Anche tra una lezione e l’altra</p><h2>Esercizi e materiali nell’area studente</h2><p>Se concordiamo esercizi da fare a casa, puoi consegnarli nella tua area e ritrovare materiali e correzioni.</p><p className="reading-note">Accessi e contenuti in preparazione.</p><a className="text-link" href="/piattaforma">Guarda l’area studente<ArrowRight size={18} aria-hidden="true"/></a></div>
     <PlatformExample/>
    </div>
   </section>

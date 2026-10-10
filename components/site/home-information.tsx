@@ -9,7 +9,7 @@ export function LessonFormats({open}:{open:OpenDialog}){
    <article className="home-format-individual">
     <h3 className="home-format-heading"><UserRound size={22} aria-hidden="true"/>Lezioni individuali</h3>
     <p className="home-format-price"><strong>20 €</strong><span>per lezione · 55 minuti</span></p>
-    <p className="home-format-package"><strong>5 lezioni · 95 €</strong><span>19 € per lezione, pagate insieme</span></p>
+    <p className="home-format-package"><strong>5 lezioni · 95 €</strong></p>
     <a className="button outline" href="/incontro">Incontro gratuito<ArrowRight size={18} aria-hidden="true"/></a>
    </article>
    <article className="home-format-group">
