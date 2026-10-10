@@ -2,7 +2,7 @@ import {studio,studioCopy} from './public-offer';
 export const faqEntries: [string,string][] = [
             ["Dove si terranno le lezioni a Lodi?", studioCopy.description + ' L’indirizzo è ' + studio.address + ', ' + studio.city + '. Puoi fare lezione anche online.'],
             ["Posso contattarti per mio figlio?", "Certo, puoi scrivermi indicando la classe, la materia e quello che tuo figlio deve preparare, così guardiamo insieme il programma e le difficoltà che sta incontrando. Se è minorenne, compilate la richiesta insieme e lasciate il contatto del genitore."],
-            ["Come si pagano le lezioni?", "Contanti o POS, su accordo, prima dell’inizio della lezione. Il pacchetto di 5 lezioni individuali costa 95 € e si paga insieme, dopo aver concordato condizioni e appuntamenti. Le richieste e l’incontro gratuito non richiedono pagamenti. Il pagamento online con carta è ancora in preparazione. La pagina di acquisto permette di scegliere una singola lezione o il pacchetto e prenotare gli orari aperti dopo la conferma del pagamento."],
+            ["Come si pagano le lezioni?", "Puoi pagare prima della lezione in contanti, con carta, PayPal, Apple Pay o Google Pay. Il pacchetto di 5 lezioni individuali costa 95 € e si paga insieme, dopo aver concordato condizioni e appuntamenti. Le richieste e l’incontro gratuito non richiedono pagamenti. La pagina di acquisto permette di scegliere una singola lezione o il pacchetto e prenotare gli orari aperti dopo la conferma del pagamento."],
             ["Cosa portare alla prima lezione?", "Il programma della materia, il libro o gli appunti e gli esercizi o le verifiche su cui lavorare. Puoi dirmi prima cosa devi preparare, così sappiamo da dove partire."],
             ["Segui anche ragazzi con DSA?", "Ho seguito molti ragazzi con DSA e, prima di iniziare, mi interessa capire come sono abituati a studiare e quali difficoltà incontrano. Durante le lezioni possiamo usare schemi e riprendere i passaggi con il tempo necessario, tenendo conto degli strumenti che lo studente usa già."],
             [
@@ -14,8 +14,8 @@ export const faqEntries: [string,string][] = [
               "Il test serve a controllare alcuni concetti di base. È gratuito e riguarda solo alcuni argomenti, quindi non è un esame su tutto il programma. Guardiamo il risultato insieme per decidere cosa riprendere.",
             ],
             [
-              "I 15 minuti gratuiti sono una lezione?",
-              "Sono un primo incontro per conoscerci. Mi mostri il programma e parliamo di cosa devi preparare e delle difficoltà che incontri. Non è una lezione di prova e non ti impegna a prenotare lezioni.",
+              "Come funziona il primo incontro gratuito?",
+              "Dura 15 minuti. Mi mostri il programma e parliamo di cosa devi preparare e delle difficoltà che incontri. Non ti impegna a prenotare lezioni.",
             ],
             ["Quante lezioni mi servono per un esame universitario?", 'Nelle proposte per gli esami trovi gli argomenti e un numero iniziale di incontri per il ripasso. Nel primo incontro confronto il piano con la tua preparazione e il programma del docente. Puoi fare meno lezioni, saltare argomenti o aggiungere esercitazioni.'],
             ["Materiali e correzioni sono compresi?", "Ci accordiamo prima sui materiali, sugli eventuali esercizi da fare a casa e sulle correzioni che seguirò, raccogliendo questo lavoro nella piattaforma. Per un dubbio breve puoi scrivermi su WhatsApp, mentre gli argomenti che richiedono una spiegazione li riprendiamo a lezione. Le correzioni e l’assistenza riguardano il lavoro concordato e non sono illimitate."],

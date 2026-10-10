@@ -479,6 +479,13 @@
 .home-compact .availability-slots h3{font-size:16px;font-weight:500;line-height:1.4;margin:0 0 12px;color:#fff}
 .home-compact .availability-slots>p{font-size:14px;color:#c4d4ec}
 
+/* The preview keeps one compact booking callout, without empty calendar space. */
+.home-compact .availability-preview.is-preview{display:block}
+.home-compact .availability-preview.is-preview .availability-copy{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:38px;align-items:start}
+.home-compact .availability-preview.is-preview .availability-copy>svg,.home-compact .availability-preview.is-preview h2,.home-compact .availability-preview.is-preview .availability-copy>p,.home-compact .availability-preview.is-preview .meeting-details{grid-column:1}
+.home-compact .availability-preview.is-preview .meeting-calendar-button{grid-column:2;grid-row:2/span 2;align-self:center}
+@media(max-width:780px){.home-compact .availability-preview.is-preview .availability-copy{display:block}.home-compact .availability-preview.is-preview .meeting-calendar-button{margin-top:4px}}
+
 /* The guide stays open, without another large card competing with booking. */
 .home-compact .home-guide{padding-block:0 40px}
 .public-shell .home-compact .study-guide{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);grid-template-rows:min-content 1fr;column-gap:48px;row-gap:18px;border:0;border-radius:0;background:transparent;padding:0}
