@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {DatabaseSync} from 'node:sqlite';
 import ts from 'typescript';
+import {signUploadClaim} from '../lib/uploads/claims.mjs';
 const sql=new DatabaseSync(':memory:');
 for(const f of (await readdir(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())sql.exec(await readFile(new URL('../drizzle/'+f,import.meta.url),'utf8'));
 const db={prepare(query){const bind=(...args)=>({async first(){return sql.prepare(query).get(...args)||null;},async all(){return {results:sql.prepare(query).all(...args)};},async run(){const r=sql.prepare(query).run(...args);return {meta:{changes:Number(r.changes)}};}});return {bind,...bind()};}};
-const objects=new Map();const env={BUCKET:{async put(key,stream){objects.set(key,new Uint8Array(await new Response(stream).arrayBuffer()));},async delete(key){objects.delete(key);},async get(key,{range}={}){const bytes=objects.get(key);if(!bytes)return null;const match=range?.get('range')?.match(/^bytes=(\d+)-(\d+)$/);const offset=match?Number(match[1]):0;const length=match?Number(match[2])-offset+1:bytes.length;return {body:bytes.slice(offset,offset+length),size:bytes.length,httpEtag:'"test"',range:{offset,length}};}}};
+const objects=new Map();const env={BUCKET:{async put(key,stream){objects.set(key,new Uint8Array(await new Response(stream).arrayBuffer()));},async delete(key){objects.delete(key);},async get(key,{range}={}){const bytes=objects.get(key);if(!bytes)return null;const match=range?.get('range')?.match(/^bytes=(\d+)-(\d+)$/);const offset=match?Number(match[1]):0;const length=match?Number(match[2])-offset+1:bytes.length;return {body:new Blob([bytes.slice(offset,offset+length)]).stream(),size:bytes.length,httpEtag:'"test"',range:{offset,length}};}}};
 let user=null;let owner=false;
 globalThis.__learning={getAccount:async()=>user?{id:user.userId,must_change_password:0,auth_version:0}:null,isRequestOwner:async()=>owner,bookingDb:()=>db,env};
 async function compile(path,replace=s=>s){const s=replace(await readFile(new URL('../'+path,import.meta.url),'utf8')).replace("import { getAccount } from '@/lib/auth/session';",'const {getAccount}=globalThis.__learning;').replace(/import \{ isRequestOwner \} from '@\/lib\/request-admin';/g,'const {isRequestOwner}=globalThis.__learning;').replace(/import \{ bookingDb \} from '@\/lib\/booking\/runtime';/g,'const {bookingDb}=globalThis.__learning;').replace(/import \{ env \} from '@\/lib\/runtime-env';/g,'const {env}=globalThis.__learning;').replace("from 'zod'",'from '+JSON.stringify(import.meta.resolve('zod')));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
@@ -91,5 +92,29 @@ try{
  sql.prepare("UPDATE students SET status='archived' WHERE id=?").run(a);assert.equal((await student.GET(req('/api/studente?studente='+a))).status,403);
  owner=true;sql.prepare("UPDATE students SET status='active' WHERE id=?").run(a);assert.equal((await student.POST(req('/api/studente?anteprima='+a,'POST',{studentId:a,materialId:mat,completed:true}))).status,403);
  assert.equal((await student.POST(req('/api/studente','POST',{studentId:a,materialId:mat,completed:true},'https://evil.example'))).status,403);
+ // A course file larger than Vercel's Function request limit is finalized
+ // through metadata alone and stays in draft until the tutor publishes it.
+ const previousSecret=process.env.TURSO_AUTH_TOKEN;process.env.TURSO_AUTH_TOKEN='test-only-private-upload-signing-secret';
+ try {
+  owner=true;user={userId:'owner',email:'owner@example.com'};
+  const bytes=new Uint8Array(6*1024*1024);bytes.set(new TextEncoder().encode('%PDF-1.7\n'));
+  const directId=crypto.randomUUID(),key='learning/'+directId;objects.set(key,bytes);
+  const proof=signUploadClaim({actor:'owner',version:0,kind:'material',target:mod,key,filename:'large.pdf',mime:'application/pdf',size:bytes.length,expires:Date.now()+60000},process.env.TURSO_AUTH_TOKEN);
+  const payload={moduleId:mod,title:'Dispensa grande',position:'2',uploadProof:proof};
+  assert.ok(JSON.stringify(payload).length<2000);
+  const result=await admin.PUT(req('/api/gestione/formazione','PUT',payload));assert.equal(result.status,201,await result.clone().text());assert.equal((await result.json()).id,directId);
+  assert.equal((await admin.PUT(req('/api/gestione/formazione','PUT',payload))).status,200);
+  assert.equal(sql.prepare('SELECT count(*) n FROM course_materials WHERE id=?').get(directId).n,1);
+  assert.equal(sql.prepare('SELECT status,size FROM course_materials WHERE id=?').get(directId).status,'draft');
+  assert.equal(sql.prepare('SELECT size FROM course_materials WHERE id=?').get(directId).size,bytes.length);
+  owner=false;user={userId:'parent',email:'parent@example.com'};const directDownload=()=>req(`/api/studente/materiali?studente=${a}&materiale=${directId}`);assert.equal((await files.GET(directDownload())).status,404);
+  owner=true;await command({kind:'material-status',id:directId,status:'published',position:2});owner=false;
+  const fetched=await files.GET(directDownload());assert.equal(fetched.status,200);assert.equal((await fetched.arrayBuffer()).byteLength,bytes.length);
+  assert.equal((await files.GET(req(`/api/studente/materiali?studente=${b}&materiale=${directId}`))).status,404);
+  owner=true;user={userId:'owner',email:'owner@example.com'};
+  const spoofId=crypto.randomUUID(),spoofKey='learning/'+spoofId;objects.set(spoofKey,new TextEncoder().encode('<html>bad pdf</html>'));
+  const spoofProof=signUploadClaim({actor:'owner',version:0,kind:'material',target:mod,key:spoofKey,filename:'spoof.pdf',mime:'application/pdf',size:objects.get(spoofKey).length,expires:Date.now()+60000},process.env.TURSO_AUTH_TOKEN);
+  assert.equal((await admin.PUT(req('/api/gestione/formazione','PUT',{...payload,uploadProof:spoofProof}))).status,400);assert.equal(objects.has(spoofKey),false);
+ } finally {if(previousSecret===undefined)delete process.env.TURSO_AUTH_TOKEN;else process.env.TURSO_AUTH_TOKEN=previousSecret;}
  console.log('PASS: explicit grants, stable identities, multi-child guardian, per-student history and balances, draft isolation, protected R2 files, revocations, progress persistence, owner preview and CSRF.');
 }finally{delete globalThis.__learning;sql.close();}
