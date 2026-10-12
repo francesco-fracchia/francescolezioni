@@ -27,7 +27,7 @@ export default function Landing({open}:{open:OpenDialog}){
   <div className="wrap home-calendar"><AvailabilityPreview/></div>
   <div className="wrap home-guide"><StudyGuide/></div>
   <section className="wrap home-tutor" aria-labelledby="home-tutor-title">
-   <div className="home-tutor-photo"><img src="/images/francesco-fracchia.jpg" alt="Francesco Fracchia" width={1179} height={1497} loading="lazy"/></div>
+   <div className="home-tutor-photo"><img src="/images/francesco-fracchia-ritratto.png" alt="Francesco Fracchia" width={1113} height={1413} loading="lazy"/></div>
    <div>
     <h2 id="home-tutor-title">Ciao, sono Francesco</h2>
     <p>Sono laureato in Informatica e frequento la magistrale. Da diversi anni do ripetizioni a studenti delle superiori e dell’università, anche con DSA. A lezione puoi chiedermi di rispiegare un passaggio senza sentirti in imbarazzo.</p>
