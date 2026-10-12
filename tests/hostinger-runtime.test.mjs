@@ -95,6 +95,9 @@ test('Hostinger bootstrap uses existing password format and private mode admits 
     assert.equal(await privateAccessAllowed(request('/accesso'), db, 'private'), true);
     assert.equal(await privateAccessAllowed(request('/api/accesso'), db), true);
     assert.equal(await privateAccessAllowed(request('/api/incontri'), db), false);
+    assert.equal(await privateAccessAllowed(new Request('https://site.example/api/stripe/webhook',{method:'POST'}),db,'private'),true);
+    for(const method of ['GET','PUT','DELETE'])assert.equal(await privateAccessAllowed(new Request('https://site.example/api/stripe/webhook',{method}),db,'private'),false);
+    assert.equal(await privateAccessAllowed(new Request('https://site.example/api/stripe/webhook/other',{method:'POST'}),db,'private'),false);
     assert.equal(await privateAccessAllowed(request('/api/studente/compiti/file'), db), false);
     assert.equal(await privateAccessAllowed(request('/francesco'), db), false);
     assert.equal(await privateAccessAllowed(request('/gestione', { 'oai-authenticated-user-email': 'tutor@example.com' }), db), false);
