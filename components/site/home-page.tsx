@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Landing from "@/components/site/landing";
+import {publicSubjectSelection} from "@/lib/public-subject-selection";
 import SiteDialog from "@/components/site/site-dialog";
 import type {
   Assessment,
@@ -18,11 +19,17 @@ export default function Home() {
   const returnFocus = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const kind = new URLSearchParams(window.location.search).get("richiesta");
+    const params = new URLSearchParams(window.location.search);
+    const kind = params.get("richiesta");
+    setSubject(publicSubjectSelection(params.get("materia")||undefined));
     if (kind === "test" || kind === "lesson" || kind === "group" || kind === "consultation" || kind === "contact") setDialog(kind);
   }, []);
 
-  const closeDialog = useCallback(() => setDialog(null), []);
+  const closeDialog = useCallback(() => {
+    setDialog(null);
+    const url=new URL(window.location.href);
+    if(url.searchParams.has("richiesta")){url.searchParams.delete("richiesta");window.history.replaceState(window.history.state,"",url.pathname+url.search+url.hash);}
+  }, []);
 
   const open: OpenDialog = (kind, selectedSubject, companion = false, size = 2) => {
     returnFocus.current = document.activeElement as HTMLElement;

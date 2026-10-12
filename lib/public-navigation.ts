@@ -3,7 +3,8 @@ export const publicNavigation = [
  {href:'/metodo',label:'Come lavoro'}, {href:'/francesco',label:'Chi sono'}, {href:'/contatti',label:'Contatti'},
 ];
 export const publicLessonNavigation = [
- {href:'/catalogo',label:'Superiori',description:'Matematica e informatica'},
+ {href:'/lezioni/matematica',label:'Matematica',description:'Superiori e università'},
+ {href:'/lezioni/informatica',label:'Informatica',description:'Programmazione, sistemi e reti'},
  {href:'/esami',label:'Università',description:'Programmi e lezioni per gli esami'},
  {href:'/maturita',label:'Maturità',description:'Ripasso e prove di esercitazione'},
 ];

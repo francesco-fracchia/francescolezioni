@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Check } from "lucide-react";
 import { studioCopy } from "@/lib/public-offer";
 import { schoolSubjects, universitySubjects } from "@/lib/catalog";
@@ -29,6 +29,15 @@ export default function RequestForm({
   const [companions, setCompanions] = useState(hasCompanion);
   const formRef = useRef<HTMLFormElement>(null);
   const steps = ['Contatti', 'Programma', 'Disponibilità', 'Riepilogo'];
+  const reviewLabels:Record<string,string>={name:'Nome',email:'Email',phone:'Telefono',subject:'Materia',program:'Programma',availability:'Disponibilità',mode:'Modalità',groupSize:'Numero di studenti',participant1:'Compagno 1',participant2:'Compagno 2',participant3:'Compagno 3',sharedProgram:'Programma del gruppo'};
+  const previousStep=useRef(step);
+  useEffect(()=>{
+    if(previousStep.current===step)return;
+    previousStep.current=step;
+    const heading=formRef.current?.querySelector<HTMLElement>(`[data-step="${step}"] h3`);
+    heading?.focus({preventScroll:true});
+    heading?.scrollIntoView({block:'start',behavior:'instant'});
+  },[step]);
   function next() {
     const controls = formRef.current?.querySelectorAll<HTMLInputElement>(`[data-step="${step}"] input, [data-step="${step}"] select, [data-step="${step}"] textarea`);
     for (const control of controls || []) if (!control.reportValidity()) return;
@@ -123,7 +132,8 @@ export default function RequestForm({
       </p>
       <ol className="form-steps" aria-label="Passaggi della richiesta">{steps.map((title,i)=><li key={title} aria-current={step===i?'step':undefined}><span>{i+1}</span>{title}</li>)}</ol>
       <form ref={formRef} onSubmit={submit} noValidate>
-        <section className="form-grid" data-step="0" hidden={step!==0}>
+        <section className="form-grid" data-step="0" hidden={step!==0} aria-label="I tuoi contatti">
+          <h3 className="request-step-title full" tabIndex={-1}>I tuoi contatti</h3>
           <label>
             Nome
             <input
@@ -159,7 +169,8 @@ export default function RequestForm({
             </select>
           </label>
         </section>
-        <section className="form-grid" data-step="1" hidden={step!==1}>
+        <section className="form-grid" data-step="1" hidden={step!==1} aria-label="Il programma da preparare">
+          <h3 className="request-step-title full" tabIndex={-1}>Il programma da preparare</h3>
           <label className="full">
             Materia / esame
             <select name="subject" defaultValue={subject}>
@@ -207,7 +218,8 @@ export default function RequestForm({
             <input name="deadline" type="date" />
           </label>
         </section>
-        <section className="form-grid" data-step="2" hidden={step!==2}>
+        <section className="form-grid" data-step="2" hidden={step!==2} aria-label="Giorni e orari">
+          <h3 className="request-step-title full" tabIndex={-1}>Giorni e orari</h3>
           <p className="full form-note">{studioCopy.requestNote}</p>
           <label>
             Modalità
@@ -265,9 +277,9 @@ export default function RequestForm({
           )}
         </section>
         <section data-step="3" hidden={step!==3}>
-          <h3>Controlla e invia</h3>
+          <h3 className="request-step-title" tabIndex={-1}>Controlla e invia</h3>
           <p>Puoi tornare ai passaggi precedenti senza perdere i dati.</p>
-          <dl className="request-review">{['name','email','subject','program','availability','mode'].map((key,i)=><div key={key}><dt>{['Nome','Email','Materia','Programma','Disponibilità','Modalità'][i]}</dt><dd>{String(new FormData(formRef.current || undefined).get(key)||'—')}</dd></div>)}</dl>
+          <dl className="request-review">{['name','email','phone','subject','program','availability','mode',...(kind==='group'?['groupSize',...(companions?['participant1','participant2','participant3','sharedProgram']:[])]:[])].map(key=><div key={key}><dt>{reviewLabels[key]}</dt><dd>{String(new FormData(formRef.current || undefined).get(key)||'—')}</dd></div>)}</dl>
         <label className="honeypot" aria-hidden="true">
           Website
           <input name="website" tabIndex={-1} autoComplete="off" />
@@ -292,7 +304,7 @@ export default function RequestForm({
         )}
         </section>
         {preview&&<p className="form-note" role="status">Stai consultando l’anteprima. Puoi provare il modulo, ma l’invio delle richieste sarà disponibile all’apertura del sito.</p>}
-        <div className="wizard-actions">{step>0&&<button type="button" className="button outline" onClick={()=>setStep(step-1)}>Indietro</button>}{step<3?<button type="button" className="button dark" onClick={next}>Continua</button>:<button
+        <div className="wizard-actions">{step>0&&<button type="button" className="button outline" disabled={state==="saving"} onClick={()=>setStep(step-1)}>Indietro</button>}{step<3?<button type="button" className="button dark" onClick={next}>Continua</button>:<button
           className="button dark"
           disabled={preview || state === "saving"}
           type="submit"
@@ -305,7 +317,7 @@ export default function RequestForm({
         </button>}</div>
         <p className="form-note">
           {kind === "consultation"
-            ? "L’incontro dura 15 minuti ed è gratuito. Non è una lezione di prova."
+            ? "L’incontro dura 15 minuti ed è gratuito."
             : kind === "lesson"
               ? "55 minuti · 20 € individuale. Nessun addebito dal sito."
               : "Nessun pagamento e nessuna prenotazione automatica."}

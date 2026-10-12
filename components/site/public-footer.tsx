@@ -3,7 +3,7 @@ import {publicBusiness} from '@/lib/public-business';
 import {studio,studioCopy} from '@/lib/public-offer';
 import WhatsAppIcon from './whatsapp-icon';
 
-export default function PublicFooter(){return <footer className="public-footer">
+export default function PublicFooter({inert=false}:{inert?:boolean}){return <footer className="public-footer" inert={inert||undefined}>
   <div className="wrap footer-main">
     <div className="footer-contact"><strong>{publicBusiness.name}</strong><p>Matematica e informatica.<br/>A Lodi e online, su appuntamento.</p>
       <a className="text-link whatsapp-link" href={'https://wa.me/'+publicBusiness.phone.slice(1)} target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>Scrivimi su WhatsApp</a>

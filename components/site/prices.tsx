@@ -14,7 +14,7 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
               <Clock size={16} aria-hidden="true" /> 55 minuti
             </p></div><CardArt kind="individual" /></div>
             <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong><details><summary>Condizioni del pacchetto</summary><p>Concordiamo prima programma e condizioni. Dopo l’acquisto puoi fissare gli orari aperti. Il credito invito non si somma al pacchetto.</p></details></div>
-            <a className="button dark" href="/acquista">Singola lezione o pacchetto</a>
+            <a className="button dark" href="/acquista">Acquista lezioni</a>
             <button className="text-link calendar-link" onClick={() => open("contact")}>Chiedi informazioni</button>
           </article>
           <article className="price-card group-price">
@@ -27,7 +27,7 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
               <Users size={16} aria-hidden="true" /> Da 2 a 4 studenti
             </p></div><CardArt kind="group" /></div>
             <div className="group-explorer">
-              <div className="group-explorer-top"><span>Quanti siete?</span><div className="group-size-options" aria-label="Numero di studenti">{([2,3,4] as const).map(size => <button key={size} aria-pressed={groupSize === size} onClick={() => setGroupSize(size)}>{size}</button>)}</div></div>
+              <div className="group-explorer-top"><span>Quanti siete?</span><div className="group-size-options" role="group" aria-label="Numero di studenti">{([2,3,4] as const).map(size => <button key={size} aria-pressed={groupSize === size} onClick={() => setGroupSize(size)}>{size}</button>)}</div></div>
               <div className="group-people" aria-hidden="true">{Array.from({length:4},(_,i) => <span key={i} className={i < groupSize ? 'present' : ''}><UserRound size={22}/></span>)}</div>
               <p className="group-total"><b>15 €</b> a persona · {groupSize} studenti</p><p className="group-example" aria-live="polite">{groupSize===2?'Per esempio, due compagni che preparano la stessa verifica.':groupSize===3?'Per esempio, tre universitari dello stesso corso, con un appello comune.':'Per esempio, quattro compagni con lo stesso programma da ripassare.'}</p>
             </div>

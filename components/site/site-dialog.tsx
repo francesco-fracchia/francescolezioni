@@ -68,7 +68,7 @@ export default function SiteDialog({
       document.removeEventListener("keydown", handleKey);
       target?.focus();
     };
-  }, [onClose, returnFocus]);
+  }, [kind, onClose, returnFocus]);
 
   return (
     <div

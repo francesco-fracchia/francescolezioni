@@ -2,7 +2,6 @@
 export default function Privacy() {
   return (
     <>
-      <div className="eyebrow">DATI E PRIVACY</div>
       <h2 id="dialog-title">Come uso i dati della richiesta</h2>
       <p>
         Salvo i dati del modulo per gestire la richiesta o l’incontro prenotato, ricontattarti e verificare se ci sono gruppi compatibili. Il sito non li pubblica e non li mostra agli altri studenti.

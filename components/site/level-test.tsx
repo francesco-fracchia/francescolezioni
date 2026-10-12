@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { tests } from "@/lib/catalog";
 import type { Assessment } from "./types";
 export default function Test({
@@ -10,12 +10,16 @@ export default function Test({
   onRequest: () => void;
 }) {
   const [test, setTest] = useState("Matematica superiori");
+  const title=useRef<HTMLHeadingElement>(null);
+  const previousScreen=useRef("intro");
   const [started, setStarted] = useState(false);
   const [answers, setAnswers] = useState<number[]>([]);
   const [choice, setChoice] = useState<number | null>(null);
   const [student, setStudent] = useState("");
   const questions = tests[test];
   const done = answers.length === questions.length;
+  const screen=started?String(answers.length):"intro";
+  useEffect(()=>{if(previousScreen.current!==screen){previousScreen.current=screen;title.current?.focus();}},[screen]);
   const score = Math.round(
     (answers.filter((a, i) => a === questions[i].correct).length /
       questions.length) *
@@ -26,7 +30,7 @@ export default function Test({
     return (
       <>
         <div className="eyebrow">Test gratuito</div>
-        <h2 id="dialog-title">Cinque domande sulle basi</h2>
+        <h2 ref={title} tabIndex={-1} id="dialog-title">Cinque domande sulle basi</h2>
         <p>
           Bastano pochi minuti per rispondere a cinque domande. Il risultato dà un’indicazione sulle basi, non un voto.
         </p>
@@ -59,7 +63,7 @@ export default function Test({
     return (
       <>
         <div className="eyebrow">Risultato del test</div>
-        <h2 id="dialog-title">
+        <h2 ref={title} tabIndex={-1} id="dialog-title">
           {score >= 80
             ? "Conosci le basi del test"
             : score >= 40
@@ -101,7 +105,7 @@ export default function Test({
             onRequest();
           }}
         >
-          Richiedi 15 minuti gratuiti
+          Incontro gratuito
         </button>
         <button
           className="text-link"
@@ -121,13 +125,14 @@ export default function Test({
       <div className="eyebrow">
         {test} / {answers.length + 1} DI {questions.length}
       </div>
-      <progress value={answers.length} max={questions.length} />
-      <h2 id="dialog-title">{q.text}</h2>
+      <progress aria-label="Avanzamento del test" value={answers.length} max={questions.length} />
+      <h2 ref={title} tabIndex={-1} id="dialog-title">{q.text}</h2>
       <div className="quiz-options">
         {[...q.options, "Non lo so"].map((o, i) => (
           <button
             key={o}
             className={choice === i ? "selected" : ""}
+            aria-pressed={choice === i}
             onClick={() => setChoice(i)}
           >
             {o}

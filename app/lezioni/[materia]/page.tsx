@@ -27,10 +27,10 @@ export default async function SubjectPage({ params }: Props) {
 
     <main id="main" className="wrap subject-page">
       <section className="subject-intro">
-        <p className="subject-audience">Con Francesco Fracchia · Superiori e università</p>
+        <p className="subject-audience">Superiori e università</p>
         <h1>{subject.title}</h1>
         <p>{subject.introduction}</p>
-        <div className="locations"><span><MapPin size={17}/>A Lodi</span><span><Monitor size={17}/>Online</span></div>
+        <div className="locations"><span><MapPin size={17} aria-hidden="true"/>In presenza a Lodi</span><span><Monitor size={17} aria-hidden="true"/>In videochiamata</span></div>
         <div className="actions">
           <a className="button dark" href={`/incontro?materia=${slug}`}>Prenota un incontro gratuito</a>
           <a className="button outline subject-whatsapp" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>Scrivimi su WhatsApp</a>
@@ -49,7 +49,7 @@ export default async function SubjectPage({ params }: Props) {
         <p>{bookingRules.lessonMinutes} minuti a lezione · {bookingRules.bufferMinutes} minuti tra gli appuntamenti.</p>
         <dl><div><dt>Lezione individuale</dt><dd><strong>{bookingRules.individualPrice} €</strong> / lezione</dd></div><div><dt>Gruppo da 2 a {bookingRules.maxGroupSize} studenti</dt><dd><strong>{bookingRules.groupPrice} €</strong> a persona / lezione</dd></div></dl>
         <details className="reading-disclosure"><summary>Come organizziamo i gruppi</summary><p>{subject.group}</p><p>La lista è gratuita. Può servire tempo per trovare compagni compatibili; decidi tu se partecipare.</p></details>
-        <div className="actions"><a className="text-link" href="/?richiesta=group">Chiedi un gruppo</a><a className="text-link" href="/prezzi">Pacchetti e pagamenti</a></div>
+        <div className="actions"><a className="text-link" href={`/?richiesta=group&materia=${slug}`}>Chiedi un gruppo</a><a className="text-link" href="/prezzi">Pacchetti e pagamenti</a></div>
         <p className="subject-condition">Condizioni e cancellazioni si concordano prima della conferma.</p>
       </section>
 
