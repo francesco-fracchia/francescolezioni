@@ -18,11 +18,40 @@ Repository: https://github.com/francesco-fracchia/francescolezioni
 Il runtime remoto mantiene il contratto D1 già usato dalle migrazioni e dai trigger della piattaforma:
 
 - **Cloudflare D1**, via API HTTPS con query parametrizzate e batch inviati in una sola richiesta. Nessuna ripetizione automatica delle scritture dal risultato incerto.
+- **Turso**, alternativa a D1 già supportata, con client libSQL ufficiale e transazioni atomiche. Impostare entrambi i segreti `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` su un database dedicato; una configurazione parziale non ripiega su D1. Il provider conserva query parametrizzate, risultati RETURNING, conteggio delle modifiche e codici di conflitto, senza divulgare dettagli SQL o ripetere scritture incerte.
 - **Cloudflare R2**, tramite SDK S3, bucket privato, download autorizzati dal server e intervalli per PDF/video. Nessun URL pubblico ai materiali.
 
 Configurazione di esempio: `deploy/vercel/runtime.env.example`. Le sei variabili dei servizi vanno aggiunte nel pannello Vercel: `CF_ACCOUNT_ID`, `CF_D1_DATABASE_ID`, `CF_D1_API_TOKEN`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`. Token e chiavi sono segreti server, senza prefisso `NEXT_PUBLIC_`; limitarli al database e al bucket necessari. Usare risorse distinte per Production e Preview. Non collegare i dati operativi alle anteprime dei branch.
 
 Le risorse del Site privato non vengono trasferite né diventano accessibili aggiungendo la repository. Occorre predisporre D1/R2 nell'account del titolare, applicare in ordine le migrazioni in `drizzle`, trasferire dati e oggetti mantenendo gli identificativi e predisporre il tutor con password propria. Non esistono account amministrativi o password predefiniti.
+
+### Configurazione scelta per il lancio
+
+Dominio scelto: **lezionifrancesco.app**. Impostare `SITE_ORIGIN=https://lezionifrancesco.app` senza slash finale in Production; collegare il dominio nel progetto Vercel e usare i record DNS restituiti dal pannello, senza copiare record generici. La registrazione, l'associazione e il certificato HTTPS non sono ancora verificati. Un aggiornamento della repository non collega il dominio da solo.
+
+Il titolare dispone di Turso e Stripe, ma non di D1/R2. Il database Turso è adattato e verificato con il client ufficiale su un database libSQL locale isolato. **Non è stato collegato un database Turso remoto**. Creare un database dedicato alla piattaforma, distinto dalle altre applicazioni e dai dati di prova, e inserire URL/token come segreti nel progetto Vercel. Non inviarli in chat.
+
+Per i file è stato proposto **Vercel Blob Private**, ancora da creare e integrare. Il runtime attuale supporta R2: Turso senza un archivio supportato non rende il runtime operativo. Non indicare il sito come pronto cambiando `VERCEL_RUNTIME_READY` prima di questa integrazione e del collaudo. Il database non sostituisce l'archivio dei materiali.
+
+### Manutenzione del database Turso
+
+La build non esegue questi comandi. Creare un file locale ignorato `.env.turso.local`, con permessi riservati, contenente solo `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN`. Lavorare dalla radice del progetto, con Node 22.16+ o 24:
+
+```sh
+node --env-file=.env.turso.local scripts/vercel-database.mjs migrate
+node --env-file=.env.turso.local scripts/vercel-database.mjs tutor EMAIL_DEL_TUTOR
+node --env-file=.env.turso.local scripts/vercel-database.mjs check
+```
+
+La password tutor viene chiesta due volte senza mostrarla. Non passare password come argomento o variabile nella cronologia del terminale. Il comando non sostituisce un tutor già presente.
+
+Le 26 migrazioni esistenti vengono applicate nell'ordine del journal, ciascuna in una transazione insieme alla propria impronta SHA-256. I riavvii riprendono solo dalle migrazioni mancanti. Database con tabelle estranee senza registro della piattaforma, migrazioni sconosciute e file già applicati ma modificati vengono rifiutati. Un SQL non valido annulla anche le modifiche allo schema di quella migrazione. Il comando `check` è in sola lettura, controlla impronte, vincoli e presenza del tutor; non certifica disponibilità, accessi o pagamenti sul deploy. Questi comandi inizializzano un database vuoto e **non importano automaticamente i dati del Site o del Mac**.
+
+### Stripe
+
+Account disponibile, collegamento al progetto ancora da verificare. Inserire `STRIPE_SECRET_KEY` e `STRIPE_WEBHOOK_SECRET` come segreti server. Endpoint sul dominio definitivo: `https://lezionifrancesco.app/api/stripe/webhook`; eventi attualmente gestiti: `checkout.session.completed` e `checkout.session.expired`. Il server verifica firma, modalità test/live, importo, valuta e metadati prima di accreditare lezioni. `PAYMENT_LIVE_ENABLED=0` mantiene chiusi i checkout live; le prove non assegnano bonus reali. Non aprire i pagamenti prima del collaudo su database dedicato.
+
+Il checkout attuale richiede il metodo carta; Apple Pay e Google Pay dipendono dall'idoneità del dispositivo/browser e dalle impostazioni Stripe. **PayPal è elencato nei testi ma il suo collegamento non è ancora implementato né verificato**: completare prima dell'apertura o rendere esplicito il metodo effettivamente concordato. Le condizioni di cancellazione e le informazioni privacy definitive sono ancora da completare.
 
 ## Stato e apertura del runtime
 
@@ -44,7 +73,7 @@ Sul Mac, con `npm run start:vercel -- --hostname 127.0.0.1 --port 5186`, `/antep
 
 1. Provisioning del database e dell'archivio privato; migrazioni e importazione controllata; primo account tutor indipendente.
 2. **Upload diretti autorizzati**: Vercel limita il corpo delle richieste a 4,5 MB. Gli upload attuali passano dal server (materiali fino a 50 MB, compiti fino a 10 MB) e i file grandi non sono ancora utilizzabili su Vercel. Il supporto agli stream nell'adapter non elimina il limite della piattaforma. Servono autorizzazioni temporanee, verifica di ruolo/destinatario/dimensione/contenuto e finalizzazione server; il bucket deve rimanere privato.
-3. Verifiche sul provider reale: concorrenza e rollback delle prenotazioni/saldi, login e isolamento tra studenti, upload/download, range video, errori di rete e persistenza dopo un nuovo deploy. I test locali dell'adapter usano un trasporto simulato e **non certificano un collegamento Cloudflare reale**.
+3. Verifiche sul provider remoto: concorrenza e rollback delle prenotazioni/saldi, login e isolamento tra studenti, upload/download, range video, errori di rete e persistenza dopo un nuovo deploy. I test Cloudflare usano un trasporto simulato; i test Turso usano il client ufficiale su libSQL locale, inclusa l'API di prenotazione con due richieste concorrenti e un solo appuntamento/richiesta salvato. **Nessuno di questi test certifica il collegamento al servizio remoto del titolare**.
 4. Verifica del piano Vercel adatto all'attività, dominio definitivo e successiva apertura autorizzata. Nessun servizio, piano o dominio è stato acquistato da questi script.
 
 ## Verifica locale
