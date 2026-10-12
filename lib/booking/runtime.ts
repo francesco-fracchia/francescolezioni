@@ -6,7 +6,7 @@ export function paymentConfig() {
  const live=!!key?.startsWith('sk_live_');
  let validOrigin=false;try{const u=new URL(origin||'');validOrigin=u.protocol==='https:'&&u.origin===origin;}catch{/* Missing or invalid public origin keeps checkout closed. */}
  const ready=validOrigin && (!!key?.startsWith('sk_test_') || (live && env.PAYMENT_LIVE_ENABLED==='1' && !!webhook));
- return {key,origin,webhook,live,ready};
+ return {key,origin,webhook,live,ready,paypal:env.STRIPE_PAYPAL_ENABLED==='1'};
 }
 export async function stripe(path:string,body?:URLSearchParams,idempotency?:string) {
  const config=paymentConfig(); if(!config.ready) throw new Error('Payments unavailable');

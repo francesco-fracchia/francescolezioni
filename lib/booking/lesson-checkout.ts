@@ -1,7 +1,7 @@
 import { noticeStatements,dispatchAppointmentNotices } from '@/lib/notifications/appointments';
 import { bookingDb,paymentConfig,stripe } from './runtime';
 import { deadlinePassed,paymentDeadline } from './payment-policy';
-export type LessonPayment={id:string;lesson_id:string;access_token:string;name:string;email:string;amount:number;status:string;stripe_session:string|null;attempt_key:string|null;checkout_expires_at:number|null;starts_at:string;ends_at:string;mode:string;subject:string;lesson_status:string;payment_method:string;payment_status:string};
+export type LessonPayment={checkout_paypal:number;id:string;lesson_id:string;access_token:string;name:string;email:string;amount:number;status:string;stripe_session:string|null;attempt_key:string|null;checkout_expires_at:number|null;starts_at:string;ends_at:string;mode:string;subject:string;lesson_status:string;payment_method:string;payment_status:string};
 export async function readLessonPayment(id:string,token:string){return bookingDb().prepare(`SELECT p.*,l.starts_at,l.ends_at,l.mode,l.subject,l.status AS lesson_status,l.payment_method,l.payment_status FROM lesson_payments p JOIN scheduled_lessons l ON l.id=p.lesson_id WHERE p.id=? AND p.access_token=?`).bind(id,token).first<LessonPayment>();}
 export async function settleLesson(lessonId:string){
  const db=bookingDb();for(let attempt=0;attempt<2;attempt++){
@@ -37,11 +37,12 @@ export async function openLessonCheckout(id:string,token:string){
  const db=bookingDb();
  if(p.status==='awaiting'){
   const key=crypto.randomUUID();const expires=Math.floor(Date.now()/60000)*60+1860;
-  await db.prepare("UPDATE lesson_payments SET status='pending',stripe_session=NULL,attempt_key=?,checkout_expires_at=? WHERE id=? AND status='awaiting' AND EXISTS(SELECT 1 FROM scheduled_lessons WHERE id=? AND status='planned' AND payment_method='online' AND payment_status='awaiting' AND starts_at>?)").bind(key,expires,id,p.lesson_id,new Date(Date.now()+3600000).toISOString()).run();
+  await db.prepare("UPDATE lesson_payments SET status='pending',stripe_session=NULL,attempt_key=?,checkout_expires_at=?,checkout_paypal=? WHERE id=? AND status='awaiting' AND EXISTS(SELECT 1 FROM scheduled_lessons WHERE id=? AND status='planned' AND payment_method='online' AND payment_status='awaiting' AND starts_at>?)").bind(key,expires,config.paypal?1:0,id,p.lesson_id,new Date(Date.now()+3600000).toISOString()).run();
   p=await readLessonPayment(id,token);if(!p||p.status!=='pending')throw Error('CLOSED');
  }
  if(!p.attempt_key||!p.checkout_expires_at)throw Error('UNAVAILABLE');
  const body=new URLSearchParams({mode:'payment',locale:'it','payment_method_types[0]':'card','line_items[0][price_data][currency]':'eur','line_items[0][price_data][unit_amount]':String(p.amount),'line_items[0][price_data][product_data][name]':`${p.subject} · 55 minuti${p.amount===1500?' · quota personale':''}`,'line_items[0][quantity]':'1',customer_email:p.email,'metadata[lesson_payment_id]':id,'metadata[attempt_key]':p.attempt_key,success_url:returnUrl,cancel_url:returnUrl,expires_at:String(p.checkout_expires_at)});
+ if(p.checkout_paypal===1)body.set('payment_method_types[1]','paypal');
  // The persisted attempt keeps retries identical even if Stripe times out.
  const session=await stripe('checkout/sessions',body,p.attempt_key);
  if(session.livemode!==!!paymentConfig().live||!session.url?.startsWith('https://checkout.stripe.com/'))throw Error('UNAVAILABLE');

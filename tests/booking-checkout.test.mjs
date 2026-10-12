@@ -5,7 +5,7 @@ import ts from 'typescript';
 const db=new DatabaseSync(':memory:');
 for(const f of (await readdir(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())db.exec(await readFile(new URL('../drizzle/'+f,import.meta.url),'utf8'));
 const binding={prepare(sql){const bind=(...args)=>({async first(){return db.prepare(sql).get(...args)||null;},async run(){return {meta:db.prepare(sql).run(...args)};}});return {bind,...bind()};}};
-let settle=false,failCreate=false;const logs=[];let unique=0;const created=new Map();const sessions=new Map();
+let settle=false,failCreate=false,paypal=true;const logs=[];let unique=0;const created=new Map();const sessions=new Map();
 const stripe=async(path,body,key)=>{
  logs.push({path,body:body?.toString(),key});
  if(path==='checkout/sessions'){
@@ -15,7 +15,7 @@ const stripe=async(path,body,key)=>{
  }
  const id=path.split('/')[2];const previous=sessions.get(id);assert.ok(previous,path);return previous;
 };
-globalThis.__checkout={bookingDb:()=>binding,paymentConfig:()=>({ready:true,origin:'https://site.example'}),stripe,
+globalThis.__checkout={bookingDb:()=>binding,paymentConfig:()=>({ready:true,paypal,origin:'https://site.example'}),stripe,
  reconcileBooking:async(id)=>{if(settle)db.prepare("UPDATE bookings SET status='confirmed' WHERE id=?").run(id);}};
 async function compile(path,replace){const source=replace(await readFile(new URL('../lib/booking/'+path+'.ts',import.meta.url),'utf8'));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
 const policy=await compile('payment-policy',s=>s);
@@ -34,7 +34,7 @@ try{
  sessions.get('old').metadata.booking_id='another';await assert.rejects(()=>openBookingCheckout(id,'personal-token'),e=>e.status===409);sessions.get('old').metadata.booking_id=id;
  sessions.get('old').status='expired';failCreate=true;await assert.rejects(()=>openBookingCheckout(id,'personal-token'),/provider timeout/);
  const first=logs.filter(l=>l.path==='checkout/sessions').at(-1);const expiry=db.prepare('SELECT checkout_expires_at FROM bookings WHERE id=?').get(id).checkout_expires_at;assert.ok(expiry);
- Date.now=()=>originalNow()+2*60000;failCreate=false;
+ assert.equal(new URLSearchParams(first.body).get('payment_method_types[1]'),'paypal');paypal=false;Date.now=()=>originalNow()+2*60000;failCreate=false;
  await openBookingCheckout(id,'personal-token');const second=logs.filter(l=>l.path==='checkout/sessions').at(-1);assert.deepEqual(second,first);assert.equal(unique,1);assert.equal(db.prepare('SELECT checkout_expires_at FROM bookings WHERE id=?').get(id).checkout_expires_at,null);
  db.prepare("UPDATE bookings SET stripe_session='old',status='awaiting_payment' WHERE id=?").run(id);
  const concurrent=await Promise.allSettled([openBookingCheckout(id,'personal-token'),openBookingCheckout(id,'personal-token')]);assert.ok(concurrent.some(r=>r.status==='fulfilled'));assert.equal(unique,1);

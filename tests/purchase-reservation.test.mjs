@@ -6,8 +6,8 @@ const sql=new DatabaseSync(':memory:');
 for(const f of (await readdir(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())sql.exec(await readFile(new URL('../drizzle/'+f,import.meta.url),'utf8'));
 function statement(query,args=[]){return {bind:(...a)=>statement(query,a),async first(){return sql.prepare(query).get(...args)||null;},async all(){return {results:sql.prepare(query).all(...args)};},async run(){return {meta:sql.prepare(query).run(...args)};}};}
 const db={prepare:statement,async batch(statements){sql.exec('BEGIN');try{const results=[];for(const s of statements)results.push(await s.run());sql.exec('COMMIT');return results;}catch(e){sql.exec('ROLLBACK');throw e;}}};
-let live=false,ready=true,fail=false;const created=new Map(),sessions=new Map(),calls=[];
-const config=()=>({ready,live,origin:'https://site.example'});
+let live=false,ready=true,fail=false,paypal=true;const created=new Map(),sessions=new Map(),calls=[];
+const config=()=>({ready,live,paypal,origin:'https://site.example'});
 async function stripe(path,body,key){calls.push({path,body:body?.toString(),key});if(path==='checkout/sessions'){
  if(fail)throw Error('timeout');if(!created.has(key)){const s={id:'cs_'+created.size,url:'https://checkout.stripe.com/pay/'+created.size,livemode:live,status:'open',payment_status:'unpaid',currency:'eur',amount_total:Number(body.get('line_items[0][price_data][unit_amount]')),metadata:{package_id:body.get('metadata[package_id]')}};created.set(key,s);sessions.set(s.id,s);}return created.get(key);
  }return sessions.get(path.split('/')[2]);}
@@ -22,7 +22,7 @@ for(const id of [student,other])sql.prepare("INSERT INTO students(id,name,email,
 function slot(days=10){const id=crypto.randomUUID(),start=new Date(Date.now()+days*86400000).toISOString();sql.prepare("INSERT INTO booking_slots(id,starts_at,ends_at,mode,status) VALUES(?,?,?,'Online','available')").run(id,start,new Date(Date.parse(start)+3300000).toISOString());return id;}
 try{
  const id=crypto.randomUUID();ready=false;await assert.rejects(()=>openPurchase(id,student,5),e=>e.status===503);assert.equal(created.size,0);ready=true;
- fail=true;await assert.rejects(()=>openPurchase(id,student,5),/timeout/);const attempt=calls.at(-1);fail=false;await openPurchase(id,student,5);assert.deepEqual(calls.at(-1),attempt);assert.equal(created.size,1);
+ fail=true;await assert.rejects(()=>openPurchase(id,student,5),/timeout/);const attempt=calls.at(-1);assert.equal(new URLSearchParams(attempt.body).get('payment_method_types[1]'),'paypal');paypal=false;fail=false;await openPurchase(id,student,5);assert.deepEqual(calls.at(-1),attempt);assert.equal(created.size,1);
  await assert.rejects(()=>openPurchase(id,other,5),e=>e.status===409);await assert.rejects(()=>openPurchase(id,student,1),e=>e.status===409);
  const s=sessions.values().next().value;s.payment_status='paid';s.amount_total=1;await assert.rejects(()=>reconcilePurchase(id),e=>e.status===409);assert.equal(sql.prepare('SELECT status FROM lesson_packages WHERE id=?').get(id).status,'awaiting');s.amount_total=9500;s.livemode=true;await assert.rejects(()=>reconcilePurchase(id));s.livemode=false;
  await reconcilePurchase(id);await reconcilePurchase(id);assert.equal(sql.prepare('SELECT status FROM lesson_packages WHERE id=?').get(id).status,'active');

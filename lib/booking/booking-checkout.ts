@@ -7,6 +7,7 @@ export class BookingCheckoutError extends Error {
 }
 
 type CheckoutBooking = {
+  checkout_paypal: number;
   status: string; stripe_session: string | null; checkout_expires_at: number | null; email: string; starts_at: string;
 };
 
@@ -14,7 +15,7 @@ export async function openBookingCheckout(id: string, token: string) {
   const config = paymentConfig();
   if (!config.ready || !config.origin) throw new BookingCheckoutError('Il pagamento online non è disponibile.', 503);
   const db = bookingDb();
-  const read = () => db.prepare(`SELECT b.status,b.stripe_session,b.checkout_expires_at,b.email,s.starts_at
+  const read = () => db.prepare(`SELECT b.checkout_paypal,b.status,b.stripe_session,b.checkout_expires_at,b.email,s.starts_at
     FROM bookings b JOIN booking_slots s ON s.id=b.slot_id
     WHERE b.id=? AND b.access_token=?`).bind(id, token).first<CheckoutBooking>();
   if (!await read()) throw new BookingCheckoutError('Prenotazione non disponibile.', 404);
@@ -41,9 +42,9 @@ export async function openBookingCheckout(id: string, token: string) {
   if (previous.status !== 'expired') throw new BookingCheckoutError('Il pagamento richiede una verifica di Francesco.');
   // Persist the expiry before asking Stripe, so timeouts and concurrent retries
   // reuse exactly the same body with the existing renewal idempotency key.
-  await db.prepare(`UPDATE bookings SET checkout_expires_at=? WHERE id=? AND stripe_session=?
+  await db.prepare(`UPDATE bookings SET checkout_expires_at=?,checkout_paypal=? WHERE id=? AND stripe_session=?
     AND checkout_expires_at IS NULL AND status IN ('pending','awaiting_payment')`)
-    .bind(Math.floor(Date.now() / 60000) * 60 + 1860, id, booking.stripe_session).run();
+    .bind(Math.floor(Date.now() / 60000) * 60 + 1860, config.paypal?1:0, id, booking.stripe_session).run();
   const attempt = await read();
   if (!attempt || attempt.stripe_session !== booking.stripe_session || !attempt.checkout_expires_at
     || !['pending','awaiting_payment'].includes(attempt.status) || deadlinePassed(attempt.starts_at)) {
@@ -58,6 +59,7 @@ export async function openBookingCheckout(id: string, token: string) {
     cancel_url: `${config.origin}/prenota?booking=${id}#${token}`,
     expires_at: String(attempt.checkout_expires_at),
   });
+  if(attempt.checkout_paypal===1)body.set('payment_method_types[1]','paypal');
   const session = await stripe('checkout/sessions', body, id + '-' + previous.id);
   if (session.livemode !== !!config.live || !session.url?.startsWith('https://checkout.stripe.com/')) throw new BookingCheckoutError('Pagamento temporaneamente non disponibile.', 503);
   const saved = await db.prepare("UPDATE bookings SET stripe_session=?,status='pending',checkout_expires_at=NULL WHERE id=? AND status IN ('pending','awaiting_payment') AND stripe_session=? AND checkout_expires_at=?")

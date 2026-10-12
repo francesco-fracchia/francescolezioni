@@ -17,20 +17,20 @@ export const bookingSlots = sqliteTable('booking_slots', {
 });
 export const bookings = sqliteTable('bookings', {
  id:text('id').primaryKey(), slotId:text('slot_id').notNull(), accessToken:text('access_token').notNull(), name:text('name').notNull(), email:text('email').notNull(), subject:text('subject').notNull(),
- studentId:text('student_id'), videoUrl:text('video_url'), version:integer('version').notNull().default(0),operationId:text('operation_id'), status:text('status').notNull().default('pending'), stripeSession:text('stripe_session'),checkoutExpiresAt:integer('checkout_expires_at'), createdAt:text('created_at').notNull(),
+ cancelledBy:text('cancelled_by'),cancellationRequestedAt:text('cancellation_requested_at'),cancellationRefundPercent:integer('cancellation_refund_percent'),checkoutPaypal:integer('checkout_paypal').notNull().default(0),studentId:text('student_id'), videoUrl:text('video_url'), version:integer('version').notNull().default(0),operationId:text('operation_id'), status:text('status').notNull().default('pending'), stripeSession:text('stripe_session'),checkoutExpiresAt:integer('checkout_expires_at'), createdAt:text('created_at').notNull(),
 });
 
 export const scheduledLessons = sqliteTable('scheduled_lessons', {
  id:text('id').primaryKey(), seriesId:text('series_id').notNull(), name:text('name').notNull(), email:text('email').notNull(), subject:text('subject').notNull(),
  startsAt:text('starts_at').notNull(), endsAt:text('ends_at').notNull(), mode:text('mode').notNull(), notes:text('notes').notNull(),
- studentId:text('student_id'), groupId:text('group_id'), videoUrl:text('video_url'), version:integer('version').notNull().default(0),operationId:text('operation_id'), paymentMethod:text('payment_method').notNull().default('legacy'), paymentStatus:text('payment_status').notNull().default('unverified'), paidAt:text('paid_at'),
+ cancelledBy:text('cancelled_by'),cancellationRequestedAt:text('cancellation_requested_at'),cancellationRefundPercent:integer('cancellation_refund_percent'),studentId:text('student_id'), groupId:text('group_id'), videoUrl:text('video_url'), version:integer('version').notNull().default(0),operationId:text('operation_id'), paymentMethod:text('payment_method').notNull().default('legacy'), paymentStatus:text('payment_status').notNull().default('unverified'), paidAt:text('paid_at'),
  status:text('status').notNull().default('planned'), createdAt:text('created_at').notNull(),
 });
 
 export const lessonPayments = sqliteTable('lesson_payments', {
  id:text('id').primaryKey(), lessonId:text('lesson_id').notNull(), accessToken:text('access_token').notNull(),
  studentId:text('student_id'), name:text('name').notNull(), email:text('email').notNull(), amount:integer('amount').notNull(),
- status:text('status').notNull().default('awaiting'), stripeSession:text('stripe_session'), attemptKey:text('attempt_key'), checkoutExpiresAt:integer('checkout_expires_at'),
+ checkoutPaypal:integer('checkout_paypal').notNull().default(0),status:text('status').notNull().default('awaiting'), stripeSession:text('stripe_session'), attemptKey:text('attempt_key'), checkoutExpiresAt:integer('checkout_expires_at'),
  paidAt:text('paid_at'), createdAt:text('created_at').notNull(),
 }, table => [index('idx_lesson_payments_lesson').on(table.lessonId)]);
 
@@ -133,7 +133,7 @@ export const referralRedemptions=sqliteTable('referral_redemptions',{
 },t=>[index('idx_referral_redemptions_credit').on(t.creditId)]);
 
 export const lessonPackages=sqliteTable('lesson_packages',{
- id:text('id').primaryKey(),studentId:text('student_id').notNull(),amount:integer('amount').notNull(),units:integer('units').notNull(),unitAmount:integer('unit_amount').notNull(),paymentMethod:text('payment_method').notNull(),status:text('status').notNull().default('awaiting'),paidAt:text('paid_at'),createdAt:text('created_at').notNull(),stripeSession:text('stripe_session'),checkoutExpiresAt:integer('checkout_expires_at'),liveMode:integer('live_mode').notNull().default(0),
+ checkoutPaypal:integer('checkout_paypal').notNull().default(0),id:text('id').primaryKey(),studentId:text('student_id').notNull(),amount:integer('amount').notNull(),units:integer('units').notNull(),unitAmount:integer('unit_amount').notNull(),paymentMethod:text('payment_method').notNull(),status:text('status').notNull().default('awaiting'),paidAt:text('paid_at'),createdAt:text('created_at').notNull(),stripeSession:text('stripe_session'),checkoutExpiresAt:integer('checkout_expires_at'),liveMode:integer('live_mode').notNull().default(0),
 },t=>[index('idx_lesson_packages_student').on(t.studentId)]);
 export const packageUses=sqliteTable('package_uses',{
  id:text('id').primaryKey(),packageId:text('package_id').notNull(),paymentId:text('payment_id').notNull(),status:text('status').notNull().default('applied'),createdAt:text('created_at').notNull(),

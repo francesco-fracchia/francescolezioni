@@ -22,7 +22,7 @@ test('Node SQLite preserves migrations, rows, RETURNING and atomic rollback acro
   const filename = path.join(root, 'test.sqlite');
   let db = openDatabase(filename, { mustExist: false });
   try {
-    assert.equal(migrateDatabase(db, migrations), 26);
+    assert.equal(migrateDatabase(db, migrations), 27);
     assert.equal(migrateDatabase(db, migrations), 0);
     db.sql.exec('CREATE TABLE adapter_test(id TEXT PRIMARY KEY, amount INTEGER NOT NULL)');
     let results = await db.batch([
@@ -44,7 +44,7 @@ test('Node SQLite preserves migrations, rows, RETURNING and atomic rollback acro
     assert.equal(await db.prepare('SELECT amount FROM adapter_test').first('amount'), 0);
     assert.equal(migrateDatabase(db, migrations), 0);
     const backup = openDatabase(path.join(root, 'backup.sqlite'));
-    try { assert.equal(await backup.prepare('SELECT count(*) n FROM ff_node_migrations').first('n'), 26); } finally { backup.close(); }
+    try { assert.equal(await backup.prepare('SELECT count(*) n FROM ff_node_migrations').first('n'), 27); } finally { backup.close(); }
   } finally { db.close(); }
   assert.throws(() => openDatabase(path.join(root, 'missing.sqlite')), /unable to open/);
 }));
@@ -118,7 +118,7 @@ test('D1 adoption requires all migrations and invalidates previous sessions with
     const last = journal.entries.at(-1).tag + '.sql';
     db.sql.prepare('DELETE FROM d1_migrations WHERE name=?').run(last);
     assert.throws(() => adoptD1Database(db, migrations), /include every current migration/);
-    db.sql.prepare('INSERT INTO d1_migrations VALUES(?,?)').run(26, last);
+    db.sql.prepare('INSERT INTO d1_migrations VALUES(?,?)').run(journal.entries.length, last);
     await createFirstTutor(db, 'tutor@example.com', 'Password lunga per il collaudo');
     const tutor = await db.prepare('SELECT id FROM accounts').first('id');
     await db.prepare('INSERT INTO account_sessions VALUES(?,?,?,?,?)').bind('old', tutor, 0, Date.now() + 1000, Date.now()).run();

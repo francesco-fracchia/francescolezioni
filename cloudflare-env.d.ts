@@ -8,6 +8,7 @@ declare global {
     REQUEST_OWNER_EMAIL?: string;
     STRIPE_SECRET_KEY?: string;
     PAYMENT_LIVE_ENABLED?: string;
+    STRIPE_PAYPAL_ENABLED?: string;
     RESEND_API_KEY?: string;
     EMAIL_FROM?: string;
     EMAIL_REPLY_TO?: string;
