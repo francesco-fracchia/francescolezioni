@@ -8,7 +8,7 @@ const {cancellationRefundPercent:percent,cancellationRefundAmount:amount}=await 
 const requested='2026-10-25T09:00:00.000Z';
 assert.equal(percent('2026-10-26T09:00:00.000Z',requested,'student'),100);
 assert.equal(percent('2026-10-26T08:59:59.999Z',requested,'student'),50);
-assert.equal(percent('2026-10-25T10:00:00.000Z',requested,'tutor'),100);
+assert.throws(()=>percent('2026-10-25T10:00:00.000Z',requested,'tutor'));assert.equal(percent('2026-10-25T10:00:00.000Z',requested,'tutor',35),35);assert.equal(percent('2026-10-25T10:00:00.000Z',requested,'tutor',0),0);assert.throws(()=>percent('2026-10-25T10:00:00.000Z',requested,'tutor',101));assert.equal(percent('2026-10-26T09:00:00.000Z',requested,'student',0),100);assert.equal(amount(2000,35),700);assert.equal(amount(2000,0),0);assert.throws(()=>amount(2000,101));
 assert.equal(amount(2000,50),1000);assert.equal(amount(1900,50),950);assert.equal(amount(1500,50),750);assert.equal(amount(0,50),0);
 assert.throws(()=>percent('invalid',requested,'student'));assert.throws(()=>amount(-1,100));
 const sql=new DatabaseSync(':memory:');
@@ -28,7 +28,7 @@ try{
  const near=lesson(86400000-1);response=await send(payload(near));assert.equal((await response.json()).refundPercent,50);
  const row=sql.prepare('SELECT * FROM scheduled_lessons WHERE id=?').get(near);assert.equal(row.cancellation_requested_at,received);assert.equal(row.cancelled_by,'student');assert.equal(row.status,'cancelled');
  response=await send(payload(near));assert.equal(response.status,409);assert.equal(sql.prepare('SELECT version FROM scheduled_lessons WHERE id=?').get(near).version,1);
- const tutor=lesson(3600000);response=await send({...payload(tutor),cancelledBy:'tutor'});assert.equal((await response.json()).refundPercent,100);
+ const tutor=lesson(3600000);for(const invalid of [-1,101,35.5]){const res=await send({...payload(tutor),cancelledBy:'tutor',refundPercent:invalid});assert.equal(res.status,400);}response=await send({...payload(tutor),cancelledBy:'tutor'});assert.equal(response.status,400);assert.equal(sql.prepare('SELECT status FROM scheduled_lessons WHERE id=?').get(tutor).status,'planned');response=await send({...payload(tutor),cancelledBy:'tutor',refundPercent:35});assert.equal((await response.json()).refundPercent,35);assert.equal(sql.prepare('SELECT cancellation_refund_percent FROM scheduled_lessons WHERE id=?').get(tutor).cancellation_refund_percent,35);const zero=lesson(2*3600000);response=await send({...payload(zero),cancelledBy:'tutor',refundPercent:0});assert.equal((await response.json()).refundPercent,0);
  const future=lesson(10*86400000);response=await send({...payload(future),requestedAt:new Date(Date.now()+86400000).toISOString()});assert.equal(response.status,400);assert.equal(sql.prepare('SELECT status FROM scheduled_lessons WHERE id=?').get(future).status,'planned');
  owner=false;assert.equal((await send(payload(future))).status,403);owner=true;assert.equal((await send(payload(future),'https://evil.example')).status,403);
  // A paid package quota is reimbursable, but must not also become a reusable lesson.

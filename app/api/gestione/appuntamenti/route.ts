@@ -12,7 +12,8 @@ export async function POST(request:Request){
  if(request.headers.get('origin')!==new URL(request.url).origin)return new Response(null,{status:403});
  try{
   const raw=await request.text();if(raw.length>3000)return new Response(null,{status:413});
-  const p=z.object({id:z.string().uuid(),entity:z.enum(['lesson','booking']),version:z.number().int().min(0),action:z.enum(['modify','cancel']),cancelledBy:z.enum(['student','tutor']).default('tutor'),requestedAt:z.string().datetime().optional(),date:z.string().optional(),time:z.string().optional(),mode:z.enum(['Online','Lodi']).optional(),notes:z.string().max(2000).optional()}).parse(JSON.parse(raw));
+  const p=z.object({id:z.string().uuid(),entity:z.enum(['lesson','booking']),version:z.number().int().min(0),action:z.enum(['modify','cancel']),cancelledBy:z.enum(['student','tutor']).default('tutor'),requestedAt:z.string().datetime().optional(),refundPercent:z.number().int().min(0).max(100).optional(),date:z.string().optional(),time:z.string().optional(),mode:z.enum(['Online','Lodi']).optional(),notes:z.string().max(2000).optional()}).parse(JSON.parse(raw));
+  if(p.action==='cancel'&&p.cancelledBy==='tutor'&&p.refundPercent===undefined)return Response.json({error:'Scegli la percentuale di rimborso per la tua cancellazione.'},{status:400});
   const receivedNow=new Date().toISOString();const requestedAt=p.requestedAt||receivedNow;
   if(p.action==='cancel'&&Date.parse(requestedAt)>Date.parse(receivedNow))return Response.json({error:'La richiesta di cancellazione non può avere una data futura.'},{status:400});
   const db=bookingDb();const query=p.entity==='lesson'?'SELECT * FROM scheduled_lessons WHERE id=?':'SELECT b.*,s.starts_at,s.ends_at,s.mode FROM bookings b JOIN booking_slots s ON s.id=b.slot_id WHERE b.id=?';
@@ -30,7 +31,7 @@ export async function POST(request:Request){
   }
   old=await db.prepare(query).bind(p.id).first<Row>();if(!old||old.version!==p.version||!['planned','confirmed','pending','awaiting_payment','payment_review'].includes(old.status))return Response.json({error:'Verifica prima lo stato del pagamento e ricarica.'},{status:409});
   if(p.action==='modify'&&((p.entity==='lesson'&&old.payment_method==='online'&&old.payment_status!=='paid')||(p.entity==='booking'&&old.status!=='confirmed'))&&Date.parse(start)<=Date.now()+3600000)return Response.json({error:'Per un appuntamento non saldato scegli un orario con almeno un’ora di anticipo.'},{status:400});
-  const refundPercent=p.action==='cancel'?cancellationRefundPercent(old.starts_at,requestedAt,p.cancelledBy):null;
+  const refundPercent=p.action==='cancel'?cancellationRefundPercent(old.starts_at,requestedAt,p.cancelledBy,p.refundPercent):null;
   const version=p.version+1;const operationId=crypto.randomUUID();const mine="id=? AND version=? AND operation_id=?";
   const guard=(p.action==='cancel'?"status='cancelled'":p.entity==='lesson'?"status='planned'":"status IN ('confirmed','pending','awaiting_payment','payment_review')")+" AND operation_id='"+operationId+"'";
   const notices=await noticeStatements(p.entity,p.id,p.action==='cancel'?'cancelled':'modified',version,{starts_at:start,ends_at:end,mode,previous_start:old.starts_at,payment_method:p.entity==='booking'?'online':old.payment_method,payment_status:p.entity==='booking'&&old.status==='confirmed'?'paid':old.payment_status},guard);
@@ -45,5 +46,5 @@ export async function POST(request:Request){
   else statements.push(db.prepare(`UPDATE booking_slots SET starts_at=?,ends_at=?,mode=? WHERE id=? AND booking_id=? AND EXISTS(SELECT 1 FROM bookings WHERE ${mine})`).bind(start,end,mode,old.slot_id!,p.id,p.id,version,operationId));
   const result=await db.batch([...statements,...notices]);if(!result[0].meta.changes)return Response.json({error:'L’appuntamento è cambiato. Ricarica.'},{status:409});
   const notifications=await dispatchAppointmentNotices();return Response.json({ok:true,notifications,refundPercent,refundReview:p.action==='cancel'&&(old.payment_status==='paid'||old.status==='confirmed'||old.payment_status==='payment_review')});
- }catch(e){const msg=String(e);return Response.json({error:msg.includes('LESSON_CONFLICT')?'Questo orario si sovrappone a un appuntamento o a un blocco. Nessuna modifica salvata.':msg.includes('PAYMENT_UNRESOLVED')?'Un pagamento è ancora in verifica. Il posto resta occupato: riprova dopo il controllo Stripe.':'Non siamo riusciti a modificare l’appuntamento. Riprova.'},{status:msg.includes('LESSON_CONFLICT')?409:503});}
+ }catch(e){if(e instanceof z.ZodError)return Response.json({error:'Dati dell’appuntamento non validi.'},{status:400});const msg=String(e);return Response.json({error:msg.includes('LESSON_CONFLICT')?'Questo orario si sovrappone a un appuntamento o a un blocco. Nessuna modifica salvata.':msg.includes('PAYMENT_UNRESOLVED')?'Un pagamento è ancora in verifica. Il posto resta occupato: riprova dopo il controllo Stripe.':'Non siamo riusciti a modificare l’appuntamento. Riprova.'},{status:msg.includes('LESSON_CONFLICT')?409:503});}
 }
