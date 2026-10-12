@@ -19,9 +19,10 @@ Il runtime remoto mantiene il contratto D1 già usato dalle migrazioni e dai tri
 
 - **Cloudflare D1**, via API HTTPS con query parametrizzate e batch inviati in una sola richiesta. Nessuna ripetizione automatica delle scritture dal risultato incerto.
 - **Turso**, alternativa a D1 già supportata, con client libSQL ufficiale e transazioni atomiche. Impostare entrambi i segreti `TURSO_DATABASE_URL` e `TURSO_AUTH_TOKEN` su un database dedicato; una configurazione parziale non ripiega su D1. Il provider conserva query parametrizzate, risultati RETURNING, conteggio delle modifiche e codici di conflitto, senza divulgare dettagli SQL o ripetere scritture incerte.
-- **Cloudflare R2**, tramite SDK S3, bucket privato, download autorizzati dal server e intervalli per PDF/video. Nessun URL pubblico ai materiali.
+- **Vercel Blob Private**, tramite SDK ufficiale, autenticazione OIDC della Function e collegamento esclusivo a Production. Caricamenti diretti con autorizzazione temporanea; download autorizzati dal server e intervalli per PDF/video. Nessun URL pubblico o token permanente ai materiali.
+- **Cloudflare R2**, alternativa a Blob tramite SDK S3, bucket privato e download autorizzati dal server.
 
-Configurazione di esempio: `deploy/vercel/runtime.env.example`. Le sei variabili dei servizi vanno aggiunte nel pannello Vercel: `CF_ACCOUNT_ID`, `CF_D1_DATABASE_ID`, `CF_D1_API_TOKEN`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`. Token e chiavi sono segreti server, senza prefisso `NEXT_PUBLIC_`; limitarli al database e al bucket necessari. Usare risorse distinte per Production e Preview. Non collegare i dati operativi alle anteprime dei branch.
+Configurazione di esempio: `deploy/vercel/runtime.env.example`. Per Turso e Blob usare `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` e `BLOB_STORE_ID`; il collegamento Blob aggiunge anche `BLOB_WEBHOOK_PUBLIC_KEY` e Vercel fornisce OIDC al runtime. Per la configurazione alternativa D1/R2 aggiungere: `CF_ACCOUNT_ID`, `CF_D1_DATABASE_ID`, `CF_D1_API_TOKEN`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`. Token e chiavi sono segreti server, senza prefisso `NEXT_PUBLIC_`; limitarli al database e al bucket necessari. Usare risorse distinte per Production e Preview. Non collegare i dati operativi alle anteprime dei branch.
 
 Le risorse del Site privato non vengono trasferite né diventano accessibili aggiungendo la repository. Occorre predisporre D1/R2 nell'account del titolare, applicare in ordine le migrazioni in `drizzle`, trasferire dati e oggetti mantenendo gli identificativi e predisporre il tutor con password propria. Non esistono account amministrativi o password predefiniti.
 
@@ -29,9 +30,17 @@ Le risorse del Site privato non vengono trasferite né diventano accessibili agg
 
 Dominio scelto: **lezionifrancesco.app**. Impostare `SITE_ORIGIN=https://lezionifrancesco.app` senza slash finale in Production; collegare il dominio nel progetto Vercel e usare i record DNS restituiti dal pannello, senza copiare record generici. La registrazione, l'associazione e il certificato HTTPS non sono ancora verificati. Un aggiornamento della repository non collega il dominio da solo.
 
-Il titolare dispone di Turso e Stripe, ma non di D1/R2. Il database Turso è adattato e verificato con il client ufficiale. Un database remoto dedicato è stato raggiunto, inizializzato con le 27 migrazioni e verificato tramite l'adapter dell'app. **Manca ancora l'account tutor e il collegamento sul deploy Vercel**: aggiungere URL/token come segreti server nell'ambiente Production del progetto, senza inserirli in chat o nel repository. Non sono stati importati dati dal Site o dal Mac e non sono stati creati studenti di prova nel database remoto.
+Il database Turso dedicato è stato inizializzato con le 27 migrazioni e verificato tramite l'adapter dell'app. L'account tutor indipendente è presente. URL/token sono stati salvati come segreti server esclusivamente in Production su Vercel. Non sono stati importati dati dal Site o dal Mac né creati studenti di prova nel database remoto.
 
-Per i file è stato proposto **Vercel Blob Private**, ancora da creare e integrare. Il runtime attuale supporta R2: Turso senza un archivio supportato non rende il runtime operativo. Non indicare il sito come pronto cambiando `VERCEL_RUNTIME_READY` prima di questa integrazione e del collaudo. Il database non sostituisce l'archivio dei materiali.
+L'archivio **francescolezioni-materiali** è stato creato come **Vercel Blob Private**, in Dublino (DUB1), e collegato esclusivamente a Production. Il codice usa OIDC, senza chiave read/write permanente. Il progetto usa il piano Pro; l'archivio è soggetto ai costi a consumo del provider, senza acquisti o cambi di piano eseguiti dagli script.
+
+### Caricamento dei materiali su Vercel
+
+I file passano direttamente dal browser al Blob privato, fuori dal limite di 4,5 MB delle Function: massimo 50 MB per materiali dei corsi, 10 MB per compiti e consegne. `/api/uploads` verifica account, ruolo, destinatario, tipo e dimensione. Il server genera una URL valida cinque minuti per una sola chiave, autorizzata solo al PUT, senza sovrascrittura. Non invia al browser credenziali del provider né autorizzazioni di lettura o cancellazione.
+
+La finalizzazione deve avvenire entro trenta minuti e passa dalle API esistenti: ricontrolla account/versione di accesso, destinazione, dimensione effettiva e firma del formato; i vincoli SQL proteggono consegne e modifiche concorrenti. Il file di un corso nasce in bozza. I download passano dal server dopo il controllo degli accessi e non espongono le URL Blob. I caricamenti multipart esistenti rimangono disponibili negli ambienti Node/Workers.
+
+Una consegna ripetuta con lo stesso identificativo e contenuto conserva un solo tentativo. In caso di esito incerto del database non viene cancellato un file già referenziato. Un upload interrotto prima della finalizzazione può lasciare un oggetto privato non referenziato: non è visibile agli studenti e richiede eventuale pulizia operativa, ancora non automatizzata. I test locali verificano il flusso di autorizzazione, finalizzazione e download con trasporto archivio simulato; il collaudo sull'archivio remoto resta separato.
 
 ### Manutenzione del database Turso
 
@@ -59,7 +68,7 @@ Condizioni confermate: cancellazione dello studente con almeno 24 ore di preavvi
 
 ## Stato e apertura del runtime
 
-Anche con le credenziali presenti, `VERCEL_RUNTIME_READY` resta **0**. Portarlo a `1` solo dopo il collaudo remoto delle migrazioni, degli accessi e dei file. Senza questa conferma le pagine operative mostrano la preparazione, le API restituiscono 503, robots e sitemap escludono l'indicizzazione. La pagina di preparazione e le sue risorse sono accessibili per verificare il deploy.
+Anche con le credenziali presenti, `VERCEL_RUNTIME_READY` resta **0** per impostazione predefinita. Dopo la verifica di configurazione, migrazioni e account, portarlo a `1` esclusivamente con `SITE_VISIBILITY=private` per collaudare accessi e file nel deploy riservato. Questo passaggio non apre il sito al pubblico. Senza questa conferma le pagine operative mostrano la preparazione, le API restituiscono 503, robots e sitemap escludono l'indicizzazione. La pagina di preparazione e le sue risorse sono accessibili per verificare il deploy.
 
 Dopo il collaudo mantenere `SITE_VISIBILITY=private`: l'accesso alle pagine operative richiede una sessione tutor valida. Le identità e gli header ChatGPT non autorizzano questo ambiente. `PUBLIC_SITE_INDEXING=false`, `NOTIFICATIONS_MODE=preview` e `PAYMENT_LIVE_ENABLED=0` mantengono indicizzazione, invio email e pagamenti reali disattivati. Nei deploy non Production invio reale e Stripe sono esclusi anche dal runtime. L'apertura pubblica è un passaggio separato dal deploy di prova.
 
@@ -75,10 +84,9 @@ Sul Mac, con `npm run start:vercel -- --hostname 127.0.0.1 --port 5186`, `/antep
 
 ## Da completare prima dell'uso operativo
 
-1. Provisioning del database e dell'archivio privato; migrazioni e importazione controllata; primo account tutor indipendente.
-2. **Upload diretti autorizzati**: Vercel limita il corpo delle richieste a 4,5 MB. Gli upload attuali passano dal server (materiali fino a 50 MB, compiti fino a 10 MB) e i file grandi non sono ancora utilizzabili su Vercel. Il supporto agli stream nell'adapter non elimina il limite della piattaforma. Servono autorizzazioni temporanee, verifica di ruolo/destinatario/dimensione/contenuto e finalizzazione server; il bucket deve rimanere privato.
-3. Verifiche sul provider remoto: concorrenza e rollback delle prenotazioni/saldi, login e isolamento tra studenti, upload/download, range video, errori di rete e persistenza dopo un nuovo deploy. I test Cloudflare usano un trasporto simulato; i test Turso usano il client ufficiale su libSQL locale, inclusa l'API di prenotazione con due richieste concorrenti e un solo appuntamento/richiesta salvato. **Nessuno di questi test certifica il collegamento al servizio remoto del titolare**.
-4. Verifica del piano Vercel adatto all'attività, dominio definitivo e successiva apertura autorizzata. Nessun servizio, piano o dominio è stato acquistato da questi script.
+1. Collaudo remoto con la sessione tutor: upload sopra 4,5 MB, finalizzazione, download e intervalli video, isolamento e revoca degli accessi; verifica della persistenza dopo un nuovo deploy. Turso è raggiungibile e le migrazioni/account sono verificati; le prove locali non certificano tutti i flussi sul servizio remoto.
+2. Stripe e webhook in ambiente di prova, metodi di pagamento effettivamente disponibili e successiva attivazione reale autorizzata. L'invio email rimane in anteprima.
+3. Collegamento DNS/HTTPS del dominio definitivo, informazioni privacy finali e apertura pubblica dopo il collaudo. Il dominio non viene collegato da un aggiornamento della repository.
 
 ## Verifica locale
 

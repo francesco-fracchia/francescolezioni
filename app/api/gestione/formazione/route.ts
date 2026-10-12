@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { isRequestOwner } from '@/lib/request-admin';
 import { bookingDb } from '@/lib/booking/runtime';
 import { failure,LearningError,privateHeaders,sameOrigin } from '@/lib/learning/access';
+import { readDirectForm } from '@/lib/uploads/server';
+import { discardUnusedFile } from '@/lib/homework/files';
 const id=z.string().uuid();const title=z.string().trim().min(2).max(150);const status=z.enum(['draft','published','archived']);
 const position=z.number().int().min(0).max(999);
 const commands=z.discriminatedUnion('kind',[
@@ -54,16 +56,23 @@ export async function PUT(request:Request){if(!await isRequestOwner())return new
  sameOrigin(request);if(!env.BUCKET)throw new LearningError('Archivio file temporaneamente non disponibile.',503);
  const length=Number(request.headers.get('content-length'));if(length>52*1024*1024)throw new LearningError('Il file supera 50 MB.',413);
  if(!request.body)throw new LearningError('Scegli un file.');
+ const direct=request.headers.get('content-type')?.startsWith('application/json')?await readDirectForm(request,'material','moduleId'):null;
+ key=direct?.key;
  let received=0;
- const bounded=request.body.pipeThrough(new TransformStream<Uint8Array,Uint8Array>({transform(chunk,controller){received+=chunk.byteLength;if(received>52*1024*1024)throw new LearningError('Il file supera 50 MB.',413);controller.enqueue(chunk);}}));
- const form=await new Response(bounded,{headers:{'Content-Type':request.headers.get('content-type')||''}}).formData();const file=form.get('file');const moduleId=id.safeParse(form.get('moduleId'));const label=title.safeParse(form.get('title'));const order=position.safeParse(Number(form.get('position')));
+ const bounded=direct?null:request.body.pipeThrough(new TransformStream<Uint8Array,Uint8Array>({transform(chunk,controller){received+=chunk.byteLength;if(received>52*1024*1024)throw new LearningError('Il file supera 50 MB.',413);controller.enqueue(chunk);}}));
+ const form=direct?.form||await new Response(bounded!,{headers:{'Content-Type':request.headers.get('content-type')||''}}).formData();const file=form.get('file');const moduleId=id.safeParse(form.get('moduleId'));const label=title.safeParse(form.get('title'));const order=position.safeParse(Number(form.get('position')));
  if(!(file instanceof File)||!moduleId.success||!label.success||!order.success)throw new LearningError('Scegli modulo, titolo e file.');
  const allowed=['application/pdf','image/png','image/jpeg','video/mp4','video/webm'];
  if(!allowed.includes(file.type)||file.size===0)throw new LearningError('Sono ammessi PDF, PNG, JPEG, MP4 e WebM.');
  if(file.size>50*1024*1024)throw new LearningError('Il file supera 50 MB.',413);
+ const bytes=new Uint8Array(await file.slice(0,12).arrayBuffer()),prefix=new TextDecoder().decode(bytes);
+ const valid=file.type==='application/pdf'?prefix.startsWith('%PDF-'):file.type==='image/png'?[137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v):file.type==='image/jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:file.type==='video/mp4'?prefix.slice(4,8)==='ftyp':file.type==='video/webm'?[26,69,223,163].every((v,i)=>bytes[i]===v):false;
+ if(!valid)throw new LearningError('Il contenuto del file non corrisponde al formato indicato.');
  const db=bookingDb();if(!await db.prepare('SELECT id FROM course_modules WHERE id=?').bind(moduleId.data).first())throw new LearningError('Modulo non disponibile.',404);
- const recordId=crypto.randomUUID();key=`learning/${recordId}`;
- await env.BUCKET.put(key,file.stream(),{httpMetadata:{contentType:file.type}});
+ const recordId=direct?direct.key.split('/').at(-1)!:crypto.randomUUID();key=direct?.key||`learning/${recordId}`;
+ const existing=await db.prepare('SELECT module_id,title,object_key,filename,mime,size,position FROM course_materials WHERE id=?').bind(recordId).first<Record<string,unknown>>();
+ if(existing){if(existing.module_id===moduleId.data&&existing.title===label.data&&existing.object_key===key&&existing.filename===file.name.slice(0,200)&&existing.mime===file.type&&existing.size===file.size&&existing.position===order.data)return Response.json({ok:true,id:recordId},{headers:privateHeaders});throw new LearningError('Caricamento già utilizzato.',409);}
+ if(!direct)await env.BUCKET.put(key,file.stream(),{httpMetadata:{contentType:file.type}});
  await db.prepare("INSERT INTO course_materials(id,module_id,title,kind,object_key,filename,mime,size,status,position,created_at) VALUES(?,?,?,?,?,?,?,?,'draft',?,?)").bind(recordId,moduleId.data,label.data,file.type.startsWith('video/')?'video':'file',key,file.name.slice(0,200),file.type,file.size,order.data,new Date().toISOString()).run();
  return Response.json({ok:true,id:recordId},{status:201,headers:privateHeaders});
- }catch(e){if(key)try{await env.BUCKET?.delete(key);}catch{/* Failed storage cleanup never makes a file public. */}return failure(e);}}
+ }catch(e){await discardUnusedFile(key||null);return failure(e);}}

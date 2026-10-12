@@ -2,15 +2,19 @@ import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {DatabaseSync} from 'node:sqlite';
 import ts from 'typescript';
+import {readUploadClaim} from '../lib/uploads/claims.mjs';
 const sql=new DatabaseSync(':memory:');for(const f of (await readdir(new URL('../drizzle/',import.meta.url))).filter(f=>f.endsWith('.sql')).sort())sql.exec(await readFile(new URL('../drizzle/'+f,import.meta.url),'utf8'));
 let owner=false,user=null,beforeWrite=null,beforePut=null,failAfterWrite=false;
 const db={prepare(query){const bind=(...args)=>({async first(){return sql.prepare(query).get(...args)||null;},async all(){return {results:sql.prepare(query).all(...args)};},async run(){if(beforeWrite&&/^(INSERT|UPDATE)/.test(query)){const f=beforeWrite;beforeWrite=null;f();}const r=sql.prepare(query).run(...args);if(failAfterWrite){failAfterWrite=false;throw Error('simulated lost database acknowledgement');}return {meta:{changes:Number(r.changes)}};}});return {bind,...bind()};}};
-const objects=new Map(),env={BUCKET:{async put(key,bytes){objects.set(key,new Uint8Array(bytes));if(beforePut){const f=beforePut;beforePut=null;f();}},async delete(key){objects.delete(key);},async get(key){const bytes=objects.get(key);return bytes?{body:bytes,size:bytes.length,httpEtag:'"test"'}:null;}}};
+const objects=new Map(),env={BUCKET:{async put(key,bytes){objects.set(key,new Uint8Array(bytes));if(beforePut){const f=beforePut;beforePut=null;f();}},async delete(key){objects.delete(key);},async get(key){const bytes=objects.get(key);return bytes?{body:new Blob([bytes]).stream(),size:bytes.length,httpEtag:'"test"'}:null;}}};
 globalThis.__homework={bookingDb:()=>db,isRequestOwner:async()=>owner,getAccount:async()=>user,env};
 async function compile(path,replace=s=>s){const source=replace(await readFile(new URL('../'+path,import.meta.url),'utf8')).replace("import { bookingDb } from '@/lib/booking/runtime';",'const {bookingDb}=globalThis.__homework;').replace("import { isRequestOwner } from '@/lib/request-admin';",'const {isRequestOwner}=globalThis.__homework;').replace("import { getAccount } from '@/lib/auth/session';",'const {getAccount}=globalThis.__homework;').replace("import { env } from '@/lib/runtime-env';",'const {env}=globalThis.__homework;').replace("from 'zod'",'from '+JSON.stringify(import.meta.resolve('zod')));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
 const helpers=await import(await compile('lib/homework/types.ts'));assert.equal(helpers.late('2026-07-01T21:59:59Z','2026-07-01'),false);assert.equal(helpers.late('2026-07-01T22:00:00Z','2026-07-01'),true);assert.equal(helpers.late('2026-01-01T23:00:00Z','2026-01-01'),true);assert.equal(helpers.late('2026-01-02T00:00:00Z',null),false);
-const access=await compile('lib/learning/access.ts'),data=await compile('lib/homework/data.ts'),files=await compile('lib/homework/files.ts',s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access))),serve=await compile('lib/learning/files.ts',s=>s.replace("from './access'",'from '+JSON.stringify(access)));
+const access=await compile('lib/learning/access.ts');
+const direct=await compile('lib/uploads/server.ts',s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from './claims.mjs'",'from '+JSON.stringify(new URL('../lib/uploads/claims.mjs',import.meta.url).href)));
+const data=await compile('lib/homework/data.ts'),files=await compile('lib/homework/files.ts',s=>s.replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)).replace("from '@/lib/learning/access'",'from '+JSON.stringify(access))),serve=await compile('lib/learning/files.ts',s=>s.replace("from './access'",'from '+JSON.stringify(access)));
 const replace=s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/homework/data'",'from '+JSON.stringify(data)).replace("from '@/lib/homework/files'",'from '+JSON.stringify(files)).replace("from '@/lib/learning/files'",'from '+JSON.stringify(serve));
+const directApi=await import(await compile('app/api/uploads/route.ts',s=>replace(s).replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)).replace("import { getVercelResources } from '@/lib/vercel/runtime.mjs';",'const getVercelResources=()=>globalThis.__homework.env;')));
 const admin=await import(await compile('app/api/gestione/compiti/route.ts',replace)),adminFile=await import(await compile('app/api/gestione/compiti/file/route.ts',replace)),student=await import(await compile('app/api/studente/compiti/route.ts',replace)),studentFile=await import(await compile('app/api/studente/compiti/file/route.ts',replace));
 const [a,b,c,plan]=Array.from({length:4},()=>crypto.randomUUID()),now=new Date().toISOString(),base='https://site.example';
 for(const [id,name] of [[a,'Anna'],[b,'Bruno'],[c,'Carla']])sql.prepare("INSERT INTO students(id,name,email,notes,created_at,updated_at) VALUES(?,?,?,'PRIVATE NOTE',?,?)").run(id,name,id+'@example.test',now,now);
@@ -54,5 +58,41 @@ try{
  owner=true;const capped=task(a,'published');assert.equal((await send(capped)).status,200);for(let i=1;i<=20;i++)sql.prepare("INSERT INTO homework_submissions(id,assignment_id,submitted_by,attempt,content_hash,feedback_status,review_status,created_at) VALUES(?,?,'student',?,'test','published','revise',?)").run(crypto.randomUUID(),capped.id,i,now);owner=false;assert.equal((await submit(submission(capped.id))).status,409);
  owner=true;const revoked=task(a,'published');assert.equal((await send(revoked)).status,200);owner=false;beforePut=()=>sql.prepare("UPDATE accounts SET auth_version=auth_version+1 WHERE id='student'").run();assert.equal((await submit(submission(revoked.id,crypto.randomUUID(),'Revoked during upload',pdf()))).status,409);assert.equal(objects.size,3);sql.prepare("UPDATE accounts SET auth_version=0 WHERE id='student'").run();owner=true;
  sql.prepare("UPDATE students SET status='archived' WHERE id=?").run(a);assert.equal((await send({...raceTask,version:1,status:'archived'})).status,409);owner=false;assert.equal((await get(a)).status,403);assert.equal((await download('submission',uncertainId)).status,403);owner=true;assert.ok((await (await admin.GET(req('/api/gestione/compiti?studente='+a))).json()).submissions.length>0);
+ // Full direct flow: authenticated authorization -> private bytes -> existing
+ // submission route -> SQL record -> authorized download, with hostile cases.
+ const savedEnv=Object.fromEntries(['APP_RUNTIME','BLOB_STORE_ID','TURSO_AUTH_TOKEN'].map(k=>[k,process.env[k]]));
+ process.env.APP_RUNTIME='vercel';process.env.BLOB_STORE_ID='store_fixture';process.env.TURSO_AUTH_TOKEN='test-only-private-upload-signing-secret';
+ try {
+  let issuedKey;env.BUCKET.presignUpload=async(key,mime,size)=>{issuedKey=key;assert.equal(mime,'application/pdf');assert.ok(size>0);return 'https://blob.example/scoped-put';};
+  const issue=(kind,target,file=pdf(),origin=base)=>directApi.POST(req('/api/uploads','POST',{kind,target,filename:file.name,mime:file.type,size:file.size},origin));
+  sql.prepare("UPDATE students SET status='active' WHERE id=?").run(a);owner=true;user={id:'tutor',role:'tutor',auth_version:0,must_change_password:0};const directTask=task(a,'published');assert.equal((await send(directTask)).status,200);
+  let token=await (await issue('task',directTask.id)).json();assert.ok(token.uploadProof);assert.ok(issuedKey.startsWith('homework/tasks/'));objects.set(issuedKey,new Uint8Array(await pdf().arrayBuffer()));
+  assert.equal((await adminFile.PUT(req('/api/gestione/compiti/file','PUT',{id:directTask.id,version:'0',uploadProof:token.uploadProof}))).status,200);
+  assert.equal(sql.prepare('SELECT object_key FROM homework_assignments WHERE id=?').get(directTask.id).object_key,issuedKey);
+  assert.equal((await send({...directTask,version:1,status:'published'})).status,200);
+  owner=false;user=null;assert.equal((await directApi.GET(req('/api/uploads'))).status,401);actor('parent');assert.equal((await issue('submission',directTask.id)).status,403);actor();
+  assert.equal((await (await directApi.GET(req('/api/uploads'))).json()).direct,true);
+  assert.equal((await issue('submission',directTask.id,pdf(),'https://evil.example')).status,403);
+  assert.equal((await issue('submission',other.id)).status,403);
+  assert.equal((await issue('submission',directTask.id,new File(['html'],'bad.html',{type:'text/html'}))).status,413);
+  assert.equal((await issue('submission',directTask.id,new File([new Uint8Array(10*1024*1024+1)],'large.pdf',{type:'application/pdf'}))).status,413);
+  token=await (await issue('submission',directTask.id)).json();const claim=readUploadClaim(token.uploadProof,process.env.TURSO_AUTH_TOKEN),directId=crypto.randomUUID(),body={id:directId,assignmentId:directTask.id,body:'Consegna diretta',uploadProof:token.uploadProof};
+  const finalize=value=>student.POST(req('/api/studente/compiti','POST',value));
+  assert.equal((await finalize(body)).status,409);objects.set(claim.key,new Uint8Array([1]));assert.equal((await finalize(body)).status,409);
+  objects.set(claim.key,new Uint8Array(await pdf().arrayBuffer()));
+  assert.equal((await finalize({...body,assignmentId:other.id})).status,403);
+  assert.equal((await finalize({...body,uploadProof:token.uploadProof+'x'})).status,409);
+  user.auth_version=1;assert.equal((await finalize(body)).status,403);user.auth_version=0;
+  assert.equal((await finalize(body)).status,200);assert.equal((await finalize(body)).status,200);
+  assert.equal(sql.prepare('SELECT count(*) n FROM homework_submissions WHERE id=?').get(directId).n,1);
+  assert.equal(sql.prepare('SELECT object_key FROM homework_submissions WHERE id=?').get(directId).object_key,claim.key);
+  assert.equal(await (await download('submission',directId)).text(),'%PDF-1.7\nsynthetic exercise');
+  // A replay is bound to its actor and resource, and revoked access remains
+  // invalid even when the byte upload itself succeeded earlier.
+  sql.prepare("UPDATE account_student_access SET status='revoked' WHERE account_id='student' AND student_id=?").run(a);assert.equal((await finalize(body)).status,403);assert.equal((await download('submission',directId)).status,403);sql.prepare("UPDATE account_student_access SET status='active' WHERE account_id='student' AND student_id=?").run(a);
+  actor('parent');assert.equal((await finalize(body)).status,403);assert.equal((await download('submission',directId)).status,200);actor();
+  const limitKey='upload:student:'+Math.floor(Date.now()/3600000);sql.prepare('UPDATE public_request_limits SET attempts=20 WHERE key=?').run(limitKey);assert.equal((await issue('submission',directTask.id)).status,429);
+  process.env.APP_RUNTIME='node';assert.equal((await (await directApi.GET(req('/api/uploads'))).json()).direct,false);assert.equal((await issue('submission',directTask.id)).status,409);
+ } finally {for(const [k,v] of Object.entries(savedEnv)){if(v===undefined)delete process.env[k];else process.env[k]=v;}}
  console.log('PASS: private assignments/files, role isolation, parent read-only, draft feedback protection, content lock, late deliveries, immutable attempts, revision/acceptance, CAS conflicts, archive/revocation, upload signatures/limits, concurrent guards and recovery after uncertain database commit.');
 }finally{delete globalThis.__homework;sql.close();}

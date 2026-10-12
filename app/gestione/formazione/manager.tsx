@@ -1,4 +1,5 @@
 'use client';
+import { uploadForm } from '@/lib/uploads/client';
 import { useEffect,useState } from 'react';
 import CourseProgress from './course-progress';
 import type { Course,LearningData,Material,Module } from '@/lib/learning/types';
@@ -11,7 +12,7 @@ export default function LearningManager(){
  async function load(){const r=await fetch('/api/gestione/formazione',{cache:'no-store'});const d=await r.json() as LearningData&{error?:string};if(!r.ok)throw Error(d.error||'Gestione non disponibile.');setData(d);}
  useEffect(()=>{void load().catch(e=>setError(e.message));},[]);
  async function save(body:object,done?:()=>void){setBusy(true);setError('');setMessage('');try{const r=await fetch('/api/gestione/formazione',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json() as {error?:string};if(!r.ok)throw Error(d.error||'Salvataggio non riuscito.');await load();done?.();setMessage('Modifica salvata.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
- async function upload(e:React.FormEvent){e.preventDefault();if(!file)return;setBusy(true);setError('');setMessage('');try{const form=new FormData();form.set('moduleId',moduleId);form.set('title',fileTitle);form.set('position',String(data?.materials.filter(m=>m.module_id===moduleId).length||0));form.set('file',file);const r=await fetch('/api/gestione/formazione',{method:'PUT',body:form});const d=await r.json() as {error?:string};if(!r.ok)throw Error(d.error||'Caricamento non riuscito.');await load();setFile(null);setFileTitle('');setFileInput(n=>n+1);setMessage('File caricato in bozza. Rendilo disponibile quando è pronto.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function upload(e:React.FormEvent){e.preventDefault();if(!file)return;setBusy(true);setError('');setMessage('');try{const form=new FormData();form.set('moduleId',moduleId);form.set('title',fileTitle);form.set('position',String(data?.materials.filter(m=>m.module_id===moduleId).length||0));form.set('file',file);const r=await uploadForm('/api/gestione/formazione','PUT',form,'material',moduleId);const d=await r.json() as {error?:string};if(!r.ok)throw Error(d.error||'Caricamento non riuscito.');await load();setFile(null);setFileTitle('');setFileInput(n=>n+1);setMessage('File caricato in bozza. Rendilo disponibile quando è pronto.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
  function choose(c:Course){setProgressOpen(false);setCourseId(c.id);setModuleId('');setCourse(c);setModule(blankModule);setText(blankText);setFile(null);setFileTitle('');setFileInput(n=>n+1);}
  function chooseModule(u:Module){setModuleId(u.id);setModule(u);setText(blankText);setFile(null);setFileTitle('');setFileInput(n=>n+1);}
  const active=data?.students.filter(s=>s.status==='active')||[];const selected=data?.courses.find(c=>c.id===courseId);

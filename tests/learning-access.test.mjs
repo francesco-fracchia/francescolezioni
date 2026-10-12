@@ -10,8 +10,10 @@ let user=null;let owner=false;
 globalThis.__learning={getAccount:async()=>user?{id:user.userId,must_change_password:0,auth_version:0}:null,isRequestOwner:async()=>owner,bookingDb:()=>db,env};
 async function compile(path,replace=s=>s){const s=replace(await readFile(new URL('../'+path,import.meta.url),'utf8')).replace("import { getAccount } from '@/lib/auth/session';",'const {getAccount}=globalThis.__learning;').replace(/import \{ isRequestOwner \} from '@\/lib\/request-admin';/g,'const {isRequestOwner}=globalThis.__learning;').replace(/import \{ bookingDb \} from '@\/lib\/booking\/runtime';/g,'const {bookingDb}=globalThis.__learning;').replace(/import \{ env \} from '@\/lib\/runtime-env';/g,'const {env}=globalThis.__learning;').replace("from 'zod'",'from '+JSON.stringify(import.meta.resolve('zod')));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
 const access=await compile('lib/learning/access.ts');
+const direct=await compile('lib/uploads/server.ts',s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from './claims.mjs'",'from '+JSON.stringify(new URL('../lib/uploads/claims.mjs',import.meta.url).href)));
+const homework=await compile('lib/homework/files.ts',s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)));
 const fileModule=await compile('lib/learning/files.ts',s=>s.replace("from './access'",'from '+JSON.stringify(access)));
-const replace=s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/learning/files'",'from '+JSON.stringify(fileModule));
+const replace=s=>s.replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)).replace("from '@/lib/homework/files'",'from '+JSON.stringify(homework)).replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/learning/files'",'from '+JSON.stringify(fileModule));
 const student=await import(await compile('app/api/studente/route.ts',replace));
 const files=await import(await compile('app/api/studente/materiali/route.ts',replace));
 const admin=await import(await compile('app/api/gestione/formazione/route.ts',replace));

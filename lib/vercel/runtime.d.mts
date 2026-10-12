@@ -3,4 +3,4 @@ import type { MaterialBucket } from '../storage-types';
 export function vercelResourcesConfigured(config?: NodeJS.ProcessEnv): boolean;
 export function vercelDatabaseConfigured(config?: NodeJS.ProcessEnv): boolean;
 export function vercelRuntimeReady(config?: NodeJS.ProcessEnv): boolean;
-export function getVercelResources(): { DB: D1Database; BUCKET: MaterialBucket };
+export function getVercelResources(): { DB: D1Database; BUCKET: MaterialBucket & { presignUpload?: (key:string,mime:string,size:number)=>Promise<string> } };
