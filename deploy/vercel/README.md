@@ -54,6 +54,16 @@ node --env-file=.env.turso.local scripts/vercel-database.mjs check
 
 La password tutor viene chiesta due volte senza mostrarla. Non passare password come argomento o variabile nella cronologia del terminale. Il comando non sostituisce un tutor già presente.
 
+Per recuperare entrambe le password, dalla radice del progetto in un terminale interattivo del titolare:
+
+```sh
+node --env-file=.env.turso.local scripts/recover-private-access.mjs EMAIL_DEL_TUTOR
+```
+
+Il comando chiede due volte la nuova password tutor (15–128 caratteri), poi due volte quella dell’anteprima (20–256 caratteri, senza spazi iniziali/finali). Non recupera o mostra quelle precedenti, non salva le nuove su disco e non le passa negli argomenti dei processi. Servono il file Turso riservato e una sessione CLI Vercel del titolare. Il reset tutor modifica solo un account tutor attivo con quell’email, incrementa la versione di autenticazione e revoca le sue sessioni in una transazione; gli altri account, i dati e i materiali restano intatti. Non riattiva account sospesi e non crea nuovi utenti.
+
+L’anteprima viene aggiornata come Secret soltanto in Production nel progetto `francescolezioni`, verificando prima nome, team e deploy corrente. Avvia il redeploy della versione verificata senza cambiare visibilità, indicizzazione o pagamenti. La nuova password dell’anteprima diventa attiva quando il deploy è Ready. Se l’anteprima fallisce dopo il reset tutor, quest’ultimo resta valido: completare solo l’anteprima con `node scripts/vercel-preview-password.mjs`. Per cambiare solo il tutor: `node --env-file=.env.turso.local scripts/vercel-database.mjs reset-tutor EMAIL_DEL_TUTOR`. Un esito di scrittura incerto non viene ritentato automaticamente. Non esiste un recupero pubblico via email finché il servizio email rimane disattivato.
+
 Le 27 migrazioni esistenti vengono applicate nell'ordine del journal, ciascuna in una transazione insieme alla propria impronta SHA-256. I riavvii riprendono solo dalle migrazioni mancanti. Database con tabelle estranee senza registro della piattaforma, migrazioni sconosciute e file già applicati ma modificati vengono rifiutati. Un SQL non valido annulla anche le modifiche allo schema di quella migrazione. Il comando `check` è in sola lettura, controlla impronte, vincoli e presenza del tutor; non certifica disponibilità, accessi o pagamenti sul deploy. Questi comandi inizializzano un database vuoto e **non importano automaticamente i dati del Site o del Mac**.
 
 ### Stripe
