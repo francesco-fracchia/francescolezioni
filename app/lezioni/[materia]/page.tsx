@@ -62,7 +62,7 @@ export default async function SubjectPage({ params }: Props) {
       <section className="subject-formats" aria-labelledby="modalita-title">
         <h2 id="modalita-title">In presenza o online</h2>
         <div className="subject-topic-columns">
-          <article><h3>{studio.address}, {studio.city}</h3><p className="booking-badge">{studioCopy.status}</p><p>{studioCopy.description}</p><a className="text-link" href={studio.mapsUrl} target="_blank" rel="noopener noreferrer">Apri l’indirizzo su Google Maps</a></article>
+          <article><h3>{studio.address}, {studio.city}</h3><p>{studioCopy.description}</p><a className="text-link" href={studio.mapsUrl} target="_blank" rel="noopener noreferrer">Apri l’indirizzo su Google Maps</a></article>
           <article><h3>In videochiamata</h3><p>{subject.online}</p><p>Per un chiarimento breve puoi scrivermi su WhatsApp.</p></article>
         </div>
       </section>

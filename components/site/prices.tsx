@@ -13,7 +13,7 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             <p className="duration">
               <Clock size={16} aria-hidden="true" /> 55 minuti
             </p></div><CardArt kind="individual" /></div>
-            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong><details><summary>Condizioni del pacchetto</summary><p>Concordiamo prima programma e condizioni. Dopo l’acquisto puoi fissare gli orari aperti. Il credito invito non si somma al pacchetto.</p></details></div>
+            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong></div>
             <a className="button dark" href="/acquista">Acquista lezioni</a>
             <button className="text-link calendar-link" onClick={() => open("contact")}>Chiedi informazioni</button>
           </article>
@@ -44,9 +44,6 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             </div>
           </article>
         </div>
-        <p className="price-footnote">
-          Ogni lezione dura 55 minuti. Lascio 5 minuti tra un appuntamento e il successivo.
-        </p>
       </section>
       <section className="wrap price-details"><details className="public-disclosure"><summary>Come funzionano le lezioni individuali</summary><p>Se devi recuperare un argomento o preparare una verifica o un esame, seguiamo il tuo programma e ci fermiamo sugli esercizi che richiedono più tempo. Puoi scegliere un solo incontro oppure continuare con altre lezioni, a seconda di quello che ti serve.</p>
             <p>Il ritmo della lezione dipende da quello che ti serve. Possiamo fermarci su un passaggio e riprenderlo prima di andare avanti.</p>

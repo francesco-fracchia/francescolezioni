@@ -234,7 +234,7 @@
 .footer-phone{display:flex;align-items:center;gap:9px;width:fit-content;margin-top:18px;font-size:15px;color:#d7e5f1}
 .footer-link-group h2,.footer-business h2{font-size:14px;letter-spacing:0;line-height:1.5;font-weight:600;margin:0 0 18px;color:#fff}
 .public-shell .public-footer nav{grid-template-columns:1fr;gap:13px;font-size:14px}
-.public-footer>.footer-business{grid-template-columns:1.2fr 1fr 1fr;gap:42px;border-top:1px solid #3b4e64;margin-top:38px;padding-top:30px}
+.public-footer>.footer-business{grid-template-columns:1.2fr 2fr;gap:42px;border-top:1px solid #3b4e64;margin-top:38px;padding-top:30px}
 .footer-business address{font-style:normal;display:flex;gap:10px;align-items:flex-start;line-height:1.7;color:#d7e5f1;font-size:14px}
 .footer-business address svg{flex-shrink:0;margin-top:4px;color:#b4c9ec}
 .footer-business p{font-size:14px;line-height:1.7;margin:0}
@@ -246,7 +246,7 @@
  .public-shell .study-guide .button.dark:hover{background:#0f2d5b;border-color:#0f2d5b}
  .public-shell .public-footer nav a:hover,.public-shell .public-footer .text-link:hover,.public-footer a:hover{color:#fff}
 }
-@media(max-width:780px){.public-footer>.footer-main,.public-footer>.footer-business{grid-template-columns:1fr 1fr;gap:32px}.footer-contact{grid-column:1/-1}.footer-business>div:last-child{grid-column:1/-1}}
+@media(max-width:780px){.public-footer>.footer-main,.public-footer>.footer-business{grid-template-columns:1fr 1fr;gap:32px}.footer-contact{grid-column:1/-1}.footer-business>div:last-child{grid-column:auto}}
 @media(max-width:480px){.public-footer>.footer-main,.public-footer>.footer-business{grid-template-columns:1fr;gap:30px}.footer-contact,.footer-business>div:last-child{grid-column:auto}.public-shell .public-footer{padding-top:36px;padding-bottom:95px}}
 
 /* Keep subject cards clear of the divider following the introduction. */
