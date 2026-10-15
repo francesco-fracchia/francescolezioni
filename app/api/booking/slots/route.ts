@@ -1,3 +1,5 @@
+import {ensureCalendarAvailability} from '@/lib/calendar/availability';
+import {availableLessonSlotsSql} from '@/lib/packages/reservation';
 import { bookingDb,paymentConfig } from '@/lib/booking/runtime';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { env } from '@/lib/runtime-env';
@@ -8,8 +10,8 @@ import { reconcileExpiredBookings } from '@/lib/booking/reconcile';
 export async function GET() { try {
  await expireUnpaidLessons();
  await reconcileExpiredBookings();
- await ensureSchedule();
- const slots=await bookingDb().prepare("SELECT id, starts_at, ends_at, mode FROM booking_slots WHERE status='available' AND starts_at > ? AND NOT EXISTS(SELECT 1 FROM consultations c WHERE c.status='confirmed' AND julianday(c.starts_at)<julianday(booking_slots.ends_at)+5.0/1440 AND julianday(c.ends_at)>julianday(booking_slots.starts_at)-5.0/1440) ORDER BY starts_at LIMIT 100").bind(new Date(Date.now()+86400000).toISOString()).all();
+ await ensureSchedule();await ensureCalendarAvailability();
+ const slots=await bookingDb().prepare(availableLessonSlotsSql).bind(new Date(Date.now()+86400000).toISOString()).all();
  return Response.json({slots:slots.results,paymentsReady:paymentConfig().ready,testMode:!paymentConfig().live},{headers:{'Cache-Control':'no-store'}});
  } catch { return Response.json({error:'Calendario temporaneamente non disponibile.'},{status:503}); } }
 export async function POST(request:Request) {

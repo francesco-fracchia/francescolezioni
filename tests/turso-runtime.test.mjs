@@ -22,7 +22,7 @@ async function fixture(run) {
 test('Turso applies all real migrations, preserves triggers, verifies checksums and survives reconnect', async () => fixture(async ({ root, url, client, db }) => {
   const directory = path.join(root, 'drizzle');
   await cp(path.resolve('drizzle'), directory, { recursive: true });
-  assert.equal(await migrateTurso(client, directory), 28);
+  assert.equal(await migrateTurso(client, directory), 29);
   assert.equal(await migrateTurso(client, directory), 0);
   assert.ok(await db.prepare("SELECT count(*) n FROM sqlite_master WHERE type='trigger'").first('n') >= 15);
   assert.equal(await db.prepare('PRAGMA foreign_keys').first('foreign_keys'), 1);
@@ -102,7 +102,7 @@ test('Public booking API with real libSQL commits one booking and request, retur
   await migrateTurso(client, path.resolve('drizzle'));
   globalThis.__tursoBooking = db;
   async function compile(filename, replace = source => source) {
-    const source = replace(await readFile(path.resolve(filename), 'utf8'));
+    const source = replace(await readFile(path.resolve(filename), 'utf8')).replace(/import \{ensureCalendarAvailability\} from '@\/lib\/calendar\/availability';/g,'const ensureCalendarAvailability=async()=>{};').replace(/from ['"]@\/lib\/calendar\/([^'"]+\.mjs)['"]/g,(_,name)=>'from '+JSON.stringify(new URL('../lib/calendar/'+name,import.meta.url).href));
     return 'data:text/javascript;base64,' + Buffer.from(ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText).toString('base64');
   }
   try {

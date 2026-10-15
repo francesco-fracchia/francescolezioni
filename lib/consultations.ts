@@ -1,3 +1,5 @@
+import {calendarBusySql} from '@/lib/calendar/busy-policy.mjs';
+import {automaticSlotEnabledSql} from '@/lib/calendar/slot-policy.mjs';
 import { romeDateTime } from '@/lib/lesson-plan';
 export const consultationMinutes = 15;
 export const consultationBufferMinutes = 5;
@@ -18,6 +20,7 @@ export function consultationWindow(date:string,from:string,to:string,now=Date.no
 // Same five-minute buffer as paid lessons. Available paid slots do not occupy time.
 export const consultationOccupiedSql = `EXISTS(SELECT 1 FROM consultations c WHERE c.status='confirmed' AND julianday(c.starts_at)<julianday(s.ends_at)+5.0/1440 AND julianday(c.ends_at)>julianday(s.starts_at)-5.0/1440)
  OR EXISTS(SELECT 1 FROM booking_slots b WHERE b.status!='available' AND julianday(b.starts_at)<julianday(s.ends_at)+5.0/1440 AND julianday(b.ends_at)>julianday(s.starts_at)-5.0/1440)
+ OR ${calendarBusySql('s')}
  OR EXISTS(SELECT 1 FROM scheduled_lessons l WHERE l.status='planned' AND julianday(l.starts_at)<julianday(s.ends_at)+5.0/1440 AND julianday(l.ends_at)>julianday(s.starts_at)-5.0/1440)`;
 
-export const consultationRecurrenceEnabledSql = `(s.recurrence_id IS NULL OR EXISTS(SELECT 1 FROM consultation_recurrence r WHERE r.id=s.recurrence_id AND r.active=1))`;
+export const consultationRecurrenceEnabledSql = automaticSlotEnabledSql('s','free');

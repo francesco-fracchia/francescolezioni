@@ -1,11 +1,13 @@
+import {ensureSchedule} from '@/lib/booking/schedule';
+import {ensureCalendarAvailability} from '@/lib/calendar/availability';
 import {z} from 'zod';
 import {bookingDb} from '@/lib/booking/runtime';
 import {failure,LearningError,privateHeaders,sameOrigin,studentScope} from '@/lib/learning/access';
 import {availableLessonSlotsSql,reservePurchasedLesson} from '@/lib/packages/reservation';
 import {noticeStatements,dispatchAppointmentNotices} from '@/lib/notifications/appointments';
-const schema=z.object({id:z.string().uuid(),studentId:z.string().uuid(),packageId:z.string().uuid(),slotId:z.string().min(1).max(100),subject:z.enum(['Matematica','Informatica','Sistemi e Reti'])});
+const schema=z.object({id:z.string().uuid(),studentId:z.string().uuid(),packageId:z.string().uuid(),slotId:z.string().min(1).max(100),subject:z.enum(['Matematica','Informatica','Sistemi e Reti']),mode:z.enum(['Online','Lodi']).optional()});
 export async function GET(request:Request){try{
- await studentScope(request);
+ await studentScope(request);await ensureSchedule();await ensureCalendarAvailability();
  const slots=await bookingDb().prepare(availableLessonSlotsSql).bind(new Date(Date.now()+86400000).toISOString()).all();
  return Response.json({slots:slots.results},{headers:privateHeaders});
  }catch(e){return failure(e);}}

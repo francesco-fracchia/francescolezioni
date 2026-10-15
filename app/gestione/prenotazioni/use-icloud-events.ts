@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useState} from 'react';
+import {startTransition,useCallback,useEffect,useState} from 'react';
 import type {ICloudCalendar,ICloudEvent} from '@/lib/calendar/types';
 type Snapshot={events:ICloudEvent[];calendars:ICloudCalendar[];connected:boolean;checkedAt:string|null};
 export default function useICloudEvents(from:string,to:string,revision:number){
@@ -12,7 +12,7 @@ export default function useICloudEvents(from:string,to:string,revision:number){
    try{
     const response=await fetch('/api/gestione/calendari/eventi?'+new URLSearchParams({from,to}),{cache:'no-store',signal:controller.signal});
     const data=await response.json();if(!response.ok)throw Error(data.error||'iCloud non disponibile.');
-    if(alive){setSnapshot(data);setError('');}
+    if(alive)startTransition(()=>{setSnapshot(current=>({...data,events:JSON.stringify(current.events)===JSON.stringify(data.events)?current.events:data.events}));setError('');});
    }catch(error){if(alive&&!(error instanceof DOMException&&error.name==='AbortError'))setError(error instanceof Error?error.message:'iCloud non disponibile.');}
    finally{pending=false;if(alive)setLoading(false);}
   }

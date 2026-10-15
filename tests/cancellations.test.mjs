@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {DatabaseSync} from 'node:sqlite';
 import ts from 'typescript';
-async function compile(file,replace=s=>s){const source=replace(await readFile(new URL('../'+file,import.meta.url),'utf8'));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
+async function compile(file,replace=s=>s){const source=replace(await readFile(new URL('../'+file,import.meta.url),'utf8')).replace(/import \{ensureCalendarAvailability\} from '@\/lib\/calendar\/availability';/g,'const ensureCalendarAvailability=async()=>{};').replace(/from ['"]@\/lib\/calendar\/([^'"]+\.mjs)['"]/g,(_,name)=>'from '+JSON.stringify(new URL('../lib/calendar/'+name,import.meta.url).href));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
 const policy=await compile('lib/booking/cancellation-policy.ts'),dates=await compile('lib/lesson-plan.ts');
 const {cancellationRefundPercent:percent,cancellationRefundAmount:amount}=await import(policy);
 const requested='2026-10-25T09:00:00.000Z';

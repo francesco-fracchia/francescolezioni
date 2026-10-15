@@ -13,7 +13,7 @@ export const tutorTemplates=sqliteTable('tutor_templates',{
 
 export const bookingSlots = sqliteTable('booking_slots', {
  id:text('id').primaryKey(), startsAt:text('starts_at').notNull(), endsAt:text('ends_at').notNull(), mode:text('mode').notNull(),
- status:text('status').notNull().default('available'), bookingId:text('booking_id'),
+ status:text('status').notNull().default('available'), bookingId:text('booking_id'),recurrenceId:text('recurrence_id'),generatedVersion:integer('generated_version').notNull().default(0),
 });
 export const bookings = sqliteTable('bookings', {
  id:text('id').primaryKey(), slotId:text('slot_id').notNull(), accessToken:text('access_token').notNull(), name:text('name').notNull(), email:text('email').notNull(), subject:text('subject').notNull(),
@@ -93,10 +93,10 @@ export const publicRequestLimits=sqliteTable('public_request_limits',{
 },t=>[index('idx_public_request_limits_expiry').on(t.expiresAt)]);
 
 export const consultationRecurrence=sqliteTable('consultation_recurrence',{
- id:text('id').primaryKey(),startDate:text('start_date').notNull(),fromTime:text('from_time').notNull(),toTime:text('to_time').notNull(),mode:text('mode').notNull(),active:integer('active').notNull().default(1),version:integer('version').notNull().default(0),generatedUntil:text('generated_until'),createdAt:text('created_at').notNull(),updatedAt:text('updated_at').notNull(),
+ id:text('id').primaryKey(),startDate:text('start_date').notNull(),fromTime:text('from_time').notNull(),toTime:text('to_time').notNull(),mode:text('mode').notNull(),active:integer('active').notNull().default(1),version:integer('version').notNull().default(0),generatedUntil:text('generated_until'),paidGeneratedUntil:text('paid_generated_until'),weekDays:text('week_days').notNull().default('[0,1,2,3,4,5,6]'),lessonsEnabled:integer('lessons_enabled').notNull().default(1),consultationsEnabled:integer('consultations_enabled').notNull().default(1),createdAt:text('created_at').notNull(),updatedAt:text('updated_at').notNull(),
 });
 export const consultationSlots=sqliteTable('consultation_slots',{
- recurrenceId:text('recurrence_id'),id:text('id').primaryKey(),startsAt:text('starts_at').notNull(),endsAt:text('ends_at').notNull(),mode:text('mode').notNull(),status:text('status').notNull().default('available'),createdAt:text('created_at').notNull(),
+ recurrenceId:text('recurrence_id'),generatedVersion:integer('generated_version').notNull().default(0),id:text('id').primaryKey(),startsAt:text('starts_at').notNull(),endsAt:text('ends_at').notNull(),mode:text('mode').notNull(),status:text('status').notNull().default('available'),createdAt:text('created_at').notNull(),
 },t=>[uniqueIndex('idx_consultation_slots_start').on(t.startsAt)]);
 export const consultations=sqliteTable('consultations',{
  id:text('id').primaryKey(),slotId:text('slot_id').notNull(),requestId:text('request_id').notNull(),name:text('name').notNull(),email:text('email').notNull(),phone:text('phone').notNull().default(''),subject:text('subject').notNull(),studentType:text('student_type').notNull(),message:text('message').notNull().default(''),mode:text('mode').notNull(),startsAt:text('starts_at').notNull(),endsAt:text('ends_at').notNull(),status:text('status').notNull().default('confirmed'),version:integer('version').notNull().default(0),payloadHash:text('payload_hash').notNull(),createdAt:text('created_at').notNull(),
@@ -141,3 +141,5 @@ export const lessonPackages=sqliteTable('lesson_packages',{
 export const packageUses=sqliteTable('package_uses',{
  id:text('id').primaryKey(),packageId:text('package_id').notNull(),paymentId:text('payment_id').notNull(),status:text('status').notNull().default('applied'),createdAt:text('created_at').notNull(),
 },t=>[index('idx_package_uses_package').on(t.packageId),index('idx_package_uses_payment').on(t.paymentId)]);
+
+export const calendarBusyCache=sqliteTable('calendar_busy_cache',{accountId:text('account_id').primaryKey().references(()=>accounts.id,{onDelete:'cascade'}),settingsVersion:integer('settings_version').notNull(),startsAt:text('starts_at').notNull(),endsAt:text('ends_at').notNull(),checkedAt:integer('checked_at').notNull(),intervals:text('intervals').notNull()});

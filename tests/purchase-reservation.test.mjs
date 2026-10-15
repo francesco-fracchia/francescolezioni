@@ -14,7 +14,7 @@ async function stripe(path,body,key){calls.push({path,body:body?.toString(),key}
 globalThis.__purchase={bookingDb:()=>db,paymentConfig:config,stripe};
 async function compile(file,replace=s=>s){const source=replace(await readFile(new URL('../'+file,import.meta.url),'utf8'));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
 const access=await compile('lib/learning/access.ts',s=>s.replace(/^import.*$/gm,''));
-const deps=s=>s.replace(/import \{.*\} from '@\/lib\/booking\/runtime';/,'const {bookingDb,paymentConfig,stripe}=globalThis.__purchase;').replace("'@/lib/learning/access'",JSON.stringify(access));
+const deps=s=>s.replace(/import \{ensureCalendarAvailability\} from '@\/lib\/calendar\/availability';/g,'const ensureCalendarAvailability=async()=>{};').replace(/from ['"]@\/lib\/calendar\/([^'"]+\.mjs)['"]/g,(_,name)=>'from '+JSON.stringify(new URL('../lib/calendar/'+name,import.meta.url).href)).replace(/import \{.*\} from '@\/lib\/booking\/runtime';/,'const {bookingDb,paymentConfig,stripe}=globalThis.__purchase;').replace("'@/lib/learning/access'",JSON.stringify(access));
 const {openPurchase,reconcilePurchase}=await import(await compile('lib/packages/checkout.ts',deps));
 const {reservePurchasedLesson,availableLessonSlotsSql}=await import(await compile('lib/packages/reservation.ts',deps));
 const now=new Date().toISOString(),student=crypto.randomUUID(),other=crypto.randomUUID();
@@ -26,9 +26,9 @@ try{
  await assert.rejects(()=>openPurchase(id,other,5),e=>e.status===409);await assert.rejects(()=>openPurchase(id,student,1),e=>e.status===409);
  const s=sessions.values().next().value;s.payment_status='paid';s.amount_total=1;await assert.rejects(()=>reconcilePurchase(id),e=>e.status===409);assert.equal(sql.prepare('SELECT status FROM lesson_packages WHERE id=?').get(id).status,'awaiting');s.amount_total=9500;s.livemode=true;await assert.rejects(()=>reconcilePurchase(id));s.livemode=false;
  await reconcilePurchase(id);await reconcilePurchase(id);assert.equal(sql.prepare('SELECT status FROM lesson_packages WHERE id=?').get(id).status,'active');
- const target=slot(),request={id:crypto.randomUUID(),studentId:student,packageId:id,slotId:target,subject:'Informatica'};
+ const target=slot(),request={id:crypto.randomUUID(),studentId:student,packageId:id,slotId:target,subject:'Informatica',mode:'Lodi'};sql.prepare("UPDATE booking_slots SET mode='Entrambe' WHERE id=?").run(target);
  await assert.rejects(()=>reservePurchasedLesson({...request,studentId:other}),e=>e.status===409);
- await reservePurchasedLesson(request);await reservePurchasedLesson(request);assert.equal(sql.prepare('SELECT COUNT(*) n FROM package_uses WHERE package_id=?').get(id).n,1);assert.equal(sql.prepare('SELECT status FROM booking_slots WHERE id=?').get(target).status,'scheduled');assert.equal(sql.prepare('SELECT payment_status FROM scheduled_lessons WHERE id=?').get(request.id).payment_status,'paid');
+ await reservePurchasedLesson(request);await reservePurchasedLesson(request);assert.equal(sql.prepare('SELECT mode FROM scheduled_lessons WHERE id=?').get(request.id).mode,'Lodi');assert.equal(sql.prepare('SELECT COUNT(*) n FROM package_uses WHERE package_id=?').get(id).n,1);assert.equal(sql.prepare('SELECT status FROM booking_slots WHERE id=?').get(target).status,'scheduled');assert.equal(sql.prepare('SELECT payment_status FROM scheduled_lessons WHERE id=?').get(request.id).payment_status,'paid');
  const covered=sql.prepare('SELECT amount,status FROM lesson_payments WHERE lesson_id=?').get(request.id);assert.equal(covered.amount,1900);assert.equal(covered.status,'paid');
  await assert.rejects(()=>reservePurchasedLesson({...request,id:crypto.randomUUID()}),e=>e.status===409);
  const conflictSlot=slot(12),start=sql.prepare('SELECT starts_at FROM booking_slots WHERE id=?').get(conflictSlot).starts_at;

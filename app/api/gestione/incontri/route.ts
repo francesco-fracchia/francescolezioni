@@ -1,3 +1,4 @@
+import {ensureCalendarAvailability} from '@/lib/calendar/availability';
 import {ensureDailyConsultations,dailyConsultationRule} from '@/lib/consultation-recurrence';
 import { z } from 'zod';
 import { isRequestOwner } from '@/lib/request-admin';
@@ -5,10 +6,10 @@ import { bookingDb } from '@/lib/booking/runtime';
 import { consultationWindow,consultationOccupiedSql } from '@/lib/consultations';
 const headers={'Cache-Control':'private, no-store'};
 export async function GET(){if(!await isRequestOwner())return new Response(null,{status:403});try{
- const db=bookingDb();await ensureDailyConsultations(db);const [slots,appointments]=await Promise.all([
+ const db=bookingDb();await ensureDailyConsultations(db);let warning='';try{await ensureCalendarAvailability();}catch{warning='Non riesco a verificare i calendari iCloud. Gli orari non verificati non sono prenotabili.';}const [slots,appointments]=await Promise.all([
   db.prepare(`SELECT s.id,s.starts_at,s.ends_at,s.mode,s.recurrence_id,s.created_at,CASE WHEN s.recurrence_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM consultation_recurrence r WHERE r.id=s.recurrence_id AND r.active=1) THEN 'blocked' ELSE s.status END status,CASE WHEN ${consultationOccupiedSql} THEN 1 ELSE 0 END occupied FROM consultation_slots s WHERE s.starts_at>? ORDER BY s.starts_at LIMIT 1501`).bind(new Date().toISOString()).all(),
   db.prepare('SELECT id,slot_id,request_id,name,email,phone,subject,student_type,message,mode,starts_at,ends_at,status,version FROM consultations ORDER BY starts_at DESC LIMIT 201').all()
- ]);return Response.json({slots:slots.results.slice(0,1500),appointments:appointments.results.slice(0,200),recurrence:await dailyConsultationRule(db),truncated:slots.results.length>1500||appointments.results.length>200},{headers});
+ ]);return Response.json({slots:slots.results.slice(0,1500),appointments:appointments.results.slice(0,200),recurrence:await dailyConsultationRule(db),warning,truncated:slots.results.length>1500||appointments.results.length>200},{headers});
 }catch{return Response.json({error:'Incontri temporaneamente non disponibili.'},{status:503,headers});}}
 export async function POST(request:Request){if(!await isRequestOwner())return new Response(null,{status:403});if(request.headers.get('origin')!==new URL(request.url).origin)return new Response(null,{status:403});try{
  const raw=await request.text();if(raw.length>1000)return new Response(null,{status:413});

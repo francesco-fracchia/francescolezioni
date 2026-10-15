@@ -1,6 +1,8 @@
 // Civil dates and times always follow the tutor's Rome timezone, including DST.
-export const agendaDay=(iso:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(iso));
-export const agendaTime=(iso:string)=>new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(iso));
+const dayFormatter=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'});
+const timeFormatter=new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+export const agendaDay=(iso:string)=>dayFormatter.format(new Date(iso));
+export const agendaTime=(iso:string)=>timeFormatter.format(new Date(iso));
 export const civilDate=(date:string)=>new Date(date+'T12:00:00Z');
 export function addDays(date:string,n:number){const d=civilDate(date);d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
 export function weekDays(date:string){const monday=addDays(date,-((civilDate(date).getUTCDay()+6)%7));return Array.from({length:7},(_,i)=>addDays(monday,i));}

@@ -22,7 +22,7 @@ test('Node SQLite preserves migrations, rows, RETURNING and atomic rollback acro
   const filename = path.join(root, 'test.sqlite');
   let db = openDatabase(filename, { mustExist: false });
   try {
-    assert.equal(migrateDatabase(db, migrations), 28);
+    assert.equal(migrateDatabase(db, migrations), 29);
     assert.equal(migrateDatabase(db, migrations), 0);
     db.sql.exec('CREATE TABLE adapter_test(id TEXT PRIMARY KEY, amount INTEGER NOT NULL)');
     let results = await db.batch([
@@ -44,7 +44,7 @@ test('Node SQLite preserves migrations, rows, RETURNING and atomic rollback acro
     assert.equal(await db.prepare('SELECT amount FROM adapter_test').first('amount'), 0);
     assert.equal(migrateDatabase(db, migrations), 0);
     const backup = openDatabase(path.join(root, 'backup.sqlite'));
-    try { assert.equal(await backup.prepare('SELECT count(*) n FROM ff_node_migrations').first('n'), 28); } finally { backup.close(); }
+    try { assert.equal(await backup.prepare('SELECT count(*) n FROM ff_node_migrations').first('n'), 29); } finally { backup.close(); }
   } finally { db.close(); }
   assert.throws(() => openDatabase(path.join(root, 'missing.sqlite')), /unable to open/);
 }));
