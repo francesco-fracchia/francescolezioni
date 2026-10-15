@@ -22,7 +22,7 @@ async function fixture(run) {
 test('Turso applies all real migrations, preserves triggers, verifies checksums and survives reconnect', async () => fixture(async ({ root, url, client, db }) => {
   const directory = path.join(root, 'drizzle');
   await cp(path.resolve('drizzle'), directory, { recursive: true });
-  assert.equal(await migrateTurso(client, directory), 27);
+  assert.equal(await migrateTurso(client, directory), 28);
   assert.equal(await migrateTurso(client, directory), 0);
   assert.ok(await db.prepare("SELECT count(*) n FROM sqlite_master WHERE type='trigger'").first('n') >= 15);
   assert.equal(await db.prepare('PRAGMA foreign_keys').first('foreign_keys'), 1);

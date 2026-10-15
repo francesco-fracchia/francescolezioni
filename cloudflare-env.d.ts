@@ -18,6 +18,7 @@ declare global {
     PUBLIC_SITE_INDEXING?: string;
     BOOKING_OWNER_USER_ID?: string;
     BOOKING_SCHEDULE_ENABLED?: string;
+    CALENDAR_CONNECTION_KEY?: string;
     BUCKET?: MaterialBucket;
   }
 }

@@ -27,7 +27,7 @@ export async function proxy(request: NextRequest) {
     if (['/preparazione', '/anteprima', '/api/anteprima', '/favicon.svg', '/francesco-fracchia-logo.png'].includes(pathname) || pathname.startsWith('/_next/static/')) return allowRequest(['/preparazione', '/anteprima', '/api/anteprima'].includes(pathname));
     const preview = previewAllowed(request);
     if (preview && previewPathAllowed(pathname)) return allowRequest(false, true);
-    if (preview && pathname.startsWith('/api/')) return NextResponse.json({ error: 'Anteprima riservata: le funzioni operative sono disattivate.' }, { status: 503, headers });
+    if (preview && pathname.startsWith('/api/') && !(pathname==='/api/calendari/lezioni'&&['GET','HEAD'].includes(request.method))) return NextResponse.json({ error: 'Anteprima riservata: le funzioni operative sono disattivate.' }, { status: 503, headers });
     if (!vercelRuntimeReady()) {
       if (pathname.startsWith('/api/')) return NextResponse.json({ error: 'Piattaforma non ancora configurata.' }, { status: 503, headers });
       if (pathname === '/robots.txt') return new NextResponse('User-agent: *\nDisallow: /\n', { headers: { ...headers, 'Content-Type': 'text/plain' } });

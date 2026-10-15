@@ -3,9 +3,12 @@ import {useCallback,useEffect,useState} from 'react';
 import Calendar,{type AgendaEvent,type AgendaSlot} from './lesson-calendar';
 import type {Consultation,ConsultationSlot} from '@/lib/consultations';
 import type {Payment} from './lesson-saldos';
+import CalendarConnections from './calendar-connections';
 type Booking=AgendaEvent & {email:string;created_at:string};
 type Lesson=Booking & {series_id:string;notes:string;payment_method:string;payment_status:string;payments:Payment[]};
 export default function Dashboard(){
+ const [calendarRevision,setCalendarRevision]=useState(0);
+ const calendarChanged=useCallback(()=>setCalendarRevision(value=>value+1),[]);
  const [events,setEvents]=useState<AgendaEvent[]>([]),[slots,setSlots]=useState<AgendaSlot[]>([]),[error,setError]=useState(''),[loading,setLoading]=useState(true),[truncated,setTruncated]=useState(false);
  const load=useCallback(async()=>{
   try{
@@ -20,5 +23,5 @@ export default function Dashboard(){
   }catch(e){setError((e as Error).message);throw e;}finally{setLoading(false);}
  },[]);
  useEffect(()=>{void Promise.resolve().then(load).catch(()=>{});},[load]);
- return <>{error&&<p role="alert" className="error">{error} <button className="text-link" onClick={()=>void load().catch(()=>{})}>Riprova</button></p>}{loading?<p role="status">Caricamento calendario…</p>:<Calendar events={events} slots={slots} onSaved={load}/>}<p className="agenda-footnote">Orari di Roma · Email in anteprima · Pagamenti di prova{truncated?' · Sono mostrati i primi 1500 orari e gli ultimi 200 incontri gratuiti.':''}</p></>;
+ return <><CalendarConnections onChanged={calendarChanged}/>{error&&<p role="alert" className="error">{error} <button className="text-link" onClick={()=>void load().catch(()=>{})}>Riprova</button></p>}{loading?<p role="status">Caricamento calendario…</p>:<Calendar events={events} slots={slots} onSaved={load} calendarRevision={calendarRevision}/>}<p className="agenda-footnote">Orari di Roma · Email in anteprima · Pagamenti di prova{truncated?' · Sono mostrati i primi 1500 orari e gli ultimi 200 incontri gratuiti.':''}</p></>;
 }

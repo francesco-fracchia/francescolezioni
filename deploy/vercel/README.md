@@ -30,7 +30,7 @@ Le risorse del Site privato non vengono trasferite né diventano accessibili agg
 
 Dominio scelto: **lezionifrancesco.app**. Impostare `SITE_ORIGIN=https://lezionifrancesco.app` senza slash finale in Production; collegare il dominio nel progetto Vercel e usare i record DNS restituiti dal pannello, senza copiare record generici. La registrazione, l'associazione e il certificato HTTPS non sono ancora verificati. Un aggiornamento della repository non collega il dominio da solo.
 
-Il database Turso dedicato è stato inizializzato con le 27 migrazioni e verificato tramite l'adapter dell'app. L'account tutor indipendente è presente. URL/token sono stati salvati come segreti server esclusivamente in Production su Vercel. Non sono stati importati dati dal Site o dal Mac né creati studenti di prova nel database remoto.
+Il database Turso dedicato è stato inizializzato con le 28 migrazioni e verificato tramite l'adapter dell'app. L'account tutor indipendente è presente. URL/token sono stati salvati come segreti server esclusivamente in Production su Vercel. Non sono stati importati dati dal Site o dal Mac né creati studenti di prova nel database remoto.
 
 L'archivio **francescolezioni-materiali** è stato creato come **Vercel Blob Private**, in Dublino (DUB1), e collegato esclusivamente a Production. Il codice usa OIDC, senza chiave read/write permanente. Il progetto usa il piano Pro; l'archivio è soggetto ai costi a consumo del provider, senza acquisti o cambi di piano eseguiti dagli script.
 
@@ -64,7 +64,7 @@ Il comando chiede due volte la nuova password tutor (15–128 caratteri), poi du
 
 L’anteprima viene aggiornata come Secret soltanto in Production nel progetto `francescolezioni`, verificando prima nome, team e deploy corrente. Avvia il redeploy della versione verificata senza cambiare visibilità, indicizzazione o pagamenti. La nuova password dell’anteprima diventa attiva quando il deploy è Ready. Se l’anteprima fallisce dopo il reset tutor, quest’ultimo resta valido: completare solo l’anteprima con `node scripts/vercel-preview-password.mjs`. Per cambiare solo il tutor: `node --env-file=.env.turso.local scripts/vercel-database.mjs reset-tutor EMAIL_DEL_TUTOR`. Un esito di scrittura incerto non viene ritentato automaticamente. Non esiste un recupero pubblico via email finché il servizio email rimane disattivato.
 
-Le 27 migrazioni esistenti vengono applicate nell'ordine del journal, ciascuna in una transazione insieme alla propria impronta SHA-256. I riavvii riprendono solo dalle migrazioni mancanti. Database con tabelle estranee senza registro della piattaforma, migrazioni sconosciute e file già applicati ma modificati vengono rifiutati. Un SQL non valido annulla anche le modifiche allo schema di quella migrazione. Il comando `check` è in sola lettura, controlla impronte, vincoli e presenza del tutor; non certifica disponibilità, accessi o pagamenti sul deploy. Questi comandi inizializzano un database vuoto e **non importano automaticamente i dati del Site o del Mac**.
+Le 28 migrazioni esistenti vengono applicate nell'ordine del journal, ciascuna in una transazione insieme alla propria impronta SHA-256. I riavvii riprendono solo dalle migrazioni mancanti. Database con tabelle estranee senza registro della piattaforma, migrazioni sconosciute e file già applicati ma modificati vengono rifiutati. Un SQL non valido annulla anche le modifiche allo schema di quella migrazione. Il comando `check` è in sola lettura, controlla impronte, vincoli e presenza del tutor; non certifica disponibilità, accessi o pagamenti sul deploy. Questi comandi inizializzano un database vuoto e **non importano automaticamente i dati del Site o del Mac**.
 
 ### Stripe
 
@@ -114,3 +114,20 @@ Eseguire il controllo TypeScript dopo la build, non contemporaneamente: Next rig
 La copia GitHub esclude `.env*`, `.dev.vars*`, database, backup, materiali privati, `.openai`, `.vercel`, stato locale e `PASSAGGIO_CHAT.md`. Non pubblicare la cronologia privata del workspace. Il dominio può rimanere registrato su Hostinger e puntare ai record indicati da Vercel, dopo la scelta del nome e il collaudo.
 
 Fonti: [Next.js su Vercel](https://vercel.com/docs/frameworks/full-stack/nextjs), [Hobby](https://vercel.com/docs/plans/hobby), [limiti delle funzioni](https://vercel.com/docs/functions/limitations), [API D1](https://developers.cloudflare.com/api/resources/d1/subresources/database/methods/query/), [R2 S3](https://developers.cloudflare.com/r2/get-started/s3/).
+
+
+## Calendari Apple e iCloud (sola lettura)
+
+In **Gestione → Calendario e saldi → Calendari collegati**, il tutor può:
+
+- creare un link ICS riservato alle lezioni e agli incontri dell’app; copiarlo in Calendario su Mac con **File → Nuova iscrizione calendario**, scegliendo iCloud come posizione. L’aggiornamento dipende dalla frequenza impostata in Apple, non è istantaneo;
+- collegare iCloud con email Apple e una **password specifica per l’app**, generata personalmente dal titolare su https://account.apple.com/ (Accesso e sicurezza). Non usare la password principale e non inviarla in chat. Scegliere e salvare fino a 10 calendari;
+- scollegare iCloud, disattivare o rigenerare il link delle lezioni. Le due connessioni sono indipendenti. La revoca impedisce nuove letture: gli appuntamenti già scaricati dai dispositivi possono restare nella loro cache finché non viene rimossa l’iscrizione.
+
+Serve `CALENDAR_CONNECTION_KEY`, segreto server di 32 byte in formato esadecimale (64 caratteri), stabile tra i deploy. Cifra credenziali iCloud e token ICS con AES-256-GCM, separati per account e finalità. Conservare una copia riservata fuori dal repository; cambiarlo senza migrare i dati richiede di ricollegare iCloud e rigenerare il feed. Il 15 ottobre la chiave è stata configurata esclusivamente in Production e la migrazione 0027 è stata applicata a Turso (28 migrazioni totali). Il collegamento Apple reale resta da completare dal titolare.
+
+Il server esegue solo discovery e lettura CalDAV tramite `tsdav`; non crea, modifica o elimina eventi Apple. Accetta soltanto HTTPS sugli host CalDAV iCloud consentiti, inclusi i reindirizzamenti verificati prima di inoltrare credenziali. Gli eventi esterni sono visibili solo al tutor autenticato e non occupano slot, non creano lezioni e non intervengono su saldi o crediti. La schermata aggiorna gli eventi circa ogni tre minuti mentre è visibile, con cache server di due minuti; eventuali errori mostrano l’ultima lettura riuscita. Ricorrenze, eccezioni, eventi spostati/cancellati e giornate intere sono gestiti; oltre i limiti di dimensione/numero la lettura segnala un errore, senza mostrare un risultato parziale come completo.
+
+Il link `/api/calendari/lezioni?token=…` è una credenziale dedicata di sola lettura: non condividerlo. Espone orari, materia e modalità per i 90 giorni precedenti e i 365 successivi; esclude nomi, recapiti, note private e pagamenti degli studenti. Solo GET/HEAD passano il blocco privato, e la route verifica il token prima di leggere dati. La sospensione dell’account o la revoca invalidano il link; il cambio della password tutor non lo revoca. Gli eventi del feed non vengono duplicati se riletti via iCloud.
+
+Collaudo locale: suite automatica di 80 test superata; interfaccia tutor verificata con un database isolato e trasporto CalDAV simulato, usando il client e il parser reali. Connessione, selezione, dettaglio in sola lettura, sovrapposizioni, creazione/revoca del feed verificati. Nessuna credenziale o evento Apple reale impiegato nel collaudo: la prima sottoscrizione effettiva su Mac/iPhone e la prima lettura dell’account del titolare restano da verificare. Site privato, indicizzazione, email e pagamenti reali restano nelle impostazioni precedenti.

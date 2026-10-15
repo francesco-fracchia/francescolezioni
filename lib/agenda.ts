@@ -8,6 +8,13 @@ export function monthDays(date:string){const first=date.slice(0,7)+'-01';const s
 export function shiftMonth(date:string,n:number){const d=civilDate(date);const day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+n);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return d.toISOString().slice(0,10);}
 export function clock(minutes:number){return String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0');}
 export function eventSpan(event:{starts_at:string;ends_at:string},day:string){const startDay=agendaDay(event.starts_at),endDay=agendaDay(event.ends_at);if(day<startDay||day>endDay)return null;const minutes=(iso:string)=>{const [h,m]=agendaTime(iso).split(':').map(Number);return h*60+m;};const start=day===startDay?minutes(event.starts_at):0;const end=day===endDay?minutes(event.ends_at):1440;return end>start?{start,end}:null;}
+// Overlapping appointments occupy separate columns instead of hiding each other.
+export function agendaEventLayout<T extends {starts_at:string;ends_at:string}>(events:T[],day:string){
+ const sorted=events.flatMap(event=>{const span=eventSpan(event,day);return span?[{event,...span,column:0,columns:1}]:[];}).sort((a,b)=>a.start-b.start||b.end-a.end);
+ let group:typeof sorted=[],until=-1;const output:typeof sorted=[];
+ function finish(){if(!group.length)return;const ends:number[]=[];for(const item of group){let column=ends.findIndex(end=>end<=item.start);if(column<0)column=ends.length;ends[column]=item.end;item.column=column;}for(const item of group){item.columns=ends.length;output.push(item);}group=[];}
+ for(const item of sorted){if(item.start>=until){finish();until=-1;}group.push(item);until=Math.max(until,item.end);}finish();return output;
+}
 // Merge only consecutive available free slots. Missing/occupied slots split the band.
 export function freeAvailabilityBands<T extends {id:string;kind:string;starts_at:string;ends_at:string;mode:string;status:string;occupied?:number}>(slots:T[]){
  const bands:{id:string;day:string;starts_at:string;ends_at:string;mode:string;count:number}[]=[];

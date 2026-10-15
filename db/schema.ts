@@ -79,6 +79,9 @@ export const accounts=sqliteTable('accounts',{
 export const accountSessions=sqliteTable('account_sessions',{
  tokenHash:text('token_hash').primaryKey(),accountId:text('account_id').notNull(),authVersion:integer('auth_version').notNull(),expiresAt:integer('expires_at').notNull(),createdAt:integer('created_at').notNull(),
 },t=>[index('idx_account_sessions_account').on(t.accountId)]);
+export const calendarConnections=sqliteTable('calendar_connections',{
+ accountId:text('account_id').primaryKey().references(()=>accounts.id,{onDelete:'cascade'}),encryptedCredentials:text('encrypted_credentials'),selectedCalendars:text('selected_calendars').notNull().default('[]'),feedTokenHash:text('feed_token_hash'),encryptedFeedToken:text('encrypted_feed_token'),version:integer('version').notNull().default(1),updatedAt:text('updated_at').notNull(),
+},t=>[uniqueIndex('idx_calendar_feed_token').on(t.feedTokenHash)]);
 export const accountStudentAccess=sqliteTable('account_student_access',{
  accountId:text('account_id').notNull(),studentId:text('student_id').notNull(),status:text('status').notNull().default('active'),createdAt:text('created_at').notNull(),
 },t=>[primaryKey({columns:[t.accountId,t.studentId]})]);
