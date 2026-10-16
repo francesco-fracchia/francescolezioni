@@ -147,6 +147,25 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     assert.equal(forbiddenPreviewAPI.status, 503);
     assert.equal((await proxy(new Request('https://site.example/studente', {headers:{cookie:'ff_site_preview='+token}}))).kind, 'redirect');
     configured = true;
+    for (const path of ['/?utm_source=test', '/francesco', '/prezzi', '/incontro', '/lezioni/matematica', '/esami/analisi-1']) {
+      const response = await proxy(new Request('https://site.example' + path));
+      assert.equal(response.kind, 'redirect');
+      assert.equal(response.url, 'https://site.example/preparazione');
+      assert.equal(response.status, 307);
+      assert.match(response.headers['Cache-Control'], /no-store/);
+      assert.match(response.headers['X-Robots-Tag'], /noindex/);
+    }
+    for (const path of ['/studente', '/gestione/prenotazioni', '/acquista']) {
+      assert.equal((await proxy(new Request('https://site.example' + path))).url, 'https://site.example/accesso');
+    }
+    for (const path of ['/preparazione', '/anteprima', '/accesso']) {
+      assert.equal((await proxy(new Request('https://site.example' + path))).kind, 'next');
+    }
+    assert.equal((await proxy(new Request('https://site.example/', {headers:{cookie:'ff_site_preview='+token}}))).kind, 'next');
+    assert.equal((await proxy(new Request('https://site.example/api/incontri'))).status, 403);
+    process.env.SITE_VISIBILITY = 'public';
+    assert.equal((await proxy(new Request('https://site.example/'))).kind, 'next');
+    delete process.env.SITE_VISIBILITY;
     const forged = await proxy(new Request('https://site.example/gestione', { headers: { 'oai-authenticated-user-email': 'forged@example.com' } }));
     assert.equal(forged.kind, 'redirect');
     assert.equal(forged.url, 'https://site.example/accesso');

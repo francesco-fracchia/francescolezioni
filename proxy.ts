@@ -41,7 +41,10 @@ export async function proxy(request: NextRequest) {
     const db = runtime === 'vercel' ? getVercelResources().DB : getNodeResources().DB;
     if (await privateAccessAllowed(request, db)) return allowRequest();
     if (new URL(request.url).pathname.startsWith('/api/')) return NextResponse.json({ error: 'Sito privato durante i preparativi. Accedi come tutor.' }, { status: 403, headers });
-    const destination = new URL('/accesso', request.url);
+    // Configuring the data services must not turn the visitor landing page
+    // into a login screen. Keep account and purchase flows behind login.
+    const preparation = runtime === 'vercel' && pathname !== '/acquista' && previewPathAllowed(pathname);
+    const destination = new URL(preparation ? '/preparazione' : '/accesso', request.url);
     return NextResponse.redirect(destination, { status: 307, headers });
   } catch {
     return NextResponse.json({ error: 'Piattaforma temporaneamente non disponibile.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
