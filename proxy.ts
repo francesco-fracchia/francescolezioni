@@ -24,7 +24,7 @@ export async function proxy(request: NextRequest) {
   if (runtime === 'vercel') {
     // The initial deployment is useful without services, but never accepts
     // requests, trusts OAI headers or creates ephemeral local student data.
-    if (['/preparazione', '/anteprima', '/api/anteprima', '/favicon.svg', '/francesco-fracchia-logo.png'].includes(pathname) || pathname.startsWith('/_next/static/')) return allowRequest(['/preparazione', '/anteprima', '/api/anteprima'].includes(pathname));
+    if (['/preparazione', '/anteprima', '/api/anteprima', '/favicon.svg', '/favicon.ico', '/apple-touch-icon.png', '/francesco-fracchia-logo.png'].includes(pathname) || pathname.startsWith('/_next/static/')) return allowRequest(['/preparazione', '/anteprima', '/api/anteprima'].includes(pathname));
     const preview = previewAllowed(request);
     if (preview && previewPathAllowed(pathname)) return allowRequest(false, true);
     if (preview && pathname.startsWith('/api/') && !(pathname==='/api/calendari/lezioni'&&['GET','HEAD'].includes(request.method))) return NextResponse.json({ error: 'Anteprima riservata: le funzioni operative sono disattivate.' }, { status: 503, headers });

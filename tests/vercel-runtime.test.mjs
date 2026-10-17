@@ -136,6 +136,10 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     assert.equal(api.status, 503);
     const staticResponse = await proxy(new Request('https://site.example/_next/static/test.js'));
     assert.equal(staticResponse.kind, 'next');
+    for (const path of ['/favicon.svg?v=ff2', '/favicon.ico?v=ff2', '/apple-touch-icon.png?v=ff2']) {
+      assert.equal((await proxy(new Request('https://site.example' + path))).kind, 'next');
+      assert.equal(await privateAccessAllowed(new Request('https://site.example' + path), null, 'private'), true);
+    }
     process.env.SITE_PREVIEW_PASSWORD = 'fixture-preview-access-not-a-real-credential';
     const token = createPreviewToken();
     const preview = await proxy(new Request('https://site.example/prezzi', {headers:{cookie:'ff_site_preview='+token+'; ff_session='+'a'.repeat(43), 'x-ff-site-preview':'forged'}}));
