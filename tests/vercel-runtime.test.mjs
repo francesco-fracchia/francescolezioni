@@ -125,7 +125,7 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     .replace("from '@/lib/page-recovery'", `from '${recoveryModule}'`);
   const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;
   const { proxy } = await import('data:text/javascript;base64,' + Buffer.from(compiled).toString('base64'));
-  const runtime = process.env.APP_RUNTIME, visibility = process.env.SITE_VISIBILITY, previewPassword = process.env.SITE_PREVIEW_PASSWORD;
+  const runtime = process.env.APP_RUNTIME, visibility = process.env.SITE_VISIBILITY, previewPassword = process.env.SITE_PREVIEW_PASSWORD, deploymentEnvironment = process.env.VERCEL_ENV;
   process.env.APP_RUNTIME = 'vercel';
   delete process.env.SITE_VISIBILITY;
   try {
@@ -172,7 +172,16 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     assert.equal((await proxy(new Request('https://site.example/api/incontri'))).status, 403);
     process.env.SITE_VISIBILITY = 'public';
     assert.equal((await proxy(new Request('https://site.example/'))).kind, 'next');
+    process.env.VERCEL_ENV = 'production';
+    assert.equal((await proxy(new Request('https://site.example/privacy'))).options.headers, undefined);
+    process.env.VERCEL_ENV = 'preview';
+    assert.match((await proxy(new Request('https://site.example/privacy'))).options.headers['X-Robots-Tag'], /noindex/);
+    process.env.VERCEL_ENV = 'production';
+    configured = false;
+    assert.match((await proxy(new Request('https://site.example/privacy'))).options.headers['X-Robots-Tag'], /noindex/);
+    configured = true;
     delete process.env.SITE_VISIBILITY;
+    assert.match((await proxy(new Request('https://site.example/privacy'))).options.headers['X-Robots-Tag'], /noindex/);
     const forged = await proxy(new Request('https://site.example/gestione', { headers: { 'oai-authenticated-user-email': 'forged@example.com' } }));
     assert.equal(forged.kind, 'redirect');
     assert.equal(forged.url, 'https://site.example/accesso');
@@ -186,6 +195,7 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     if (runtime === undefined) delete process.env.APP_RUNTIME; else process.env.APP_RUNTIME = runtime;
     if (visibility === undefined) delete process.env.SITE_VISIBILITY; else process.env.SITE_VISIBILITY = visibility;
     if (previewPassword === undefined) delete process.env.SITE_PREVIEW_PASSWORD; else process.env.SITE_PREVIEW_PASSWORD = previewPassword;
+    if (deploymentEnvironment === undefined) delete process.env.VERCEL_ENV; else process.env.VERCEL_ENV = deploymentEnvironment;
     delete globalThis.__vercelProxy;
   }
 });

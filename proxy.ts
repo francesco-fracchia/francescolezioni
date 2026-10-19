@@ -35,7 +35,10 @@ export async function proxy(request: NextRequest) {
   if (runtime === 'vercel') {
     // The initial deployment is useful without services, but never accepts
     // requests, trusts OAI headers or creates ephemeral local student data.
-    if (['/preparazione', '/privacy', '/anteprima', '/api/anteprima', '/favicon.svg', '/favicon.ico', '/apple-touch-icon.png', '/francesco-fracchia-logo.png', '/francesco-fracchia-logo-256.webp', '/francesco-fracchia-logo-512.webp', '/francesco-fracchia-logo-768.webp'].includes(pathname) || pathname.startsWith('/_next/static/')) return allowRequest(['/preparazione', '/privacy', '/anteprima', '/api/anteprima'].includes(pathname));
+    if (['/preparazione', '/privacy', '/anteprima', '/api/anteprima', '/favicon.svg', '/favicon.ico', '/apple-touch-icon.png', '/francesco-fracchia-logo.png', '/francesco-fracchia-logo-256.webp', '/francesco-fracchia-logo-512.webp', '/francesco-fracchia-logo-768.webp'].includes(pathname) || pathname.startsWith('/_next/static/')) {
+      const publicPrivacy = pathname === '/privacy' && process.env.VERCEL_ENV === 'production' && process.env.SITE_VISIBILITY === 'public' && vercelRuntimeReady();
+      return allowRequest(!publicPrivacy && ['/preparazione', '/privacy', '/anteprima', '/api/anteprima'].includes(pathname));
+    }
     const preview = previewAllowed(request);
     if (preview && previewPathAllowed(pathname)) return allowRequest(false, true);
     if (preview && apiRequest && !(pathname==='/api/calendari/lezioni'&&['GET','HEAD'].includes(request.method))) return NextResponse.json({ error: 'Anteprima riservata: le funzioni operative sono disattivate.' }, { status: 503, headers });
