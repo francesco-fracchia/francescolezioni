@@ -7,6 +7,7 @@ export const publicLessonNavigation = [
  {href:'/lezioni/informatica',label:'Informatica',description:'Programmazione, sistemi e reti'},
  {href:'/esami',label:'Università',description:'Programmi e lezioni per gli esami'},
  {href:'/maturita',label:'Maturità',description:'Ripasso e prove di esercitazione'},
+ {href:'/percorsi',label:'Programmi di ripasso',description:'Argomenti da consultare'},
 ];
 const pages=new Set(['/', '/catalogo','/prezzi','/metodo','/francesco','/lodi','/domande','/privacy','/piattaforma','/percorsi','/esami','/maturita','/contatti','/incontro','/invita','/acquista']);
 export function isPublicPage(path:string){return pages.has(path)||path.startsWith('/esami/')||path.startsWith('/lezioni/');}

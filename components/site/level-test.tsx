@@ -1,6 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useReducer } from "react";
 import { tests } from "@/lib/catalog";
+import {assessmentReducer, initialAssessment, assessmentReview} from '@/lib/assessment';
 import type { Assessment } from "./types";
 export default function Test({
   onFinish,
@@ -13,19 +14,16 @@ export default function Test({
   const title=useRef<HTMLHeadingElement>(null);
   const previousScreen=useRef("intro");
   const [started, setStarted] = useState(false);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [choice, setChoice] = useState<number | null>(null);
+  const [state, dispatch] = useReducer(assessmentReducer, tests[test].length, initialAssessment);
   const [student, setStudent] = useState("");
   const questions = tests[test];
-  const done = answers.length === questions.length;
-  const screen=started?String(answers.length):"intro";
+  const {answers, complete: done, question: index} = state;
+  const choice = answers[index];
+  const screen=started?done?'result':String(index):"intro";
   useEffect(()=>{if(previousScreen.current!==screen){previousScreen.current=screen;title.current?.focus();}},[screen]);
-  const score = Math.round(
-    (answers.filter((a, i) => a === questions[i].correct).length /
-      questions.length) *
-      100,
-  );
-  useEffect(() => { if (done) onFinish({test,score,answers,student}); }, [done, test, score, answers, student, onFinish]);
+  const review = assessmentReview(questions, answers);
+  const {score} = review;
+  useEffect(() => { if (done) onFinish({test,score,answers: answers as number[],student}); }, [done, test, score, answers, student, onFinish]);
   if (!started)
     return (
       <>
@@ -36,7 +34,7 @@ export default function Test({
         </p>
         <label>
           Che cosa stai studiando?
-          <select value={test} onChange={(e) => setTest(e.target.value)}>
+          <select value={test} onChange={(e) => {setTest(e.target.value);dispatch({type:'reset',count:tests[e.target.value].length});}}>
             {Object.keys(tests).map((t) => (
               <option key={t}>{t}</option>
             ))}
@@ -73,20 +71,20 @@ export default function Test({
         <div className="test-score">
           {score}%<span>{test}</span>
         </div>
+        <p className="assessment-counts">Corrette: {review.correct} · Errate: {review.incorrect} · Non lo so: {review.unknown}</p>
         <p>
           Il risultato riguarda soltanto i cinque concetti del test. Non valuta tutta la tua preparazione e non indica quante lezioni ti servono.
         </p>
         <div className="review-list">
-          {questions.map((q, i) => (
+          {review.items.map((q) => (
             <div key={q.topic}>
               <b>
-                {answers[i] === q.correct ? "✓" : "○"} {q.topic}
+                {q.outcome === 'correct' ? "✓" : q.outcome === 'unknown' ? "?" : "○"} {q.topic}
               </b>
               <span>
-                {answers[i] === q.correct
-                  ? "Risposta corretta"
-                  : "Da ripassare"}
+                {q.outcome === 'correct' ? 'Risposta corretta' : q.outcome === 'unknown' ? 'Hai scelto “Non lo so”' : 'Risposta errata'}
               </span>
+              {q.outcome === 'incorrect' && <p>La tua risposta: {q.answer}</p>}
               <p>{q.explanation}</p>
             </div>
           ))}
@@ -101,31 +99,31 @@ export default function Test({
         <button
           className="button dark"
           onClick={() => {
-            onFinish({ test, score, answers, student });
+            onFinish({ test, score, answers: answers as number[], student });
             onRequest();
           }}
         >
           Incontro gratuito
         </button>
+        <button className="button outline" onClick={()=>dispatch({type:'review'})}>Rivedi le risposte</button>
         <button
           className="text-link"
           onClick={() => {
             setStarted(false);
-            setAnswers([]);
-            setChoice(null);
+            dispatch({type:'reset',count:questions.length});
           }}
         >
           Rifai il test
         </button>
       </>
     );
-  const q = questions[answers.length];
+  const q = questions[index];
   return (
     <>
       <div className="eyebrow">
-        {test} / {answers.length + 1} DI {questions.length}
+        {test} / {index + 1} DI {questions.length}
       </div>
-      <progress aria-label="Avanzamento del test" value={answers.length} max={questions.length} />
+      <progress aria-label="Avanzamento del test" value={index} max={questions.length} />
       <h2 ref={title} tabIndex={-1} id="dialog-title">{q.text}</h2>
       <div className="quiz-options">
         {[...q.options, "Non lo so"].map((o, i) => (
@@ -133,24 +131,21 @@ export default function Test({
             key={o}
             className={choice === i ? "selected" : ""}
             aria-pressed={choice === i}
-            onClick={() => setChoice(i)}
+            onClick={() => dispatch({type:'answer',value:i,optionCount:q.options.length})}
           >
             {o}
           </button>
         ))}
       </div>
-      <button
+      <div className="actions assessment-navigation"><button type="button" className="button outline" disabled={index===0} onClick={()=>dispatch({type:'previous'})}>Domanda precedente</button><button
         disabled={choice === null}
         className="button dark"
-        onClick={() => {
-          setAnswers([...answers, choice!]);
-          setChoice(null);
-        }}
+        onClick={() => dispatch({type:'next'})}
       >
-        {answers.length === questions.length - 1
+        {index === questions.length - 1
           ? "Vedi il risultato"
           : "Continua"}
-      </button>
+      </button></div>
       <p className="form-note">
         Alla fine del test trovi le spiegazioni. Non c’è un limite di tempo.
       </p>

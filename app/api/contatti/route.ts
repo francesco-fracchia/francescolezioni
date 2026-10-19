@@ -1,3 +1,4 @@
+import {validationBody} from '@/lib/form-errors.mjs';
 import {validateReferral} from '@/lib/referrals/server';
 import {z} from 'zod';
 import {findRequest,saveRequest} from '@/lib/request-store';
@@ -8,7 +9,7 @@ export async function POST(request:Request){
  if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Origine non consentita.'},{status:403,headers});
  try{
   const raw=await request.text();if(raw.length>5000)return Response.json({error:'Messaggio troppo lungo.'},{status:413,headers});
-  const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)return Response.json({error:'Controlla nome, email, materia e consenso.'},{status:400,headers});
+  const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)return Response.json(validationBody(parsed.error),{status:400,headers});
   const {id,name,email,subject,message,referralCode}=parsed.data;
   const record={id,kind:'contact',name,email,subject,details:JSON.stringify({message,...(referralCode?{referralCode}:{})}),assessment:null};
   // Verify retries by content, without exposing another request's data.
@@ -22,5 +23,5 @@ export async function POST(request:Request){
    const saved=await findRequest(id);if(saved)return same(saved)?Response.json({ok:true,id},{headers}):Response.json({error:'Identificativo già utilizzato. Invia una nuova richiesta.'},{status:409,headers});throw error;
   }
   return Response.json({ok:true,id},{status:201,headers});
- }catch(error){if(error instanceof Error&&error.message.startsWith('Codice invito'))return Response.json({error:error.message},{status:400,headers});if(error instanceof SyntaxError)return Response.json({error:'Dati del messaggio non validi.'},{status:400,headers});return Response.json({error:'Non ho ricevuto la conferma del salvataggio. Il messaggio è ancora qui: riprova.'},{status:503,headers});}
+ }catch(error){if(error instanceof Error&&error.message.startsWith('Codice invito'))return Response.json({error:error.message,fieldErrors:{referralCode:error.message}},{status:400,headers});if(error instanceof SyntaxError)return Response.json({error:'Dati del messaggio non validi.'},{status:400,headers});return Response.json({error:'Non ho ricevuto la conferma del salvataggio. Il messaggio è ancora qui: riprova.'},{status:503,headers});}
 }

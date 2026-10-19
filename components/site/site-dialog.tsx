@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useRef, type RefObject } from "react";
-import { X } from "lucide-react";
+import { type RefObject } from "react";
+import NativeDialog from "@/components/dialogs/native-dialog";
+import GroupRequestForm from "./group-request-form";
 import Privacy from "./privacy";
 import LevelTest from "./level-test";
 import ContactForm from "./contact-form";
@@ -31,64 +32,10 @@ export default function SiteDialog({
   onClose,
   returnFocus,
 }: Props) {
-  const panel = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const overflow = document.body.style.overflow;
-    const target = returnFocus.current;
-    document.body.style.overflow = "hidden";
-    const focusable = () =>
-      Array.from(
-        panel.current?.querySelectorAll<HTMLElement>(
-          'button, input, select, textarea, a[href], [tabindex="0"]',
-        ) || [],
-      ).filter(
-        (element) =>
-          !element.hasAttribute("disabled") &&
-          element.offsetParent !== null &&
-          element.tabIndex >= 0,
-      );
-    focusable()[0]?.focus();
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      if (event.key !== "Tab") return;
-      const elements = focusable();
-      const first = elements[0];
-      const last = elements[elements.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
-      }
-    };
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.body.style.overflow = overflow;
-      document.removeEventListener("keydown", handleKey);
-      target?.focus();
-    };
-  }, [kind, onClose, returnFocus]);
-
-  return (
-    <div
-      className="modal-backdrop"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        ref={panel}
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="dialog-title"
-      >
-        <button className="close" aria-label="Chiudi" onClick={onClose}>
-          <X size={20} />
-        </button>
-        {kind === "privacy" ? (
-          <Privacy />
+  const heading = {privacy:"Informativa privacy",test:"Test orientativo",contact:"Contattami",consultation:"Incontro gratuito",group:"Richiesta di gruppo",lesson:"Richiesta di lezione","pre-registration":"Pre-iscrizione"}[kind];
+  return <NativeDialog key={kind} title={heading} className="modal site-native-dialog" headerClassName="modal-header" closeClassName="close" labelledBy="dialog-title" onClose={onClose} returnFocus={returnFocus}>
+        <div className="modal-body">{kind === "privacy" ? (
+          <Privacy dialog />
         ) : kind === "test" ? (
           <LevelTest
             onFinish={setAssessment}
@@ -98,7 +45,7 @@ export default function SiteDialog({
           <ContactForm subject={subject}/>
         ) : kind === "consultation" ? (
           <ConsultationBooking assessment={assessment} subject={assessment ? assessment.test === "Analisi 1" ? "Analisi 1" : assessment.test === "Programmazione" ? "Programmazione 1" : assessment.test === "Informatica superiori" ? "Informatica" : "Matematica" : subject}/>
-        ) : (
+        ) : kind === "group" ? <GroupRequestForm subject={subject} assessment={assessment} hasCompanion={hasCompanion} groupSize={groupSize}/> : (
           <RequestForm
             key={kind}
             kind={kind}
@@ -107,8 +54,6 @@ export default function SiteDialog({
             hasCompanion={hasCompanion}
             initialGroupSize={groupSize}
           />
-        )}
-      </section>
-    </div>
-  );
+        )}</div>
+  </NativeDialog>;
 }

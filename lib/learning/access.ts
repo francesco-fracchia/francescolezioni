@@ -3,11 +3,11 @@ import { isRequestOwner } from '@/lib/request-admin';
 import { bookingDb } from '@/lib/booking/runtime';
 
 export class LearningError extends Error {
- constructor(message:string,public status=400){super(message);}
+ constructor(message:string,public status=400,public fieldErrors?:Record<string,string>){super(message);}
 }
 export const privateHeaders={'Cache-Control':'private, no-store','Vary':'Cookie'};
 export function failure(error:unknown){
- return Response.json({error:error instanceof LearningError?error.message:'Servizio temporaneamente non disponibile. Riprova.'},{status:error instanceof LearningError?error.status:503,headers:privateHeaders});
+ return Response.json({error:error instanceof LearningError?error.message:'Servizio temporaneamente non disponibile. Riprova.',...(error instanceof LearningError&&error.fieldErrors?{fieldErrors:error.fieldErrors}:{})},{status:error instanceof LearningError?error.status:503,headers:privateHeaders});
 }
 export function sameOrigin(request:Request){if(request.headers.get('origin')!==new URL(request.url).origin)throw new LearningError('Richiesta non consentita.',403);}
 export async function studentScope(request:Request){

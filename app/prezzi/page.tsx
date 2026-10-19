@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import {publicPageMetadata} from '@/lib/site-seo';
 import PricesPage from '@/components/site/prices-page';
 export function generateMetadata(){return publicPageMetadata('/prezzi');}

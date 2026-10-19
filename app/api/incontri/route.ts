@@ -1,3 +1,5 @@
+import {validationBody} from '@/lib/form-errors.mjs';
+import {privacyVersion} from '@/lib/privacy-policy.mjs';
 import {ensureCalendarAvailability} from '@/lib/calendar/availability';
 import {ensureDailyConsultations} from '@/lib/consultation-recurrence';
 import { validateReferral } from '@/lib/referrals/server';
@@ -18,10 +20,10 @@ export async function POST(request:Request){
  if(request.headers.get('origin')!==new URL(request.url).origin)return Response.json({error:'Origine non consentita.'},{status:403,headers});
  try{
   const raw=await request.text();if(raw.length>5000)return Response.json({error:'Richiesta troppo grande.'},{status:413,headers});
-  const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)return Response.json({error:'Controlla i dati richiesti.'},{status:400,headers});
+  const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)return Response.json(validationBody(parsed.error),{status:400,headers});
   const p=parsed.data,db=bookingDb(),hash=createHash('sha256').update(JSON.stringify(p)).digest('hex');
   const existing=await db.prepare('SELECT payload_hash,starts_at,ends_at,mode,status FROM consultations WHERE id=?').bind(p.id).first<{payload_hash:string;starts_at:string;ends_at:string;mode:string;status:string}>();
-  if(existing){if(existing.payload_hash!==hash)return Response.json({error:'Questa prenotazione è già stata inviata con altri dati.'},{status:409,headers});return Response.json({ok:true,appointment:{starts_at:existing.starts_at,ends_at:existing.ends_at,mode:existing.mode,status:existing.status}},{headers});}
+  if(existing){if(existing.payload_hash!==hash)return Response.json({error:'Questa prenotazione è già stata inviata con altri dati.'},{status:409,headers});return Response.json({ok:true,appointment:{starts_at:existing.starts_at,ends_at:existing.ends_at,mode:existing.mode,status:existing.status,calendarToken:existing.payload_hash}},{headers});}
   if(await db.prepare('SELECT id FROM requests WHERE id=?').bind(p.id).first())return Response.json({error:'Identificativo già utilizzato. Riprova la prenotazione.'},{status:409,headers});
   const limited=await limitPublicRequest(request,p.email);if(limited)return limited;
   await validateReferral(p.referralCode||'');
@@ -33,10 +35,10 @@ export async function POST(request:Request){
   const result=await db.batch([
    db.prepare(`INSERT INTO consultations(id,slot_id,request_id,name,email,phone,subject,student_type,message,mode,starts_at,ends_at,payload_hash,created_at)
     SELECT ?,s.id,?,?,?,?,?,?,?,?,s.starts_at,s.ends_at,?,? FROM consultation_slots s WHERE s.id=? AND s.status='available' AND ${consultationRecurrenceEnabledSql} AND s.starts_at>=? AND (s.mode=? OR s.mode='Entrambe') ON CONFLICT(id) DO NOTHING`).bind(p.id,p.id,p.name,p.email,p.phone,p.subject,p.studentType,p.message,p.mode,hash,now,p.slotId,after,p.mode),
-   db.prepare(`INSERT INTO requests(id,kind,name,email,subject,details,assessment,status,created_at,consent_version) SELECT ?,'consultation',?,?,?,json_set(?,'$.appointmentStart',starts_at,'$.appointmentEnd',ends_at),?,'confirmed',?,'2026-10-06' FROM consultations WHERE id=? AND payload_hash=? ON CONFLICT(id) DO NOTHING`).bind(p.id,p.name,p.email,p.subject,details,assessment,now,p.id,hash)
+   db.prepare(`INSERT INTO requests(id,kind,name,email,subject,details,assessment,status,created_at,consent_version) SELECT ?,'consultation',?,?,?,json_set(?,'$.appointmentStart',starts_at,'$.appointmentEnd',ends_at),?,'confirmed',?,? FROM consultations WHERE id=? AND payload_hash=? ON CONFLICT(id) DO NOTHING`).bind(p.id,p.name,p.email,p.subject,details,assessment,now,privacyVersion,p.id,hash)
   ]);
   const booked=await db.prepare('SELECT payload_hash,starts_at,ends_at,mode,status FROM consultations WHERE id=?').bind(p.id).first<{payload_hash:string;starts_at:string;ends_at:string;mode:string;status:string}>();
   if(!booked||booked.payload_hash!==hash)return Response.json({error:'Questo orario non è più disponibile. Scegline un altro.'},{status:409,headers});
-  return Response.json({ok:true,appointment:{starts_at:booked.starts_at,ends_at:booked.ends_at,mode:booked.mode,status:booked.status}},{status:result[0].meta.changes?201:200,headers});
- }catch(e){if(e instanceof Error&&e.message.startsWith('Codice invito'))return Response.json({error:e.message},{status:400,headers});if(e instanceof SyntaxError)return Response.json({error:'Dati non validi.'},{status:400,headers});const conflict=/LESSON_CONFLICT|CONSULTATION_SLOT_CHANGED|ICLOUD_SLOT_UNAVAILABLE|AUTOMATIC_SLOT_CHANGED|UNIQUE constraint/.test(String(e));return Response.json({error:conflict?'Questo orario è già occupato o è stato modificato. Scegline un altro.':'Non siamo riusciti a confermare l’incontro. I dati sono ancora nel modulo: riprova.'},{status:conflict?409:503,headers});}
+  return Response.json({ok:true,appointment:{starts_at:booked.starts_at,ends_at:booked.ends_at,mode:booked.mode,status:booked.status,calendarToken:booked.payload_hash}},{status:result[0].meta.changes?201:200,headers});
+ }catch(e){if(e instanceof Error&&e.message.startsWith('Codice invito'))return Response.json({error:e.message,fieldErrors:{referralCode:e.message}},{status:400,headers});if(e instanceof SyntaxError)return Response.json({error:'Dati non validi.'},{status:400,headers});const conflict=/LESSON_CONFLICT|CONSULTATION_SLOT_CHANGED|ICLOUD_SLOT_UNAVAILABLE|AUTOMATIC_SLOT_CHANGED|UNIQUE constraint/.test(String(e));return Response.json({error:conflict?'Questo orario è già occupato o è stato modificato. Scegline un altro.':'Non siamo riusciti a confermare l’incontro. I dati sono ancora nel modulo: riprova.'},{status:conflict?409:503,headers});}
 }

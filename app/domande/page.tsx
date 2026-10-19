@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import {publicPageMetadata} from '@/lib/site-seo';
 import FAQ from '@/components/site/faq';
 export function generateMetadata(){return publicPageMetadata('/domande');}

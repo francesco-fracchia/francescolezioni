@@ -2,10 +2,16 @@ import type { Metadata } from 'next';
 import {headers} from 'next/headers';
 import {siteOrigin,privateRobots} from '@/lib/site-seo';
 import './globals.css';
-import './public.css';
-import './workspace.css';
+import './form-controls.css';
+import localFont from 'next/font/local';
+const bodyFont = localFont({src:'./fonts/dm-sans-latin-variable.woff2',weight:'400 700',display:'swap',variable:'--font-body'});
+const headingFont = localFont({src:'./fonts/manrope-latin-variable.woff2',weight:'400 800',display:'swap',variable:'--font-heading'});
 import PublicFrame from '@/components/site/public-frame';
+import {FormFeedbackProvider} from '@/components/forms/form-feedback';
+import {FormSafetyProvider} from '@/components/forms/form-safety';
+import {RuntimeStatusProvider} from '@/components/runtime-status';
+import {currentRuntimeStatus} from '@/lib/current-runtime-status';
 // Render per request: the private deployment has no shared Next ISR cache.
 export const dynamic = 'force-dynamic';
 export function generateMetadata():Metadata{return {metadataBase:new URL(siteOrigin()),title:'Francesco Fracchia | Matematica e informatica a Lodi e online',description:'Ripetizioni di matematica e informatica a Lodi e online con Francesco Fracchia.',robots:privateRobots,icons:{icon:[{url:'/favicon.ico?v=ff2',sizes:'16x16 32x32 48x48',type:'image/x-icon'},{url:'/favicon.svg?v=ff2',sizes:'any',type:'image/svg+xml'}],apple:{url:'/apple-touch-icon.png?v=ff2',sizes:'180x180',type:'image/png'}}};}
-export default async function RootLayout({children}:Readonly<{children:React.ReactNode}>){const preview=process.env.APP_RUNTIME==='vercel'&&(await headers()).get('x-ff-site-preview')==='1';return <html lang="it"><body><PublicFrame origin={siteOrigin()} preview={preview}>{children}</PublicFrame></body></html>}
+export default async function RootLayout({children}:Readonly<{children:React.ReactNode}>){const preview=process.env.APP_RUNTIME==='vercel'&&(await headers()).get('x-ff-site-preview')==='1';const status=currentRuntimeStatus();return <html lang="it"><body className={`${bodyFont.variable} ${headingFont.variable}`}><RuntimeStatusProvider value={preview?{...status,paymentMode:'disabled',emailMode:'preview'}:status}><FormFeedbackProvider><FormSafetyProvider><PublicFrame origin={siteOrigin()} preview={preview}>{children}</PublicFrame></FormSafetyProvider></FormFeedbackProvider></RuntimeStatusProvider></body></html>}

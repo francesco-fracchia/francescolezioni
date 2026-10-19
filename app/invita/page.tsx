@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import {publicPageMetadata} from '@/lib/site-seo';
 import ContactForm from '@/components/site/contact-form';
 import ReferralTerms from '@/components/site/referral-terms';

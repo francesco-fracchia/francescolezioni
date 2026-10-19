@@ -1,3 +1,5 @@
+import '@/app/operations.css';
+import '@/app/workspace.css';
 import {isRequestOwner} from '@/lib/request-admin';
 import ManagementShell from '@/components/management/management-shell';
 export const dynamic='force-dynamic';

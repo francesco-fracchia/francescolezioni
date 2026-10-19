@@ -1,7 +1,15 @@
 import { env } from '@/lib/runtime-env';
 import { LearningError,privateHeaders } from './access';
-type StoredMaterial={object_key:string|null;filename:string|null;mime:string|null;kind:string};
+import {readVideoAccessibility} from './video-accessibility';
+type StoredMaterial={object_key:string|null;filename:string|null;mime:string|null;kind:string;body?:string};
 export async function serveMaterialFile(request:Request,material:StoredMaterial){
+  const format=new URL(request.url).searchParams.get('formato');
+  if(format==='sottotitoli'||format==='trascrizione'){
+    const access=material.kind==='video'?readVideoAccessibility(material.body||''):null;
+    const text=format==='sottotitoli'?access?.captions:access?.transcript;
+    if(!text)throw new LearningError('Testo del video non disponibile.',404);
+    return new Response(text+'\n',{headers:{...privateHeaders,'Content-Type':format==='sottotitoli'?'text/vtt; charset=utf-8':'text/plain; charset=utf-8','X-Content-Type-Options':'nosniff',...(format==='trascrizione'?{'Content-Disposition':"attachment; filename*=UTF-8''trascrizione.txt"}:{})}});
+  }
   if(!material.object_key)throw new LearningError('File non disponibile.',404);
   if(!env.BUCKET)throw new LearningError('Archivio temporaneamente non disponibile.',503);
   let object;

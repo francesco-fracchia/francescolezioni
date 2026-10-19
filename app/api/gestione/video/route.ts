@@ -1,3 +1,4 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import {z} from 'zod';
 import {isRequestOwner} from '@/lib/request-admin';
 import {bookingDb} from '@/lib/booking/runtime';
@@ -9,7 +10,7 @@ export async function PATCH(request:Request){try{
  if(!await isRequestOwner())throw new LearningError('Accesso non consentito.',403);
  sameOrigin(request);const raw=await request.text();if(raw.length>600)throw new LearningError('Dati troppo grandi.',413);
  const parsed=z.object({id:z.string().uuid(),entity:z.enum(['lesson','booking']),version:z.number().int().min(0),url:z.string().max(250)}).safeParse(JSON.parse(raw));
- if(!parsed.success)throw new LearningError('Controlla il collegamento e ricarica l’appuntamento.');
+ if(!parsed.success)throw new LearningError('Controlla il collegamento e ricarica l’appuntamento.',400,issueFieldErrors(parsed.error.issues));
  const p=parsed.data,url=meetUrl(p.url);if(p.url.trim()&&!url)throw new LearningError('Incolla il link Google Meet completo, per esempio https://meet.google.com/abc-defg-hij.');
  const db=bookingDb(),now=new Date().toISOString();
  const query=p.entity==='lesson'?'SELECT id,version,status,mode,ends_at,video_url FROM scheduled_lessons WHERE id=?':'SELECT b.id,b.version,b.status,b.video_url,s.mode,s.ends_at FROM bookings b JOIN booking_slots s ON s.id=b.slot_id WHERE b.id=?';

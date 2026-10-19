@@ -1,25 +1,17 @@
-# Francesco · Lezioni
+# Lezioni Francesco
 
-Piattaforma per lezioni di matematica e informatica, in presenza a Lodi e online.
+Sito pubblico e piattaforma riservata per lezioni di matematica e informatica.
 
-Next.js App Router, React, TypeScript. Il codice comprende sito pubblico, account tutor/studenti/genitori, calendario, incontri gratuiti, corsi e materiali protetti, compiti, pacchetti e bonus inviti. Email e pagamenti reali restano disattivati.
+## Tecnologie
 
-## Hosting
+Next.js App Router, React e TypeScript. Su Vercel, i dati applicativi risiedono in Turso e i materiali in un archivio Blob privato. Le aree tutor e studente richiedono autenticazione; il checkout usa Stripe quando configurato e abilitato.
 
-- **Sites/Cloudflare**: runtime con binding D1 e R2 e migrazioni in `drizzle`. Il Site attuale rimane privato.
-- **Hostinger/VPS**: runtime Node indipendente, SQLite e materiali su disco privato persistente. Istruzioni in `deploy/hostinger/README.md`.
-- **Vercel**: build Next.js compatibile, adapter remoto per Turso o D1 e Blob Private o R2, caricamenti diretti autorizzati e pagina di preparazione. L’ambiente resta privato; il collaudo remoto e i pagamenti sono ancora da completare: vedere `deploy/vercel/README.md`.
+## Sviluppo e verifica
 
-Questa repository contiene sorgenti e test, senza credenziali, dati degli studenti, materiali caricati o cronologia privata del workspace. Non contiene un database inizializzato né account amministrativi predefiniti.
+Usare Node.js 22 o 24 e installare le dipendenze con `npm ci`. `npm test` esegue le verifiche automatiche; `npm run build:vercel` prepara la versione per Vercel.
 
-## Verifica locale
+Le credenziali vanno configurate nell’ambiente del servizio e non devono essere aggiunte al repository. Le configurazioni di prova e i database locali restano esclusi dal controllo versione.
 
-Node 22.16+ della serie 22 oppure Node 24.
+Il sito pubblico richiede `SITE_VISIBILITY=public` e `SITE_ORIGIN=https://lezionifrancesco.app`. L’indicizzazione si abilita separatamente con `PUBLIC_SITE_INDEXING=true`; le aree riservate restano escluse.
 
-```sh
-npm ci
-npm test
-npx tsc --noEmit
-```
-
-Per le istruzioni di esecuzione e le variabili necessarie consultare la guida del provider scelto. Non inserire password o chiavi API nella repository. Un nuovo ambiente non contiene automaticamente gli account e le prenotazioni del Site esistente.
+`npm run check:release` verifica in sola lettura accesso anonimo, metadati, robots, sitemap e protezione degli endpoint privati sul dominio definitivo. Il controllo non invia moduli, pagamenti o notifiche.

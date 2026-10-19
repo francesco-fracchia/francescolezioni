@@ -15,7 +15,8 @@ export async function GET(request:Request){try{
   if(!owned)throw new LearningError('Acquisto non disponibile.',404);
   try{await reconcilePurchase(purchase);}catch{warning='La verifica del pagamento non è riuscita. Riprova: non effettuare un secondo acquisto per lo stesso saldo.';}
  }
- return Response.json({students:scope.students,studentId:id,packages:await packagesFor(id),ready:paymentConfig().ready&&!scope.preview,live:paymentConfig().live,preview:scope.preview,warning},{headers:privateHeaders});
+ const config=paymentConfig();
+ return Response.json({students:scope.students,studentId:id,packages:await packagesFor(id),ready:config.ready&&!scope.preview,live:config.live,checkoutMode:config.ready?(config.live?'live':'test'):'disabled',preview:scope.preview,warning},{headers:privateHeaders});
  }catch(e){return failure(e);}}
 export async function POST(request:Request){try{
  sameOrigin(request);const scope=await studentScope(request);if(scope.preview)throw new LearningError('L’anteprima è in sola lettura.',403);

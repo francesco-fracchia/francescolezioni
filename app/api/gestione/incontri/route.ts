@@ -1,3 +1,4 @@
+import {validationBody} from '@/lib/form-errors.mjs';
 import {ensureCalendarAvailability} from '@/lib/calendar/availability';
 import {ensureDailyConsultations,dailyConsultationRule} from '@/lib/consultation-recurrence';
 import { z } from 'zod';
@@ -18,7 +19,7 @@ export async function POST(request:Request){if(!await isRequestOwner())return ne
  const statements=slots.map((s,i)=>db.prepare(`INSERT INTO consultation_slots(id,starts_at,ends_at,mode,created_at) VALUES(?,?,?,?,?) ON CONFLICT DO NOTHING`).bind(`${p.id.slice(0,24)}${String(i).padStart(12,'0')}`,s.starts_at,s.ends_at,p.mode,now));
  // Public slot IDs are UUIDs, deterministic per batch to make retries safe.
  const results=await db.batch(statements);return Response.json({ok:true,created:results.reduce((n,r)=>n+r.meta.changes,0),count:slots.length},{status:201,headers});
-}catch{return Response.json({error:'Scegli una fascia futura di almeno 20 minuti, massimo 12 ore, con almeno 24 ore di anticipo ed entro un anno.'},{status:400,headers});}}
+}catch(error){if(error instanceof z.ZodError)return Response.json(validationBody(error),{status:400,headers});return error instanceof Error&&error.message==='INVALID_WINDOW'?Response.json({error:'Controlla la fascia oraria indicata.',fieldErrors:{from:'Scegli una fascia futura di almeno 20 minuti e massimo 12 ore, con almeno 24 ore di anticipo ed entro un anno.',to:'L’orario finale deve seguire quello iniziale e consentire almeno un incontro.'}},{status:400,headers}):Response.json({error:'Non ho ricevuto la conferma del salvataggio. Riprova con gli stessi orari.'},{status:503,headers});}}
 export async function PATCH(request:Request){if(!await isRequestOwner())return new Response(null,{status:403});if(request.headers.get('origin')!==new URL(request.url).origin)return new Response(null,{status:403});try{
  const raw=await request.text();if(raw.length>700)return new Response(null,{status:413});
  const p=z.object({id:z.string().uuid(),action:z.enum(['block','unblock','cancel']),version:z.number().int().min(0).optional()}).parse(JSON.parse(raw));const db=bookingDb();
@@ -30,4 +31,4 @@ export async function PATCH(request:Request){if(!await isRequestOwner())return n
  }
  const result=await db.prepare(`UPDATE consultation_slots SET status=? WHERE id=? AND status=? AND starts_at>? AND NOT EXISTS(SELECT 1 FROM consultations WHERE slot_id=consultation_slots.id AND status='confirmed')`).bind(p.action==='block'?'blocked':'available',p.id,p.action==='block'?'available':'blocked',new Date().toISOString()).run();
  return result.meta.changes?Response.json({ok:true},{headers}):Response.json({error:'Questo orario è già prenotato o è cambiato. Ricarica la pagina.'},{status:409,headers});
-}catch{return Response.json({error:'Aggiornamento non riuscito.'},{status:503,headers});}}
+}catch(error){if(error instanceof z.ZodError)return Response.json(validationBody(error),{status:400,headers});return Response.json({error:'Aggiornamento non riuscito.'},{status:503,headers});}}

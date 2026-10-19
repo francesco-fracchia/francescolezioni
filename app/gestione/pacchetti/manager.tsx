@@ -1,4 +1,5 @@
 'use client';
+import {safeFormMessage} from '@/components/forms/form-feedback';
 import { useEffect,useRef,useState,type FormEvent } from 'react';
 import type { PackageData } from '@/lib/packages/types';
 type Student={id:string;name:string;status:string};
@@ -9,10 +10,10 @@ async function read<T>(url:string,signal:AbortSignal){const r=await fetch(url,{c
 export default function Manager(){
  const [students,setStudents]=useState<Student[]>([]),[student,setStudent]=useState(''),[balance,setBalance]=useState<Balance|null>(null),[method,setMethod]=useState('cash'),[pkg,setPkg]=useState(''),[payment,setPayment]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0),[truncated,setTruncated]=useState(false);
  const createAttempt=useRef<{body:string;id:string}|null>(null),useAttempt=useRef<{body:string;id:string}|null>(null);
- useEffect(()=>{const c=new AbortController();read<{students:Student[];truncated:boolean}>('/api/gestione/pacchetti',c.signal).then(d=>{setStudents(d.students);setTruncated(d.truncated);setStudent(current=>current||new URLSearchParams(window.location.search).get('studente')||'');}).catch(e=>{if(!c.signal.aborted)setError(e.message);});return()=>c.abort();},[revision]);
- useEffect(()=>{if(!student)return;const c=new AbortController();read<Omit<Balance,'studentId'>>('/api/gestione/pacchetti?studente='+student,c.signal).then(d=>setBalance({...d,studentId:student})).catch(e=>{if(!c.signal.aborted)setError(e.message);});return()=>c.abort();},[student,revision]);
+ useEffect(()=>{const c=new AbortController();read<{students:Student[];truncated:boolean}>('/api/gestione/pacchetti',c.signal).then(d=>{setStudents(d.students);setTruncated(d.truncated);setStudent(current=>current||new URLSearchParams(window.location.search).get('studente')||'');}).catch(e=>{if(!c.signal.aborted)setError(safeFormMessage(e));});return()=>c.abort();},[revision]);
+ useEffect(()=>{if(!student)return;const c=new AbortController();read<Omit<Balance,'studentId'>>('/api/gestione/pacchetti?studente='+student,c.signal).then(d=>setBalance({...d,studentId:student})).catch(e=>{if(!c.signal.aborted)setError(safeFormMessage(e));});return()=>c.abort();},[student,revision]);
  function attempt(ref:typeof createAttempt,body:string){if(ref.current?.body!==body)ref.current={body,id:crypto.randomUUID()};return ref.current.id;}
- async function command(body:unknown){setBusy(true);setError('');setNotice('');try{const r=await fetch('/api/gestione/pacchetti',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),d=await r.json() as {error?:string};if(!r.ok)throw Error(d.error||'Operazione non confermata: riprova con gli stessi dati.');setNotice('Operazione registrata.');setRevision(v=>v+1);return true;}catch(e){setError((e as Error).message);return false;}finally{setBusy(false);}}
+ async function command(body:unknown){setBusy(true);setError('');setNotice('');try{const r=await fetch('/api/gestione/pacchetti',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),d=await r.json() as {error?:string};if(!r.ok)throw Error(d.error||'Operazione non confermata: riprova con gli stessi dati.');setNotice('Operazione registrata.');setRevision(v=>v+1);return true;}catch(e){setError(safeFormMessage(e));return false;}finally{setBusy(false);}}
  async function create(e:FormEvent){e.preventDefault();const body=JSON.stringify({studentId:student,method});if(await command({kind:'create',id:attempt(createAttempt,body),...JSON.parse(body)}))createAttempt.current=null;}
  async function cover(e:FormEvent){e.preventDefault();const body=JSON.stringify({packageId:pkg,paymentId:payment});if(await command({kind:'cover',id:attempt(useAttempt,body),...JSON.parse(body)})){useAttempt.current=null;setPkg('');setPayment('');}}
  const [now]=useState(()=>Date.now());

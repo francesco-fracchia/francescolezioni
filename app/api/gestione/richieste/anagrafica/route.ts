@@ -1,3 +1,4 @@
+import {validationBody} from '@/lib/form-errors.mjs';
 import { isRequestOwner } from '@/lib/request-admin';
 import { bookingDb } from '@/lib/booking/runtime';
 import { requestDetails,detailText,type RequestRow } from '@/lib/requests/types';
@@ -13,7 +14,7 @@ export async function POST(request:Request) {
  if(request.headers.get('origin')!==new URL(request.url).origin)return new Response(null,{status:403});
  try {
   const raw=await request.text();if(raw.length>1000)return new Response(null,{status:413});
-  const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)return Response.json({error:'Controlla il collegamento alla scheda.'},{status:400});
+  const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)return Response.json(validationBody(parsed.error),{status:400});
   const p=parsed.data;const db=bookingDb();
   const row=await db.prepare('SELECT * FROM requests WHERE id=?').bind(p.id).first<RequestRow>();
   if(!row)return new Response(null,{status:404});

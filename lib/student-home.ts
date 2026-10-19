@@ -8,6 +8,17 @@ export function activeAppointment(appointment: StudentAppointment, now: number) 
     appointment.status === (appointment.kind === 'lesson' ? 'planned' : 'confirmed');
 }
 
+export function visibleStudentAppointment(appointment:StudentAppointment,now:number){
+ const start=Date.parse(appointment.starts_at),end=Date.parse(appointment.ends_at);
+ return Number.isFinite(start)&&Number.isFinite(end)&&end>start&&end>now&&
+  (appointment.kind==='lesson'?appointment.status==='planned':['pending','awaiting_payment','confirmed','payment_review'].includes(appointment.status));
+}
+export function studentAppointmentLabel(appointment:StudentAppointment,now:number){
+ if(!visibleStudentAppointment(appointment,now))return null;
+ if(activeAppointment(appointment,now)&&Date.parse(appointment.starts_at)<=now)return 'In corso';
+ return appointment.status==='planned'||appointment.status==='confirmed'?'In programma':null;
+}
+
 export function nextAppointment(data: StudentData, now = Date.now()) {
   if (data.nextAppointment !== undefined) return data.nextAppointment && activeAppointment(data.nextAppointment, now) ? data.nextAppointment : null;
   return [...data.lessons.map(l => ({ ...l, kind: 'lesson' as const })), ...data.bookings.map(b => ({ ...b, kind: 'booking' as const }))]

@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import {publicPageMetadata} from '@/lib/site-seo';
 import {examContactMessage} from '@/lib/exam-preparation';
 import ContactForm from '@/components/site/contact-form';

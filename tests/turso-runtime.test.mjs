@@ -103,7 +103,7 @@ test('Public booking API with real libSQL commits one booking and request, retur
   globalThis.__tursoBooking = db;
   async function compile(filename, replace = source => source) {
     const source = replace(await readFile(path.resolve(filename), 'utf8')).replace(/import \{ensureCalendarAvailability\} from '@\/lib\/calendar\/availability';/g,'const ensureCalendarAvailability=async()=>{};').replace(/from ['"]@\/lib\/calendar\/([^'"]+\.mjs)['"]/g,(_,name)=>'from '+JSON.stringify(new URL('../lib/calendar/'+name,import.meta.url).href));
-    return 'data:text/javascript;base64,' + Buffer.from(ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText).toString('base64');
+    return 'data:text/javascript;base64,' + Buffer.from(ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText.replace(/(['"])@\/lib\/form-errors\.mjs\1/g,JSON.stringify(new URL('../lib/form-errors.mjs',import.meta.url).href))).toString('base64');
   }
   try {
     const plan = await compile('lib/lesson-plan.ts');
@@ -114,7 +114,7 @@ test('Public booking API with real libSQL commits one booking and request, retur
       .replace("from '@/lib/consultations'", 'from ' + JSON.stringify(consultations))
       .replace("from '@/lib/consultation-recurrence'", 'from ' + JSON.stringify(recurrence))
       .replace("from '@/lib/catalog'", 'from ' + JSON.stringify(catalog))
-      .replace("from 'zod'", 'from ' + JSON.stringify(import.meta.resolve('zod')))
+      .replace("from '@/lib/privacy-policy.mjs'",'from '+JSON.stringify(new URL('../lib/privacy-policy.mjs',import.meta.url).href)).replace("from 'zod'", 'from ' + JSON.stringify(import.meta.resolve('zod')))
       .replace("import { bookingDb } from '@/lib/booking/runtime';", 'const bookingDb=()=>globalThis.__tursoBooking;')
       .replace("import { validateReferral } from '@/lib/referrals/server';", 'const validateReferral=async()=>{};')
       .replace("import {limitPublicRequest} from '@/lib/public-request-limit';", 'const limitPublicRequest=async()=>null;')));

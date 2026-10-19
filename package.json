@@ -15,6 +15,7 @@
     "build:sites": "node scripts/build-sites-next.mjs",
     "preview:sites": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config wrangler.jsonc --local --persist-to .wrangler/state --ip 127.0.0.1 --port 5174 --inspector-port 0",
     "test": "node --test tests/*.test.mjs",
+    "check:release": "node scripts/check-release.mjs",
     "dev:hostinger": "node scripts/run-hostinger.mjs dev",
     "build:hostinger": "node scripts/run-hostinger.mjs build",
     "start:hostinger": "node scripts/run-hostinger.mjs start",

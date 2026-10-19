@@ -10,7 +10,7 @@ export function publicGraph(path:string,origin:string){
  const business=origin+'/#lezioni',person=origin+'/#francesco',website=origin+'/#sito',url=origin+path;
  const graph:Record<string,unknown>[]=[
   {'@type':'Person','@id':person,name:'Francesco Fracchia',url:origin+'/francesco',jobTitle:'Tutor di matematica e informatica'},
-  {'@type':'EducationalOrganization','@id':business,name:'Francesco Fracchia · Lezioni private',url:origin,founder:{'@id':person},telephone:publicBusiness.phone,vatID:'IT'+publicBusiness.vatNumber,address:{'@type':'PostalAddress',streetAddress:studio.address,addressLocality:studio.city,addressCountry:'IT'},description:'Ripetizioni di matematica e informatica per superiori e università, a Lodi e online. Sede confermata, apertura in preparazione.'},
+  {'@type':'EducationalOrganization','@id':business,name:'Francesco Fracchia · Lezioni private',url:origin,founder:{'@id':person},telephone:publicBusiness.phone,vatID:'IT'+publicBusiness.vatNumber,address:{'@type':'PostalAddress',streetAddress:studio.address,addressLocality:studio.city,addressCountry:'IT'},description:'Ripetizioni di matematica e informatica per superiori e università, a Lodi e online, su appuntamento.'},
   {'@type':'WebSite','@id':website,url:origin,name:'Francesco Fracchia · Lezioni private',inLanguage:'it-IT',publisher:{'@id':business}},
   {'@type':path==='/domande'?'FAQPage':'WebPage','@id':url+'#pagina',url,name:page.title,description:page.description,inLanguage:'it-IT',isPartOf:{'@id':website},about:{'@id':business},...(path==='/domande'?{mainEntity:faqEntries.map(([name,text])=>({'@type':'Question',name,acceptedAnswer:{'@type':'Answer',text}}))}:{})},
  ];
