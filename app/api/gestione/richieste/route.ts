@@ -1,3 +1,4 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import { bookingDb } from '@/lib/booking/runtime';
 import { isRequestOwner } from '@/lib/request-admin';
 import {z} from 'zod';
@@ -20,7 +21,7 @@ export async function GET(request:Request){try{
 export async function PATCH(request:Request){try{
  if(!await isRequestOwner())throw new LearningError('Accesso non consentito.',403);sameOrigin(request);
  const raw=await request.text();if(raw.length>1000)throw new LearningError('Richiesta troppo grande.',413);
- const p=z.object({id:z.string().uuid(),status:z.enum(['new','contacted','matching','confirmed','closed'])}).safeParse(JSON.parse(raw));if(!p.success)throw new LearningError('Stato non valido.');
+ const p=z.object({id:z.string().uuid(),status:z.enum(['new','contacted','matching','confirmed','closed'])}).safeParse(JSON.parse(raw));if(!p.success)throw new LearningError('Stato non valido.',400,issueFieldErrors(p.error.issues));
  const r=await bookingDb().prepare('UPDATE requests SET status=? WHERE id=?').bind(p.data.status,p.data.id).run();if(!r.meta.changes)throw new LearningError('Richiesta non trovata.',404);
  return Response.json({ok:true},{headers:privateHeaders});
  }catch(e){return failure(e instanceof SyntaxError?new LearningError('Dati non validi.'):e);}}

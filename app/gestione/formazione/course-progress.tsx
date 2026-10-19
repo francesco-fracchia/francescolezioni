@@ -1,4 +1,5 @@
 'use client';
+import {safeFormMessage} from '@/components/forms/form-feedback';
 import { useEffect,useState } from 'react';
 type Progress={course:{id:string;title:string;status:string};materials:{id:string;title:string;module_title:string}[];students:{id:string;name:string;student_status:string;enrollment_status:string;completed:{material_id:string;completed_at:string}[];last_completed_at:string|null}[]};
 const date=(s:string)=>new Intl.DateTimeFormat('it-IT',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Rome'}).format(new Date(s));
@@ -7,7 +8,7 @@ export default function CourseProgress({courseId}:{courseId:string}){
   async function load(){setLoading(true);setError('');try{
     const r=await fetch('/api/gestione/formazione/avanzamento?corso='+courseId,{cache:'no-store'});const d=await r.json() as Progress&{error?:string};
     if(!r.ok)throw Error(d.error||'Avanzamento non disponibile.');setData(d);
-  }catch(e){setError((e as Error).message);}finally{setLoading(false);}}
+  }catch(e){setError(safeFormMessage(e));}finally{setLoading(false);}}
   useEffect(()=>{void load();},[courseId]);
   return <section className="learning-course-progress"><div className="learning-toolbar"><h3>Avanzamento degli iscritti</h3><button className="button outline" disabled={loading} onClick={load}>{loading?'Caricamento…':'Aggiorna avanzamento'}</button></div>{error&&<p className="error" role="alert">{error}</p>}
     {data&&<><p>Lo studente o il referente segna i materiali completati. Il conteggio include soltanto quelli disponibili, senza bozze e materiali archiviati.</p>{data.course.status!=='published'&&<p>Il corso è in bozza o archiviato: gli iscritti non possono accedere ai materiali.</p>}

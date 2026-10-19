@@ -1,3 +1,5 @@
+import '@/app/operations.css';
+import '@/app/workspace.css';
 import ManagementShell from '@/components/management/management-shell';
 import StudentShell from '@/components/site/student-shell';
 import {isRequestOwner} from '@/lib/request-admin';

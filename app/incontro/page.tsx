@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import {publicPageMetadata} from '@/lib/site-seo';
 import {publicSlotSelection} from '@/lib/public-slot-selection';
 import ConsultationBooking from '@/components/site/consultation-booking';

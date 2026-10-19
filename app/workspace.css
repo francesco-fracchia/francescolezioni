@@ -19,13 +19,13 @@
 .student-brand img{display:block;width:155px;height:auto}.student-area-label{display:flex;align-items:center;gap:8px;font-weight:700}.student-header>div{margin-left:auto;font-size:14px}.student-header a{text-decoration:none}.student-header>div a:hover{text-decoration:underline}
 .student-shell main{max-width:1180px;padding-top:32px}.student-shell main>h1{font-size:32px;letter-spacing:-.035em;margin-bottom:24px}
 .student-preview-banner{padding:14px 30px;background:#fff4dd;border-bottom:1px solid #ead5a6;display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:#624514}.student-preview-banner span{color:#735a2e}.student-preview-banner a{margin-left:auto;color:#624514}
-.student-preview-picker{max-width:680px;border:1px solid #dce2ed;background:white;padding:24px;border-radius:14px}.student-preview-picker h2{font-size:24px}.student-preview-picker label{display:block;margin:20px 0}.student-preview-picker select{display:block;width:100%;margin-top:8px;padding:12px;border:1px solid #dce2ed;border-radius:8px;font:inherit;background:#fff;color:#0f2d5b}
+.student-preview-picker{max-width:680px;border:1px solid #dce2ed;background:white;padding:24px;border-radius:14px}.student-preview-picker h2{font-size:24px}.student-preview-picker label{display:block;margin:20px 0}.student-preview-picker select{display:block;width:100%;margin-top:8px;padding:12px;border:1px solid var(--field-border);border-radius:8px;font:inherit;background:#fff;color:#0f2d5b}
 .student-shell .learning-toolbar>.student-tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid #dce2ed;width:100%;margin:12px 0 16px;justify-content:flex-start}.student-shell .student-tabs .button{border:0;border-radius:0;background:transparent;box-shadow:none;padding:12px 14px;color:#647084;font-size:14px;margin:0;border-bottom:3px solid transparent;transform:none}.student-shell .student-tabs .button[aria-pressed=true]{color:#0f2d5b;border-bottom-color:#2462c5;background:#f0f5ff}.student-tabs .button:hover{color:#0f2d5b;background:#f5f7fb}
 .consultation-picker{display:grid;grid-template-columns:minmax(250px,330px) minmax(0,1fr);gap:28px;align-items:start}.consultation-day-times h3{font-family:inherit;font-size:18px;font-weight:700;letter-spacing:0;line-height:1.4;text-transform:capitalize;margin:0 0 12px}
 .consultation-time-note{font-size:14px;color:#647084;margin:0 0 18px;line-height:1.5}.consultation-bands{display:flex;gap:6px;border-bottom:1px solid #dce2ed;padding-bottom:12px;margin-bottom:16px;flex-wrap:wrap}
 .consultation-bands button{display:flex;align-items:center;gap:6px;border:1px solid #dce2ed;border-radius:8px;background:#fff;padding:9px 10px;color:#0f2d5b;font:inherit;font-size:14px;cursor:pointer}.consultation-bands button span{font-size:12px;opacity:.75}.consultation-bands button[aria-pressed=true]{border-color:#0f2d5b;background:#0f2d5b;color:white}.consultation-bands button:hover{box-shadow:0 2px 8px #0f2d5b18}
 .consultation-time-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px}.consultation-time-chips label{position:relative;display:flex!important;align-items:center;justify-content:center;min-height:48px;padding:10px 8px!important;margin:0!important;border:1px solid #cdd9eb;border-radius:9px;background:white;font-size:16px;font-weight:600;cursor:pointer;text-align:center}.consultation-time-chips label.selected{background:#eaf1ff;border-color:#2462c5;color:#153f91;box-shadow:inset 0 0 0 1px #2462c5}.consultation-time-chips label:hover{border-color:#2462c5;background:#f5f8ff}
-.consultation-time-chips input[type=radio]{position:absolute;width:1px;height:1px;opacity:0;padding:0;margin:0}.consultation-time-chips label:has(input:focus-visible){outline:3px solid #4174cb;outline-offset:3px}.consultation-time-chips small{display:block;font-size:12px;font-weight:400}.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.consultation-time-chips input[type=radio]{position:absolute;width:1px;height:1px;opacity:0;padding:0;margin:0}.consultation-time-chips label:has(input:focus-visible){outline:3px solid #4174cb;outline-offset:3px}.consultation-time-chips small{display:block;font-size:12px;font-weight:400}
 .modal .consultation-picker{grid-template-columns:1fr}.modal .consultation-time-chips{grid-template-columns:repeat(4,minmax(0,1fr))}
 .agenda-free-band{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:3px;position:absolute;left:4px;right:4px;background:#edf6ff;border:1px dashed #8eb6dc;border-left:3px solid #75a4d0;border-radius:7px;text-align:left;padding:8px;color:#335c83!important;font-size:12px!important;overflow:hidden;z-index:2;cursor:pointer}.agenda-free-band strong,.agenda-free-band span{display:block;line-height:1.45}.agenda-free-band:hover{background:#dfedfc}.agenda-free-band span{font-size:12px}.agenda-day-column .agenda-position{z-index:5}
 .agenda-free-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0}.agenda-free-list button{padding:10px 8px;background:#f1f7ff;color:#0f2d5b;border:1px solid #cdd9eb;border-radius:8px;font-size:14px;cursor:pointer;min-height:54px}.agenda-free-list button b,.agenda-free-list button span{display:block}.agenda-free-list button span{font-size:12px;color:#647084}.agenda-free-list button.unavailable{background:#f5f5f5;border-style:dashed}
@@ -86,3 +86,49 @@
 .agenda-availability-band{display:block;line-height:1.35}.agenda-availability-band>span{position:static;text-align:left}.agenda-availability-band{font-size:10px!important}
 
 .agenda-availability-band,.ff-agenda .agenda-event{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}.ff-agenda .agenda-event>b,.ff-agenda .agenda-event>span{max-width:100%;flex-shrink:0}
+
+.cancellation-outcome{margin:14px 0;padding:14px 16px;border-left:3px solid #537ec1;background:#f4f7fc;border-radius:0 8px 8px 0;overflow-wrap:anywhere}.cancellation-outcome p{font-size:14px;line-height:1.6;margin:6px 0}.cancellation-outcome p:first-child{margin-top:0}.cancellation-outcome p:last-child{margin-bottom:0}.student-packages li{margin:18px 0}.student-packages .reading-disclosure p{max-width:760px}
+.cancellation-outcome details{margin-top:8px}.cancellation-outcome summary{font-size:13px;font-weight:500;color:#285d9f;cursor:pointer;padding:4px 0}.cancellation-outcome summary:focus-visible{outline:2px solid #598ae1;outline-offset:3px}
+.cancellation-outcome strong{color:#14325e}.lesson-payment-price small{display:block;font-size:14px;font-weight:400;margin-top:6px}
+
+/* R34: a single Tab entry for empty time cells; visible, sized keyboard targets. */
+.ff-agenda .agenda-empty{min-height:24px;min-width:24px;scroll-margin-top:84px}
+.ff-agenda .agenda-empty:focus-visible{z-index:5;background:#dfebff;outline:3px solid #245fc0;outline-offset:-3px}
+.agenda-keyboard-help{margin:0;padding:8px 14px;font-size:12px;color:#52647c;background:#f8fbfd;border-bottom:1px solid #e0e6ef}
+.ff-agenda .agenda-month-create{width:28px;height:28px;opacity:.7}
+.ff-agenda .agenda-month-cell{padding-bottom:36px}
+.ff-agenda .agenda-month .agenda-event.compact{min-height:24px;height:24px}
+.ff-agenda .agenda-more,.ff-agenda .agenda-month-availability{min-height:24px;min-width:24px}
+.ff-agenda .agenda-mini button{min-width:24px;min-height:24px}
+.agenda-list{height:var(--calendar-height);overflow-y:auto;padding:8px 24px}
+.agenda-list>section{padding:20px 0;border-bottom:1px solid #dbe1e9}
+.agenda-list h3{margin:0 0 14px;font-size:18px;text-transform:capitalize}
+.agenda-list ul{padding:0;list-style:none;margin:0}
+.agenda-list li{padding:10px 0}
+.ff-agenda .agenda-list .agenda-event{position:static;height:auto;min-height:44px;width:100%;font-size:14px!important}
+.agenda-list p{font-size:13px;margin:8px 0;color:#52647c}
+.agenda-list-availability{display:block;min-height:44px;text-align:left;background:#f0f5fc;border:1px solid #c7d6eb;border-radius:6px;color:#173e70;padding:10px 14px;margin:8px 0;width:100%;font:inherit;font-size:14px}
+.agenda-list>.text-link,.agenda-list section>.text-link{min-height:44px;display:inline-flex;align-items:center}
+.action-confirmation{width:min(540px,calc(100vw - 28px));padding:0;border:1px solid #c9d4e6;border-radius:16px;color:#0f2d5b;background:white;max-height:90dvh;overflow:auto}
+.action-confirmation::backdrop{background:#0f2d5b66}
+.action-confirmation-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 22px;background:white;border-bottom:1px solid #dbe1e9}
+.action-confirmation-heading h2{font-size:22px;line-height:1.3;margin:0}
+.action-confirmation-body{padding:8px 22px 24px;font-size:15px;line-height:1.65;overflow-wrap:anywhere}
+.action-confirmation-body .registry-actions{gap:12px}
+@media(max-width:780px){.agenda-list{padding-inline:14px}.agenda-views{flex-wrap:wrap}}
+
+.file-upload-status{border:1px solid #c5d6eb;border-radius:8px;background:#f5f9ff;padding:14px 16px;margin:14px 0;min-width:0;font-size:14px}
+.file-upload-status p{margin:6px 0;overflow-wrap:anywhere}
+.file-upload-name{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.file-upload-name span{color:#52647c;font-size:13px;white-space:nowrap}
+.file-upload-meter{display:flex;align-items:center;gap:12px;margin:12px 0}
+.file-upload-meter progress{flex:1;min-width:0;height:12px;accent-color:#2460c1}
+.file-upload-status .button,.file-upload-status .text-link{min-height:44px;margin:8px 10px 0 0;white-space:normal}
+
+.ff-agenda .agenda-list .agenda-event b,.ff-agenda .agenda-list .agenda-event span{white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
+
+.video-accessibility-editor{width:calc(100% - 32px);max-width:740px;max-height:calc(100dvh - 32px);padding:0;border-radius:16px;overflow:auto;scroll-padding-top:110px;background:#fff}
+.video-editor-header{display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fff;padding:18px 24px;border-bottom:1px solid var(--line)}.video-editor-header h2{font-size:22px;line-height:1.3;overflow-wrap:anywhere}.video-editor-close{flex-shrink:0;display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--field-border);border-radius:8px;background:#fff}
+.video-accessibility-editor form{padding:12px 24px 24px}.video-accessibility-editor fieldset{border:0;margin:0;padding:0;min-width:0}.video-accessibility-editor label{display:block;margin-block:18px}.video-accessibility-editor :is(input,textarea){display:block;width:100%;max-width:100%;margin-top:8px;border:1px solid var(--field-border);border-radius:8px;padding:12px;background:#fff;color:var(--ink);font:inherit}.video-accessibility-editor [aria-invalid=true]{border-color:var(--field-error)}.video-accessibility-editor textarea{min-height:140px;resize:vertical}.video-accessibility-editor textarea[name=captions]{font-family:monospace;font-size:13px}.video-accessibility-editor .text-link{display:inline-flex;min-height:44px;align-items:center}.video-readiness{font-size:13px}
+.video-transcript{margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}.video-transcript summary{cursor:pointer;font-weight:600;min-height:44px;display:list-item}.video-transcript-copy{white-space:pre-wrap;overflow-wrap:anywhere;margin-block:18px}.video-lesson video{display:block;width:100%;aspect-ratio:16/9;background:#142341;border-radius:12px}.video-lesson>p{font-size:14px}
+@media(max-width:480px){.video-editor-header{padding:14px 16px}.video-editor-header h2{font-size:19px}.video-accessibility-editor form{padding:8px 16px 20px}.video-accessibility-editor input[type=file]{font-size:12px;padding:10px}.video-accessibility-editor .button{width:100%}}

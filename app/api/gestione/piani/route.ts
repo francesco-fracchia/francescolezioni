@@ -1,3 +1,4 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import { z } from 'zod';
 import { bookingDb } from '@/lib/booking/runtime';
 import { isRequestOwner } from '@/lib/request-admin';
@@ -25,7 +26,7 @@ export async function GET(request:Request){try{if(!await isRequestOwner())return
 }catch(e){return failure(e);}}
 export async function POST(request:Request){try{if(!await isRequestOwner())return failure(new LearningError('Accesso riservato al tutor.',403));
  sameOrigin(request);const raw=await request.text();if(raw.length>18000)throw new LearningError('Testo troppo lungo.',413);
- const parsed=command.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Controlla titolo, testi e data.');const p=parsed.data,db=bookingDb(),now=new Date().toISOString();
+ const parsed=command.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Controlla titolo, testi e data.',400,issueFieldErrors(parsed.error.issues));const p=parsed.data,db=bookingDb(),now=new Date().toISOString();
  const student=await db.prepare("SELECT id FROM students WHERE id=? AND status='active'").bind(p.studentId).first();if(!student)throw new LearningError('Ripristina lo studente prima di modificare il percorso.',409);
  const table=p.kind==='plan'?'study_plans':'lesson_summaries';
  let appointment:{ends_at:string;status:string}|null=null;

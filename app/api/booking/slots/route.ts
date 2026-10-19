@@ -12,7 +12,8 @@ export async function GET() { try {
  await reconcileExpiredBookings();
  await ensureSchedule();await ensureCalendarAvailability();
  const slots=await bookingDb().prepare(availableLessonSlotsSql).bind(new Date(Date.now()+86400000).toISOString()).all();
- return Response.json({slots:slots.results,paymentsReady:paymentConfig().ready,testMode:!paymentConfig().live},{headers:{'Cache-Control':'no-store'}});
+ const config=paymentConfig();
+ return Response.json({slots:slots.results,paymentsReady:config.ready,testMode:config.ready&&!config.live,checkoutMode:config.ready?(config.live?'live':'test'):'disabled'},{headers:{'Cache-Control':'no-store'}});
  } catch { return Response.json({error:'Calendario temporaneamente non disponibile.'},{status:503}); } }
 export async function POST(request:Request) {
  const user=await getChatGPTUser();

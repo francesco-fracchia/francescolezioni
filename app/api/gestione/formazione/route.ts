@@ -1,3 +1,5 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
+import {createHash} from 'node:crypto';
 import { env } from '@/lib/runtime-env';
 import { z } from 'zod';
 import { isRequestOwner } from '@/lib/request-admin';
@@ -5,6 +7,12 @@ import { bookingDb } from '@/lib/booking/runtime';
 import { failure,LearningError,privateHeaders,sameOrigin } from '@/lib/learning/access';
 import { readDirectForm } from '@/lib/uploads/server';
 import { discardUnusedFile } from '@/lib/homework/files';
+import {videoReady} from '@/lib/learning/video-accessibility';
+async function digestMaterial(stream:ReadableStream<Uint8Array>){
+ const hash=createHash('sha256'),reader=stream.getReader();let size=0;
+ try{while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>50*1024*1024)throw new LearningError('Il file supera 50 MB.',413);hash.update(part.value);}return hash.digest('hex');}
+ finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
+}
 const id=z.string().uuid();const title=z.string().trim().min(2).max(150);const status=z.enum(['draft','published','archived']);
 const position=z.number().int().min(0).max(999);
 const commands=z.discriminatedUnion('kind',[
@@ -28,7 +36,7 @@ export async function GET(){if(!await isRequestOwner())return new Response(null,
  }catch(e){return failure(e);}}
 export async function POST(request:Request){if(!await isRequestOwner())return new Response(null,{status:403});try{
  sameOrigin(request);const raw=await request.text();if(raw.length>40000)throw new LearningError('Contenuto troppo grande.',413);
- const parsed=commands.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Controlla i campi richiesti.');const p=parsed.data;
+ const parsed=commands.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Controlla i campi richiesti.',400,issueFieldErrors(parsed.error.issues));const p=parsed.data;
  const db=bookingDb();const now=new Date().toISOString();const recordId=('id' in p?p.id:undefined)||crypto.randomUUID();
  async function exists(table:string,value:string,active=false){if(!await db.prepare(`SELECT id FROM ${table} WHERE id=?${active?" AND status='active'":''}`).bind(value).first())throw new LearningError('La scheda selezionata non è disponibile.',404);}
  if(p.kind==='access'||p.kind==='revoke-access'){
@@ -45,7 +53,12 @@ export async function POST(request:Request){if(!await isRequestOwner())return ne
   if(p.id){const r=await db.prepare("UPDATE course_materials SET title=?,body=?,status=?,position=? WHERE id=? AND module_id=? AND kind='text'").bind(p.title,p.body,p.status,p.position,p.id,p.moduleId).run();if(!r.meta.changes)throw new LearningError('Materiale non disponibile.',404);}
   else await db.prepare("INSERT INTO course_materials(id,module_id,title,kind,body,status,position,created_at) VALUES(?,?,?,'text',?,?,?,?)").bind(recordId,p.moduleId,p.title,p.body,p.status,p.position,now).run();
  }else if(p.kind==='material-status'){
-  await exists('course_materials',p.id);await db.prepare('UPDATE course_materials SET status=?,position=?,title=COALESCE(?,title) WHERE id=?').bind(p.status,p.position,p.title??null,p.id).run();
+  const material=await db.prepare('SELECT kind,body,status FROM course_materials WHERE id=?').bind(p.id).first<{kind:string;body:string;status:string}>();
+  if(!material)throw new LearningError('Materiale non disponibile.',404);
+  if(material.kind==='video'&&p.status==='published'&&material.status!=='published'&&!videoReady(material.body))throw new LearningError('Aggiungi sottotitoli e trascrizione prima di rendere disponibile il video.',400);
+  const guarded=material.kind==='video'&&p.status==='published'&&material.status!=='published';
+  const updated=await db.prepare('UPDATE course_materials SET status=?,position=?,title=COALESCE(?,title) WHERE id=? AND (?=0 OR body=?)').bind(p.status,p.position,p.title??null,p.id,guarded?1:0,material.body).run();
+  if(!updated.meta.changes)throw new LearningError('Il materiale è stato aggiornato altrove. Aggiorna l’elenco prima di riprovare.',409);
  }else{
   await exists('students',p.studentId,true);await exists('courses',p.courseId);
   await db.prepare('INSERT INTO course_enrollments(student_id,course_id,status,created_at) VALUES(?,?,?,?) ON CONFLICT(student_id,course_id) DO UPDATE SET status=excluded.status').bind(p.studentId,p.courseId,p.status,now).run();
@@ -69,10 +82,20 @@ export async function PUT(request:Request){if(!await isRequestOwner())return new
  const valid=file.type==='application/pdf'?prefix.startsWith('%PDF-'):file.type==='image/png'?[137,80,78,71,13,10,26,10].every((v,i)=>bytes[i]===v):file.type==='image/jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:file.type==='video/mp4'?prefix.slice(4,8)==='ftyp':file.type==='video/webm'?[26,69,223,163].every((v,i)=>bytes[i]===v):false;
  if(!valid)throw new LearningError('Il contenuto del file non corrisponde al formato indicato.');
  const db=bookingDb();if(!await db.prepare('SELECT id FROM course_modules WHERE id=?').bind(moduleId.data).first())throw new LearningError('Modulo non disponibile.',404);
- const recordId=direct?direct.key.split('/').at(-1)!:crypto.randomUUID();key=direct?.key||`learning/${recordId}`;
+ const uploadId=form.get('uploadId');if(uploadId!==null&&!id.safeParse(uploadId).success)throw new LearningError('Identificativo del caricamento non valido. Riprova.',400);
+ const recordId=typeof uploadId==='string'?uploadId:direct?direct.key.split('/').at(-1)!:crypto.randomUUID();key=direct?.key||`learning/${crypto.randomUUID()}`;
+ const attachment=file;
+ async function sameMaterial(existing:Record<string,unknown>){
+  if(existing.module_id!==moduleId.data||existing.title!==label.data||existing.filename!==attachment.name.slice(0,200)||existing.mime!==attachment.type||existing.size!==attachment.size||existing.position!==order.data)return false;
+  if(existing.object_key===key)return true;
+  if(typeof existing.object_key!=='string')return false;
+  const stored=await env.BUCKET!.get(existing.object_key);if(!stored||stored.size!==attachment.size)return false;
+  const [incoming,saved]=await Promise.all([digestMaterial(attachment.stream()),digestMaterial(stored.body)]);return incoming===saved;
+ }
  const existing=await db.prepare('SELECT module_id,title,object_key,filename,mime,size,position FROM course_materials WHERE id=?').bind(recordId).first<Record<string,unknown>>();
- if(existing){if(existing.module_id===moduleId.data&&existing.title===label.data&&existing.object_key===key&&existing.filename===file.name.slice(0,200)&&existing.mime===file.type&&existing.size===file.size&&existing.position===order.data)return Response.json({ok:true,id:recordId},{headers:privateHeaders});throw new LearningError('Caricamento già utilizzato.',409);}
+ if(existing){if(await sameMaterial(existing)){await discardUnusedFile(key);return Response.json({ok:true,id:recordId},{headers:privateHeaders});}throw new LearningError('Questo invio è già stato usato per un materiale diverso. Scegli nuovamente il file.',409);}
  if(!direct)await env.BUCKET.put(key,file.stream(),{httpMetadata:{contentType:file.type}});
- await db.prepare("INSERT INTO course_materials(id,module_id,title,kind,object_key,filename,mime,size,status,position,created_at) VALUES(?,?,?,?,?,?,?,?,'draft',?,?)").bind(recordId,moduleId.data,label.data,file.type.startsWith('video/')?'video':'file',key,file.name.slice(0,200),file.type,file.size,order.data,new Date().toISOString()).run();
+ const inserted=await db.prepare("INSERT OR IGNORE INTO course_materials(id,module_id,title,kind,object_key,filename,mime,size,status,position,created_at) VALUES(?,?,?,?,?,?,?,?,'draft',?,?)").bind(recordId,moduleId.data,label.data,file.type.startsWith('video/')?'video':'file',key,file.name.slice(0,200),file.type,file.size,order.data,new Date().toISOString()).run();
+ if(!inserted.meta.changes){const raced=await db.prepare('SELECT module_id,title,object_key,filename,mime,size,position FROM course_materials WHERE id=?').bind(recordId).first<Record<string,unknown>>();if(!raced||!await sameMaterial(raced))throw new LearningError('Il caricamento è cambiato. Controlla l’elenco.',409);await discardUnusedFile(key);return Response.json({ok:true,id:recordId},{headers:privateHeaders});}
  return Response.json({ok:true,id:recordId},{status:201,headers:privateHeaders});
  }catch(e){await discardUnusedFile(key||null);return failure(e);}}

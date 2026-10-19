@@ -9,6 +9,7 @@ export async function GET(request:Request) {
  const booking=await db.prepare('SELECT status,stripe_session FROM bookings WHERE id=? AND access_token=?').bind(id,token).first<{status:string;stripe_session:string|null}>();
  if(booking) await reconcileBooking(id);
  const row=await bookingDb().prepare('SELECT b.status,s.starts_at,s.ends_at,s.mode FROM bookings b JOIN booking_slots s ON s.id=b.slot_id WHERE b.id=? AND b.access_token=?').bind(id,token).first();
- return row?Response.json({...row,testMode:!paymentConfig().live,payment_deadline:paymentDeadline(String(row.starts_at))},{headers:{'Cache-Control':'no-store'}}):Response.json({error:'Prenotazione non trovata.'},{status:404});
+ const config=paymentConfig();
+ return row?Response.json({...row,testMode:config.ready&&!config.live,checkoutMode:config.ready?(config.live?'live':'test'):'disabled',payment_deadline:paymentDeadline(String(row.starts_at))},{headers:{'Cache-Control':'no-store'}}):Response.json({error:'Prenotazione non trovata.'},{status:404});
  }catch{return Response.json({error:'Stato temporaneamente non disponibile.'},{status:503});}
 }

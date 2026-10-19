@@ -1,4 +1,5 @@
 'use client';
+import {safeFormMessage} from '@/components/forms/form-feedback';
 import { useEffect, useRef, useState } from 'react';
 import RequestContext from '@/components/management/request-context';
 import type { RequestRow } from '@/lib/requests/types';
@@ -38,7 +39,7 @@ export default function StudentHistory({ kind, id, name, onClose }: { kind: 'stu
   fetch(`/api/gestione/anagrafica/storico?kind=${kind}&id=${encodeURIComponent(id)}`, { signal: controller.signal }).then(async r => {
    if (!r.ok) throw Error('Non è stato possibile caricare lo storico.');
    return await r.json() as History;
-  }).then(setData).catch(e => { if (!controller.signal.aborted) setError(e.message); });
+  }).then(setData).catch(e => { if (!controller.signal.aborted) setError(safeFormMessage(e)); });
   return () => controller.abort();
  }, [kind, id, revision]);
  const appointments = data ? [...data.lessons, ...data.bookings].sort((a, b) => b.starts_at.localeCompare(a.starts_at)) : [];

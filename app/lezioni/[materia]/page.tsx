@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import WhatsAppIcon from '@/components/site/whatsapp-icon';
 import type { Metadata } from 'next';
 import {publicPageMetadata} from '@/lib/site-seo';
@@ -46,16 +47,16 @@ export default async function SubjectPage({ params }: Props) {
 
       <section className="subject-prices" aria-labelledby="prezzi-title">
         <h2 id="prezzi-title">Quanto costa</h2>
-        <p>{bookingRules.lessonMinutes} minuti a lezione · {bookingRules.bufferMinutes} minuti tra gli appuntamenti.</p>
+        <p>{bookingRules.lessonMinutes} minuti a lezione.</p>
         <dl><div><dt>Lezione individuale</dt><dd><strong>{bookingRules.individualPrice} €</strong> / lezione</dd></div><div><dt>Gruppo da 2 a {bookingRules.maxGroupSize} studenti</dt><dd><strong>{bookingRules.groupPrice} €</strong> a persona / lezione</dd></div></dl>
         <details className="reading-disclosure"><summary>Come organizziamo i gruppi</summary><p>{subject.group}</p><p>La lista è gratuita. Può servire tempo per trovare compagni compatibili; decidi tu se partecipare.</p></details>
         <div className="actions"><a className="text-link" href={`/?richiesta=group&materia=${slug}`}>Chiedi un gruppo</a><a className="text-link" href="/prezzi">Pacchetti e pagamenti</a></div>
-        <p className="subject-condition">Condizioni e cancellazioni si concordano prima della conferma.</p>
+        <a className="text-link" href="/prezzi#cancellazioni">Spostamenti e cancellazioni</a>
       </section>
 
 
       <section className="subject-lesson">
-        <div><h2>Durante la lezione</h2><p>{subject.lesson}</p><a className="text-link" href="/piattaforma">Esercizi, materiali e correzioni</a></div>
+        <div><h2>Durante la lezione</h2><p>{subject.lesson}</p><a className="text-link" href="/piattaforma">Area studente</a></div>
         <aside><h3>Cosa portare</h3><p>{subject.preparation}</p></aside>
       </section>
 
@@ -68,8 +69,8 @@ export default async function SubjectPage({ params }: Props) {
       </section>
 
       <section className="subject-programs">
-        <h2>Programmi da consultare</h2><p><a href="/esami">Argomenti e lezioni per gli esami universitari</a> · <a href="/maturita">Ripasso per la maturità</a></p>
-        <p>Puoi leggere gli argomenti dei percorsi. I corsi registrati sono in preparazione e non sono ancora in vendita.</p>
+        <h2>Programmi di ripasso</h2><p><a href="/esami">Argomenti e lezioni per gli esami universitari</a> · <a href="/maturita">Ripasso per la maturità</a></p>
+        <p>Consulta gli argomenti di ripasso per questa materia.</p>
         <div className="subject-page-links">{paths.map(path => <a key={path.slug} className="text-link" href={`/percorsi?percorso=${path.slug}`}>{path.name}</a>)}</div>
       </section>
 

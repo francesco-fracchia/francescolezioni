@@ -1,10 +1,11 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import {z} from 'zod';
 import {bookingDb} from '@/lib/booking/runtime';
 import {isRequestOwner} from '@/lib/request-admin';
 import {failure,LearningError,privateHeaders,sameOrigin} from '@/lib/learning/access';
 const schema=z.object({recipients:z.array(z.object({id:z.string().uuid(),studentId:z.string().uuid()}).strict()).min(2).max(30),title:z.string().trim().min(2).max(160),subject:z.string().trim().min(2).max(160),instructions:z.string().trim().min(1).max(10000),dueDate:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(s=>{const d=new Date(s+'T12:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===s;}).nullable(),status:z.enum(['draft','published'])}).strict().refine(p=>new Set(p.recipients.map(r=>r.id)).size===p.recipients.length&&new Set(p.recipients.map(r=>r.studentId)).size===p.recipients.length);
 export async function POST(request:Request){try{
- if(!await isRequestOwner())throw new LearningError('Accesso riservato al tutor.',403);sameOrigin(request);const raw=await request.text();if(raw.length>100000)throw new LearningError('Compito troppo lungo.',413);const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Scegli da 2 a 30 studenti distinti e controlla i testi.');
+ if(!await isRequestOwner())throw new LearningError('Accesso riservato al tutor.',403);sameOrigin(request);const raw=await request.text();if(raw.length>100000)throw new LearningError('Compito troppo lungo.',413);const parsed=schema.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Scegli da 2 a 30 studenti distinti e controlla i testi.',400,issueFieldErrors(parsed.error.issues));
  const p=parsed.data,db=bookingDb(),now=new Date().toISOString(),recipients=JSON.stringify(p.recipients);
  // One INSERT: all recipients must still be active and every reused id must match.
  // No partial batch, no shared submission, no file or private plan copied across students.

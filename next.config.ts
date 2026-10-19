@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
 import path from 'node:path';
+import {indexingExcludedPaths} from './lib/site-release.mjs';
 
 const runtime = process.env.VERCEL === '1' || process.env.APP_RUNTIME === 'vercel' ? 'vercel' : process.env.APP_RUNTIME === 'node' ? 'node' : 'cloudflare';
 const nodeRuntime = runtime === 'node';
@@ -13,6 +14,7 @@ const nextConfig: NextConfig = {
   env: { APP_RUNTIME: runtime },
   outputFileTracingRoot: process.cwd(),
   turbopack: { root: process.cwd() },
+  // Public images use pre-generated srcSet variants across all runtimes.
   images: { unoptimized: true },
   webpack(config, { webpack }) {
     // Workers must never bundle SQLite or filesystem code. The Node build
@@ -33,8 +35,8 @@ const nextConfig: NextConfig = {
     return config;
   },
   async headers() {
-    return ['/gestione/:path*','/studente/:path*','/api/:path*','/account','/accesso','/prenota','/pagamento'].map(source => ({
-      source, headers: [{ key:'X-Robots-Tag', value:'noindex, nofollow, noarchive' }],
+    return indexingExcludedPaths.map(source => ({
+      source:source+'/:path*', headers: [{ key:'X-Robots-Tag', value:'noindex, nofollow, noarchive' }],
     }));
   },
 };

@@ -1,3 +1,4 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import { z } from 'zod';
 import { bookingDb } from '@/lib/booking/runtime';
 import { getAccount } from '@/lib/auth/session';
@@ -9,7 +10,7 @@ export async function GET(request:Request){try{const account=await getAccount(re
 export async function POST(request:Request){try{
  sameOrigin(request);const account=await getAccount(request);if(!account||account.must_change_password)throw new LearningError('Accedi con il tuo account.',401);
  if(process.env.APP_RUNTIME!=='vercel'||!process.env.BLOB_STORE_ID)throw new LearningError('Caricamento diretto non disponibile.',409);
- const raw=await request.text();if(raw.length>2000)throw new LearningError('Dati troppo grandi.',413);const parsed=input.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Controlla il file selezionato.');const p=parsed.data;
+ const raw=await request.text();if(raw.length>2000)throw new LearningError('Dati troppo grandi.',413);const parsed=input.safeParse(JSON.parse(raw));if(!parsed.success)throw new LearningError('Controlla il file selezionato.',400,issueFieldErrors(parsed.error.issues));const p=parsed.data;
  if(!uploadTypes[p.kind].includes(p.mime)||p.size>(p.kind==='material'?50:10)*1024*1024)throw new LearningError('Formato o dimensione del file non consentiti.',413);
  const db=bookingDb();if(p.kind==='submission'){
   if(account.role!=='student')throw new LearningError('La consegna è riservata allo studente.',403);const scope=await studentScope(request);

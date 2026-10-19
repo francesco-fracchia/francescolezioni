@@ -1,3 +1,4 @@
+import '@/app/public.css';
 import {publicPageMetadata} from '@/lib/site-seo';
 import MaturityProgramme from '@/components/site/maturity-programme';
 import ContactForm from '@/components/site/contact-form';

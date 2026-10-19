@@ -109,6 +109,8 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
   assert.equal(vercelRuntimeReady({ ...credentials, VERCEL_RUNTIME_READY: '1' }), true);
   let configured = false;
   globalThis.__vercelProxy = { configured: () => configured, privateAccessAllowed, previewAllowed, previewPathAllowed };
+  const recoverySource = await readFile(new URL('../lib/page-recovery.ts', import.meta.url), 'utf8');
+  const recoveryModule = 'data:text/javascript;base64,' + Buffer.from(ts.transpileModule(recoverySource, {compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');
   const source = (await readFile(new URL('../proxy.ts', import.meta.url), 'utf8'))
     .replace(/import \{ NextResponse, type NextRequest \} from 'next\/server';/, `const NextResponse = {
       next: options => ({ kind: 'next', options }),
@@ -119,7 +121,8 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     .replace("import { getNodeResources } from '@/lib/node/runtime.mjs';", 'const getNodeResources = () => { throw Error("No local data on Vercel"); };')
     .replace("import { privateAccessAllowed } from './lib/node/private-access.mjs';", 'const privateAccessAllowed = globalThis.__vercelProxy.privateAccessAllowed;')
     .replace("import { getVercelResources, vercelRuntimeReady } from '@/lib/vercel/runtime.mjs';", 'const vercelRuntimeReady = globalThis.__vercelProxy.configured; const getVercelResources = () => ({DB:{prepare(){throw Error("No session query expected");}}});')
-    .replace("import { previewAllowed, previewPathAllowed } from '@/lib/site-preview.mjs';", 'const {previewAllowed,previewPathAllowed} = globalThis.__vercelProxy;');
+    .replace("import { previewAllowed, previewPathAllowed } from '@/lib/site-preview.mjs';", 'const {previewAllowed,previewPathAllowed} = globalThis.__vercelProxy;')
+    .replace("from '@/lib/page-recovery'", `from '${recoveryModule}'`);
   const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 } }).outputText;
   const { proxy } = await import('data:text/javascript;base64,' + Buffer.from(compiled).toString('base64'));
   const runtime = process.env.APP_RUNTIME, visibility = process.env.SITE_VISIBILITY, previewPassword = process.env.SITE_PREVIEW_PASSWORD;
@@ -136,7 +139,7 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     assert.equal(api.status, 503);
     const staticResponse = await proxy(new Request('https://site.example/_next/static/test.js'));
     assert.equal(staticResponse.kind, 'next');
-    for (const path of ['/favicon.svg?v=ff2', '/favicon.ico?v=ff2', '/apple-touch-icon.png?v=ff2']) {
+    for (const path of ['/privacy', '/favicon.svg?v=ff2', '/favicon.ico?v=ff2', '/apple-touch-icon.png?v=ff2']) {
       assert.equal((await proxy(new Request('https://site.example' + path))).kind, 'next');
       assert.equal(await privateAccessAllowed(new Request('https://site.example' + path), null, 'private'), true);
     }
@@ -162,7 +165,7 @@ test('Vercel stays closed without services; no local DB, public forms or forged 
     for (const path of ['/studente', '/gestione/prenotazioni', '/acquista']) {
       assert.equal((await proxy(new Request('https://site.example' + path))).url, 'https://site.example/accesso');
     }
-    for (const path of ['/preparazione', '/anteprima', '/accesso']) {
+    for (const path of ['/privacy', '/preparazione', '/anteprima', '/accesso']) {
       assert.equal((await proxy(new Request('https://site.example' + path))).kind, 'next');
     }
     assert.equal((await proxy(new Request('https://site.example/', {headers:{cookie:'ff_site_preview='+token}}))).kind, 'next');

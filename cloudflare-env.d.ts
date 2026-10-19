@@ -15,6 +15,7 @@ declare global {
     NOTIFICATIONS_MODE?: string;
     STRIPE_WEBHOOK_SECRET?: string;
     SITE_ORIGIN?: string;
+    SITE_VISIBILITY?: string;
     PUBLIC_SITE_INDEXING?: string;
     BOOKING_OWNER_USER_ID?: string;
     BOOKING_SCHEDULE_ENABLED?: string;

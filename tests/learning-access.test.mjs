@@ -9,15 +9,17 @@ const db={prepare(query){const bind=(...args)=>({async first(){return sql.prepar
 const objects=new Map();const env={BUCKET:{async put(key,stream){objects.set(key,new Uint8Array(await new Response(stream).arrayBuffer()));},async delete(key){objects.delete(key);},async get(key,{range}={}){const bytes=objects.get(key);if(!bytes)return null;const match=range?.get('range')?.match(/^bytes=(\d+)-(\d+)$/);const offset=match?Number(match[1]):0;const length=match?Number(match[2])-offset+1:bytes.length;return {body:new Blob([bytes.slice(offset,offset+length)]).stream(),size:bytes.length,httpEtag:'"test"',range:{offset,length}};}}};
 let user=null;let owner=false;
 globalThis.__learning={getAccount:async()=>user?{id:user.userId,must_change_password:0,auth_version:0}:null,isRequestOwner:async()=>owner,bookingDb:()=>db,env};
-async function compile(path,replace=s=>s){const s=replace(await readFile(new URL('../'+path,import.meta.url),'utf8')).replace("import { getAccount } from '@/lib/auth/session';",'const {getAccount}=globalThis.__learning;').replace(/import \{ isRequestOwner \} from '@\/lib\/request-admin';/g,'const {isRequestOwner}=globalThis.__learning;').replace(/import \{ bookingDb \} from '@\/lib\/booking\/runtime';/g,'const {bookingDb}=globalThis.__learning;').replace(/import \{ env \} from '@\/lib\/runtime-env';/g,'const {env}=globalThis.__learning;').replace("from 'zod'",'from '+JSON.stringify(import.meta.resolve('zod')));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText).toString('base64');}
+async function compile(path,replace=s=>s){const s=replace(await readFile(new URL('../'+path,import.meta.url),'utf8')).replace("import { getAccount } from '@/lib/auth/session';",'const {getAccount}=globalThis.__learning;').replace(/import \{ isRequestOwner \} from '@\/lib\/request-admin';/g,'const {isRequestOwner}=globalThis.__learning;').replace(/import \{ bookingDb \} from '@\/lib\/booking\/runtime';/g,'const {bookingDb}=globalThis.__learning;').replace(/import \{ env \} from '@\/lib\/runtime-env';/g,'const {env}=globalThis.__learning;').replace("from 'zod'",'from '+JSON.stringify(import.meta.resolve('zod')));return 'data:text/javascript;base64,'+Buffer.from(ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText.replace(/(['"])@\/lib\/form-errors\.mjs\1/g,JSON.stringify(new URL('../lib/form-errors.mjs',import.meta.url).href))).toString('base64');}
 const access=await compile('lib/learning/access.ts');
 const direct=await compile('lib/uploads/server.ts',s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from './claims.mjs'",'from '+JSON.stringify(new URL('../lib/uploads/claims.mjs',import.meta.url).href)));
 const homework=await compile('lib/homework/files.ts',s=>s.replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)));
-const fileModule=await compile('lib/learning/files.ts',s=>s.replace("from './access'",'from '+JSON.stringify(access)));
-const replace=s=>s.replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)).replace("from '@/lib/homework/files'",'from '+JSON.stringify(homework)).replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/learning/files'",'from '+JSON.stringify(fileModule));
+const videoModule=await compile('lib/learning/video-accessibility.ts');
+const fileModule=await compile('lib/learning/files.ts',s=>s.replace("from './access'",'from '+JSON.stringify(access)).replace("from './video-accessibility'",'from '+JSON.stringify(videoModule)));
+const replace=s=>s.replace("from '@/lib/learning/video-accessibility'",'from '+JSON.stringify(videoModule)).replace("from '@/lib/uploads/server'",'from '+JSON.stringify(direct)).replace("from '@/lib/homework/files'",'from '+JSON.stringify(homework)).replace("from '@/lib/learning/access'",'from '+JSON.stringify(access)).replace("from '@/lib/learning/files'",'from '+JSON.stringify(fileModule));
 const student=await import(await compile('app/api/studente/route.ts',replace));
 const files=await import(await compile('app/api/studente/materiali/route.ts',replace));
 const admin=await import(await compile('app/api/gestione/formazione/route.ts',replace));
+const videoEditor=await import(await compile('app/api/gestione/formazione/video/route.ts',replace));
 const adminFiles=await import(await compile('app/api/gestione/formazione/materiali/route.ts',replace));
 const progressView=await import(await compile('app/api/gestione/formazione/avanzamento/route.ts',replace));
 const base='https://site.example';
@@ -116,5 +118,44 @@ try{
   const spoofProof=signUploadClaim({actor:'owner',version:0,kind:'material',target:mod,key:spoofKey,filename:'spoof.pdf',mime:'application/pdf',size:objects.get(spoofKey).length,expires:Date.now()+60000},process.env.TURSO_AUTH_TOKEN);
   assert.equal((await admin.PUT(req('/api/gestione/formazione','PUT',{...payload,uploadProof:spoofProof}))).status,400);assert.equal(objects.has(spoofKey),false);
  } finally {if(previousSecret===undefined)delete process.env.TURSO_AUTH_TOKEN;else process.env.TURSO_AUTH_TOKEN=previousSecret;}
+ // Material uploads retain one record across a lost acknowledgement, concurrent
+ // transport retries, and a new signed object for the same explicit attempt.
+ owner=true;user={userId:'owner',email:'owner@example.com'};
+ const materialAttempt=crypto.randomUUID();
+ const multipart=(content='%PDF-1.7\nfirst',label='Materiale idempotente',uploadId=materialAttempt)=>{const f=new FormData();f.set('uploadId',uploadId);f.set('moduleId',mod);f.set('title',label);f.set('position','7');f.set('file',new File([content],'same-name.pdf',{type:'application/pdf'}));return new Request(base+'/api/gestione/formazione',{method:'PUT',headers:{Origin:base},body:f});};
+ const concurrentMaterial=await Promise.all([admin.PUT(multipart()),admin.PUT(multipart())]);
+ assert.deepEqual(concurrentMaterial.map(r=>r.status).sort(),[200,201]);
+ assert.equal(sql.prepare('SELECT count(*) n FROM course_materials WHERE id=?').get(materialAttempt).n,1);
+ const storedKey=sql.prepare('SELECT object_key FROM course_materials WHERE id=?').get(materialAttempt).object_key;
+ assert.equal(new TextDecoder().decode(objects.get(storedKey)),'%PDF-1.7\nfirst');
+ assert.equal((await admin.PUT(multipart())).status,200);
+ assert.equal((await admin.PUT(multipart('%PDF-1.7\nother'))).status,409); // same name, MIME and byte count, different content
+ assert.equal((await admin.PUT(multipart('%PDF-1.7\nfirst','Different title'))).status,409);
+ assert.equal((await admin.PUT(multipart('%PDF-1.7\nfirst','Materiale idempotente','invalid'))).status,400);
+ assert.equal(new TextDecoder().decode(objects.get(storedKey)),'%PDF-1.7\nfirst');
+ assert.equal(sql.prepare('SELECT count(*) n FROM course_materials WHERE id=?').get(materialAttempt).n,1);
+ // Video text alternatives have the exact same access scope as the video.
+ const videoId=crypto.randomUUID(),videoKey='learning/'+videoId,videoBytes=new Uint8Array(128);videoBytes.set(new TextEncoder().encode('ftyp'),4);objects.set(videoKey,videoBytes);
+ sql.prepare("INSERT INTO course_materials(id,module_id,title,kind,body,status,position,object_key,filename,mime,size,created_at) VALUES(?,?,?,'video','','draft',8,?,'fixture.mp4','video/mp4',128,?)").run(videoId,mod,'Video sintetico',videoKey,now);
+ const caption='WEBVTT\n\n00:00.000 --> 00:01.000\nEsempio di collaudo.';
+ const textPayload={id:videoId,expectedBody:'',captions:caption,transcript:'Esempio di collaudo.'};
+ owner=false;assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',textPayload))).status,403);
+ owner=true;assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',textPayload,'https://evil.example'))).status,403);
+ assert.equal((await admin.POST(req('/api/gestione/formazione','POST',{kind:'material-status',id:videoId,status:'published',position:8}))).status,400);
+ assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',{...textPayload,captions:'WEBVTT'}))).status,400);
+ assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',textPayload))).status,200);
+ assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',textPayload))).status,200); // Lost response: same data remains idempotent.
+ assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',{...textPayload,transcript:'Conflicting draft'}))).status,409);
+ await command({kind:'material-status',id:videoId,status:'published',position:8});
+ const storedBody=sql.prepare('SELECT body FROM course_materials WHERE id=?').get(videoId).body;
+ assert.equal((await videoEditor.POST(req('/api/gestione/formazione/video','POST',{...textPayload,expectedBody:storedBody,captions:''}))).status,400);
+ owner=false;user={userId:'parent',email:'parent@example.com'};
+ const scopedVideo=`/api/studente/materiali?studente=${a}&materiale=${videoId}`;
+ const captionsResponse=await files.GET(req(scopedVideo+'&formato=sottotitoli'));assert.equal(captionsResponse.status,200);assert.match(captionsResponse.headers.get('Content-Type'),/^text\/vtt/);assert.equal(captionsResponse.headers.get('Cache-Control'),'private, no-store');assert.equal((await captionsResponse.text()).trim(),caption);
+ const transcriptResponse=await files.GET(req(scopedVideo+'&formato=trascrizione'));assert.match(transcriptResponse.headers.get('Content-Disposition'),/attachment/);assert.equal((await transcriptResponse.text()).trim(),'Esempio di collaudo.');
+ assert.equal((await files.GET(req(`/api/studente/materiali?studente=${b}&materiale=${videoId}&formato=sottotitoli`))).status,404);
+ const ranged=await files.GET(new Request(base+scopedVideo,{headers:{Range:'bytes=4-11'}}));assert.equal(ranged.status,206);assert.equal(ranged.headers.get('Content-Range'),'bytes 4-11/128');assert.equal((await ranged.arrayBuffer()).byteLength,8);
+ owner=true;await command({kind:'material-status',id:videoId,status:'draft',position:8});owner=false;
+ assert.equal((await files.GET(req(scopedVideo+'&formato=trascrizione'))).status,404);
  console.log('PASS: explicit grants, stable identities, multi-child guardian, per-student history and balances, draft isolation, protected R2 files, revocations, progress persistence, owner preview and CSRF.');
 }finally{delete globalThis.__learning;sql.close();}

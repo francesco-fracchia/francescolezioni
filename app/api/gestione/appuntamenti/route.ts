@@ -1,3 +1,4 @@
+import {validationBody} from '@/lib/form-errors.mjs';
 import { isRequestOwner } from '@/lib/request-admin';
 import { bookingDb,stripe } from '@/lib/booking/runtime';
 import { reconcileLessonPayment } from '@/lib/booking/lesson-checkout';
@@ -46,5 +47,5 @@ export async function POST(request:Request){
   else statements.push(db.prepare(`UPDATE booking_slots SET starts_at=?,ends_at=?,mode=? WHERE id=? AND booking_id=? AND EXISTS(SELECT 1 FROM bookings WHERE ${mine})`).bind(start,end,mode,old.slot_id!,p.id,p.id,version,operationId));
   const result=await db.batch([...statements,...notices]);if(!result[0].meta.changes)return Response.json({error:'L’appuntamento è cambiato. Ricarica.'},{status:409});
   const notifications=await dispatchAppointmentNotices();return Response.json({ok:true,notifications,refundPercent,refundReview:p.action==='cancel'&&(old.payment_status==='paid'||old.status==='confirmed'||old.payment_status==='payment_review')});
- }catch(e){if(e instanceof z.ZodError)return Response.json({error:'Dati dell’appuntamento non validi.'},{status:400});const msg=String(e);return Response.json({error:msg.includes('LESSON_CONFLICT')?'Questo orario si sovrappone a un appuntamento o a un blocco. Nessuna modifica salvata.':msg.includes('PAYMENT_UNRESOLVED')?'Un pagamento è ancora in verifica. Il posto resta occupato: riprova dopo il controllo Stripe.':'Non siamo riusciti a modificare l’appuntamento. Riprova.'},{status:msg.includes('LESSON_CONFLICT')?409:503});}
+ }catch(e){if(e instanceof z.ZodError)return Response.json(validationBody(e),{status:400});const msg=String(e);return Response.json({error:msg.includes('LESSON_CONFLICT')?'Questo orario si sovrappone a un appuntamento o a un blocco. Nessuna modifica salvata.':msg.includes('PAYMENT_UNRESOLVED')?'Un pagamento è ancora in verifica. Il posto resta occupato: riprova dopo il controllo Stripe.':'Non siamo riusciti a modificare l’appuntamento. Riprova.'},{status:msg.includes('LESSON_CONFLICT')?409:503});}
 }

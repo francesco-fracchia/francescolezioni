@@ -1,3 +1,4 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import { z } from 'zod';
 import { createHash } from 'node:crypto';
 import { bookingDb } from '@/lib/booking/runtime';
@@ -8,7 +9,7 @@ import { discardUnusedFile,homeworkFile,putHomeworkFile,readHomeworkForm,uploade
 export async function GET(request:Request){try{const scope=await studentScope(request),selected=new URL(request.url).searchParams.get('studente')||scope.students[0]?.id;if(!selected)return Response.json({assignments:[],submissions:[],truncated:false,canSubmit:false},{headers:privateHeaders});if(!scope.students.some(s=>s.id===selected))throw new LearningError('Accesso non consentito.',403);const account=scope.preview?null:await getAccount(request);return Response.json({...await homeworkData(selected,true),canSubmit:account?.role==='student'&&!scope.preview},{headers:privateHeaders});}catch(e){return failure(e);}}
 export async function POST(request:Request){let key:string|null=null;try{
  sameOrigin(request);const scope=await studentScope(request);if(scope.preview)throw new LearningError('L’anteprima è in sola lettura.',403);const account=await getAccount(request);if(!account||account.role!=='student')throw new LearningError('La consegna è riservata all’account studente. Il referente può consultare.',403);
- const f=await readHomeworkForm(request);key=uploadedHomeworkKey(f)||null;const parsed=z.object({id:z.string().uuid(),assignmentId:z.string().uuid(),body:z.string().trim().max(10000)}).safeParse({id:f.get('id'),assignmentId:f.get('assignmentId'),body:f.get('body')||''});if(!parsed.success)throw new LearningError('Controlla il testo della consegna.');const p=parsed.data,db=bookingDb();
+ const f=await readHomeworkForm(request);key=uploadedHomeworkKey(f)||null;const parsed=z.object({id:z.string().uuid(),assignmentId:z.string().uuid(),body:z.string().trim().max(10000)}).safeParse({id:f.get('id'),assignmentId:f.get('assignmentId'),body:f.get('body')||''});if(!parsed.success)throw new LearningError('Controlla il testo della consegna.',400,issueFieldErrors(parsed.error.issues));const p=parsed.data,db=bookingDb();
  const task=await db.prepare("SELECT id,student_id FROM homework_assignments WHERE id=? AND status='published'").bind(p.assignmentId).first<{id:string;student_id:string}>();if(!task||!scope.students.some(s=>s.id===task.student_id))throw new LearningError('Compito non disponibile.',403);
  const file=await homeworkFile(f.get('file'));if(!p.body&&!file)throw new LearningError('Scrivi una risposta o allega un file.');
  const hash=createHash('sha256').update(JSON.stringify([p.body,file?.hash||'',file?.filename||'',file?.mime||''])).digest('hex');

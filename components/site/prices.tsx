@@ -13,9 +13,10 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             <p className="duration">
               <Clock size={16} aria-hidden="true" /> 55 minuti
             </p></div><CardArt kind="individual" /></div>
-            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong></div>
-            <a className="button dark" href="/acquista">Acquista lezioni</a>
-            <button className="text-link calendar-link" onClick={() => open("contact")}>Chiedi informazioni</button>
+            <p className="individual-choice">Puoi fare una singola lezione o scegliere il pacchetto se prevedi di continuare.</p>
+            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong><p>19 € per lezione · pagamento unico</p></div>
+            <div className="price-student-actions"><a className="button dark" href="/incontro">È la prima volta? Incontro gratuito</a><a className="text-link" href="/acquista">Sei già studente? Acquista</a></div>
+            <p className="price-account-note">Ti attivo l’account dopo aver concordato programma e disponibilità.</p>
           </article>
           <article className="price-card group-price">
             <div className="price-card-heading"><div><h2>Lezioni di gruppo</h2>

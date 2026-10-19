@@ -1,3 +1,4 @@
+import {issueFieldErrors} from '@/lib/form-errors.mjs';
 import { z } from 'zod';
 import { isRequestOwner } from '@/lib/request-admin';
 import { bookingDb } from '@/lib/booking/runtime';
@@ -6,7 +7,7 @@ export async function GET(request:Request){
   if(!await isRequestOwner())return new Response(null,{status:403});
   try{
     const courseId=z.string().uuid().safeParse(new URL(request.url).searchParams.get('corso'));
-    if(!courseId.success)throw new LearningError('Corso non valido.');
+    if(!courseId.success)throw new LearningError('Corso non valido.',400,issueFieldErrors(courseId.error.issues));
     const db=bookingDb();
     const course=await db.prepare('SELECT id,title,status FROM courses WHERE id=?').bind(courseId.data).first();
     if(!course)throw new LearningError('Corso non disponibile.',404);

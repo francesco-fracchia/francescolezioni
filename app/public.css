@@ -4,6 +4,14 @@
 .public-announcement{background:#0f2d5b;color:#fff;text-align:center;font-size:13px;padding:7px 20px}.public-announcement a{text-decoration:underline;text-underline-offset:3px;color:#d4e3ff}
 .public-shell .public-header{position:sticky;top:0;z-index:80;background:#fff;backdrop-filter:none;max-width:none;padding:0;display:block;border-bottom:1px solid #dce2ed;margin:0}
 .public-header-inner{max-width:1264px;display:flex;align-items:center;gap:24px;margin:auto;padding:14px 32px;min-height:88px}.public-header .brand{flex-shrink:0}.public-header .brand-logo{width:205px;height:58px}.public-shell .public-navigation{display:flex;align-items:center;gap:21px;position:static;padding:0;background:none;box-shadow:none;border:0;font-size:14px;margin-left:auto}.public-navigation>a{white-space:nowrap;padding:10px 0}.public-navigation>a[aria-current=page]{color:#2459b3;box-shadow:inset 0 -2px #2459b3;font-weight:700}.public-navigation .public-student{display:flex;align-items:center;gap:3px;font-size:12px;border-left:1px solid #dce2ed;padding-left:16px;color:#647084}.public-book{flex-shrink:0;min-height:44px;font-size:13px;padding:10px 14px}.public-menu{display:none}
+
+.public-mobile-dialog{width:min(420px,calc(100% - 24px));max-width:none;max-height:calc(100dvh - 24px);margin:12px auto;padding:16px 18px 22px;border:1px solid #dce2ed;border-radius:14px;background:#fafbfe;color:var(--ink);font:inherit;box-shadow:0 16px 48px #0f2d5b30;overscroll-behavior:contain}
+.public-mobile-dialog::backdrop{background:#0f2343a6}
+.public-mobile-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:8px}
+.public-mobile-heading>strong{font-size:18px}
+.public-mobile-close{display:grid;place-items:center;min-width:44px;min-height:44px;border:1px solid #dce2ed;border-radius:8px;background:white;color:inherit}
+.public-shell .public-mobile-dialog .public-navigation{display:flex;position:static;flex-direction:column;align-items:stretch;gap:0;margin:0;padding:0;max-height:none;overflow:visible;border:0;background:transparent;box-shadow:none}
+
 .public-footer{max-width:none;background:#edf2fa;border-top:1px solid #dce2ed;padding:45px 0 105px;margin:0;display:block;font-size:15px}.public-footer>.wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px}.public-footer strong{font-size:20px}.public-footer p{margin:10px 0 18px}.public-shell .public-footer nav{display:grid;grid-template-columns:1fr 1fr;gap:15px 25px;position:static;background:none;padding:0;border:0;box-shadow:none;font-size:14px}.whatsapp-link{display:inline-flex;align-items:center;gap:6px}.whatsapp-floating{position:fixed;left:auto;right:max(24px,env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));z-index:90;display:flex;align-items:center;justify-content:center;width:56px;height:56px;min-height:56px;border-radius:50%;padding:0;background:#25d366;color:white;box-shadow:0 4px 14px #103a4b25;border:2px solid white}.whatsapp-floating .whatsapp-icon{width:28px;height:28px}.whatsapp-floating:hover{background:#20c45c}body:has([aria-modal=true]) .whatsapp-floating{visibility:hidden}
 .public-shell #public-content:focus{outline:none}.public-shell main{min-width:0}.public-shell .subject-page{padding-top:44px;padding-bottom:64px}.public-shell .subject-intro{max-width:830px}.public-shell .subject-intro h1,.public-intro h1{font-size:clamp(2.25rem,4.2vw,3.7rem);line-height:1.14}.public-shell .subject-intro>p{font-size:17px;max-width:760px}.public-shell .subject-audience{font-size:13px;color:#406aa5;letter-spacing:.01em;margin:0 0 14px}.public-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.public-panel{border:1px solid #dce2ed;border-radius:16px;padding:30px;background:#fff;min-width:0}.public-panel h2{font-size:clamp(1.5rem,2.5vw,2rem);margin:12px 0 18px}.public-panel h3{font-size:23px}.public-panel>svg{color:#376eb9}.public-panel p{font-size:16px;max-width:760px}.public-spaced{margin-top:32px}.public-disclosure{margin-top:32px;border-top:1px solid #dce2ed;border-bottom:1px solid #dce2ed;padding:22px 0;max-width:850px}.public-disclosure summary{font-size:21px;font-weight:700;cursor:pointer}.public-disclosure p{max-width:760px}.public-search{display:block;font-size:14px;max-width:620px;margin:24px 0}.public-search input{display:block;width:100%;margin-top:8px;background:white;min-height:48px}.public-shell .public-faq{display:block;max-width:850px}.public-faq details{border-bottom:1px solid #dce2ed}.public-faq summary{display:flex;justify-content:space-between;align-items:center;gap:20px;cursor:pointer;font-size:17px;padding:20px 0}.public-faq summary svg{flex-shrink:0}.public-faq p{padding:0 0 16px;max-width:760px}.public-intro{padding-top:44px}.public-intro>p{max-width:650px}.public-prices #prezzi{padding-top:32px}.public-prices #prezzi>.section-heading{display:none}.public-payment{padding-top:24px;padding-bottom:64px}.public-payment h2{font-size:28px}.public-payment p{max-width:780px}
 .public-shell .home-compact .hero{grid-template-columns:1.08fr 1fr;gap:46px;padding-top:35px;padding-bottom:65px;overflow:clip}.home-compact .hero h1{font-size:clamp(2.6rem,4.5vw,4.1rem);line-height:1.08}.home-compact .hero-copy>p{max-width:510px;font-size:18px;margin:20px 0}.home-compact .hero-copy>.subject-audience{font-size:13px;margin:0 0 14px}.home-compact .hero .actions{margin-top:22px}.home-compact .hero small{font-size:13px;max-width:440px}.home-compact .hero-copy>.hero-rates{font-size:14px;line-height:1.8;margin-top:20px}.home-compact .hero-rates>a{display:inline;font-size:14px}.home-compact .study-scene{padding:28px 8px}.home-compact .study-window{transform:none;animation:copy-enter .6s ease both}.home-compact .scene-caption{transform:none;bottom:-8px}.home-compact .scene-symbol-a{font-size:55px;left:0}.home-compact .scene-symbol-b{font-size:28px}.home-compact .study-window>.graph-title{padding-top:16px}.home-compact .study-window>svg{max-height:270px}.home-compact .graph-control{padding-bottom:18px}.home-compact .graphic-explanation{margin-bottom:16px}.home-compact .code-example{min-height:415px}.home-compact .code-example pre{margin:14px 0 20px}
@@ -197,7 +205,7 @@
 .guide-subjects button[aria-pressed=true]{background:#f4f7fc;border-color:#376eb9;box-shadow:inset 0 0 0 1px #376eb9}
 .subject-choice-check{width:22px;height:22px;border:1px solid #b4c9ec;border-radius:50%;display:grid;place-items:center;flex-shrink:0;margin-left:auto}
 .guide-subjects button[aria-pressed=true] .subject-choice-check{background:#0f2d5b;border-color:#0f2d5b;color:white}
-.public-shell .guide-exam select{min-height:48px;border-radius:10px;padding:12px;font-size:15px;border:1px solid #b4c9ec;cursor:pointer}
+.public-shell .guide-exam select{min-height:48px;border-radius:10px;padding:12px;font-size:15px;border:1px solid var(--field-border);cursor:pointer}
 @media(hover:hover) and (pointer:fine){.guide-subjects button:hover{border-color:#376eb9;background:#f4f7fc}}
 @media(max-width:780px){.home-guide{padding-top:28px}}
 @media(max-width:560px){.guide-subjects>div{grid-template-columns:1fr}.guide-subjects button{min-height:76px;padding:14px}.hero-formats{margin:24px 0}}
@@ -348,6 +356,9 @@
 .public-shell :is(.text-link, .path-tabs button, .graphic-tabs button){min-height:44px}
 .public-shell .text-link{display:inline-flex;align-items:center}
 .public-shell .request-step-title{font-size:21px;margin:0 0 8px;scroll-margin-top:24px}
+.request-companion{border:0;min-width:0;padding:0;margin:4px 0 12px}
+.request-companion>legend{padding:0;margin-bottom:8px;font-size:15px;font-weight:700}
+.request-companion>label{min-width:0}
 .public-shell .request-step-title:focus,.public-shell .modal h2[tabindex="-1"]:focus{outline:none}
 .public-shell .form-note{font-size:13px!important}
 .public-shell .public-navigation a{scroll-margin-block:12px}
@@ -627,3 +638,94 @@
 .public-shell:has([aria-modal=true]) .referral-banner{visibility:hidden}
 @media(hover:hover) and (pointer:fine){.referral-banner-minimize:hover{background:#d7e6fc}.referral-banner-toggle:hover{background:#f4f7fc;color:#2459b3;border-color:#b4c9ec}.referral-banner-link:hover{color:#2459b3}}
 @media(max-width:780px){.referral-banner{left:max(12px,env(safe-area-inset-left));right:auto;bottom:calc(76px + env(safe-area-inset-bottom));max-width:calc(100vw - 24px);padding:14px 18px 16px}.referral-banner.is-minimized{bottom:calc(12px + env(safe-area-inset-bottom));max-width:calc(100vw - 84px)}}
+
+/* Privacy stays readable in the full page and in the existing dialog. */
+.privacy-page{max-width:960px}.privacy-policy{max-width:800px}.privacy-policy>section{margin-top:32px;padding-top:24px;border-top:1px solid #dce2ed}.privacy-policy h2{font-size:23px;margin:0 0 14px}.privacy-policy p,.privacy-policy li,.privacy-policy dd{font-size:15px;line-height:1.75;overflow-wrap:anywhere}.privacy-policy ul{padding-left:22px}.privacy-policy li+li{margin-top:12px}.privacy-policy a{color:#245bb0;text-decoration:underline;text-underline-offset:3px}.privacy-policy a:focus-visible{outline:2px solid #598ae1;outline-offset:3px}.privacy-retention{margin:0}.privacy-retention>div{padding:14px 0;border-bottom:1px solid #e5ebf3}.privacy-retention dt{font-size:15px;font-weight:600}.privacy-retention dd{margin:6px 0 0;color:#4e5e73}.privacy-policy .reading-note{font-size:13px}.privacy-policy a:hover{color:#0f2d5b}
+
+/* Unsaved work: the same confirmation is used by public and private forms. */
+
+/* First purchase, availability and confirmations: secondary details stay compact. */
+.price-student-actions{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.price-student-actions .button{max-width:100%;white-space:normal;text-align:center}
+.public-shell .price-account-note{max-width:36em;margin:18px 0 0;font-size:13px;line-height:1.6}
+.lesson-availability{margin:28px 0;scroll-margin-top:110px}.lesson-availability>.availability-mode{max-width:300px;margin:20px 0}.lesson-availability-picker{display:grid;grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:24px;align-items:start;margin:20px 0}.lesson-availability-picker h3{margin-top:0}
+.available-lesson-times{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;list-style:none;padding:0;margin:0}.available-lesson-times li{display:flex;flex-direction:column;gap:5px;padding:12px;border:1px solid #a4b5ce;border-radius:9px;background:#f7faff}.available-lesson-times strong{font-size:15px}.available-lesson-times span{font-size:12px;color:#465a74}
+.response-expectation{margin:16px 0 22px}.response-expectation p{font-size:14px;line-height:1.6;margin:6px 0}.response-expectation .whatsapp-link{display:inline;white-space:normal}.response-expectation .whatsapp-icon{display:inline-block;vertical-align:middle;width:16px;height:16px;margin-right:4px}
+.consultation-receipt .actions{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0}.consultation-receipt .button{display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:normal}.consultation-receipt textarea{width:100%;font:inherit;line-height:1.6;resize:vertical}
+@media(max-width:700px){.lesson-availability-picker{grid-template-columns:minmax(0,1fr)}.consultation-receipt .actions>*{flex:1 1 220px}.price-student-actions{align-items:stretch}}
+
+.consultation-receipt .actions form{margin:0}.consultation-receipt .actions form .button{width:100%}
+
+/* R18–R22: early credentials, optional mobile demos and compact, readable dialogs. */
+.home-compact .hero-credential{display:flex;flex-direction:column;gap:3px;width:fit-content;margin:0 0 20px;font-size:13px;line-height:1.5;color:var(--home-muted);text-decoration:none}
+.home-compact .hero-credential strong{font-size:15px;color:var(--home-ink);font-weight:600}
+.home-compact .hero-credential:hover strong{text-decoration:underline;text-underline-offset:4px}
+.home-preview{min-width:0}.home-preview-toggle{display:none}.home-preview-content{min-width:0}
+.public-prices .price-grid{align-items:start}
+.public-prices .price-card .individual-choice{font-size:14px;line-height:1.6;margin:0 0 20px;color:#52647c}
+.modal:has(>.modal-header){padding:0;max-height:min(94dvh,1000px);scroll-padding-top:80px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid #d8e2f1;padding:10px 24px;border-radius:18px 18px 0 0}
+.modal-header>span{font-size:14px;font-weight:600;color:#0f2d5b;line-height:1.4}
+.modal-header .close{position:static;flex-shrink:0;width:44px;height:44px}
+.modal-body{padding:24px 32px 32px;container-type:inline-size;container-name:public-form}
+.modal-body h2{padding-right:0}.modal .request-step-title{scroll-margin-top:80px}
+.request-review-groups{display:grid;gap:20px;margin-block:24px}
+.request-review-groups>section{min-width:0;border-top:1px solid #d8e2f1;padding-top:16px}
+.request-review-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.request-review-heading h4{margin:0;font-size:17px;color:#0f2d5b}
+.modal .request-review-heading .text-link{margin:0;min-height:44px;font-size:13px;display:inline-flex;align-items:center}
+.request-review-groups .request-review{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px}
+.request-review-groups .request-review>div{padding:0;border:0;min-width:0}
+.request-review-groups .request-review dt{color:#52647c}
+.request-review-groups .request-review dd{font-size:14px;line-height:1.6}
+@container public-form (max-width:480px){.form-grid{grid-template-columns:minmax(0,1fr)}.request-review-groups .request-review{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:780px){
+ .home-compact .home-preview-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:48px;padding:12px 0;border:0;border-top:1px solid #d8e2f1;background:transparent;text-align:left;font-size:14px;font-weight:500;color:var(--home-blue)}
+ .home-preview[data-expanded="false"]>.home-preview-content{display:none}
+ .home-preview[data-expanded="true"]>.home-preview-toggle svg{transform:rotate(180deg)}
+ .public-shell .home-compact .hero{gap:12px;padding-bottom:28px}
+ .home-compact .hero-credential{margin-block:18px;font-size:12px}
+ .home-compact .hero-credential strong{font-size:14px}
+ .home-compact .home-format-grid article{padding:20px}
+ .home-compact .home-format-price strong{font-size:52px}
+ .home-compact .home-format-grid .home-format-price{margin-top:14px}
+ .modal-header{padding-inline:20px}
+ .modal-body{padding:20px 22px 26px}
+}
+@media(max-width:480px){.modal-body .form-grid{grid-template-columns:minmax(0,1fr)}.modal-body .request-review{grid-template-columns:minmax(0,1fr)}}
+
+/* Shared native dialogs isolate the background in the browser's top layer. */
+.site-native-dialog{width:calc(100% - 50px);max-width:680px;box-sizing:border-box}
+.group-first-contact{border:0;min-width:0;padding:0;margin:0}
+.group-optional-details{border-top:1px solid #d8e2f1;padding-top:14px;margin:8px 0 20px}
+.group-optional-details summary{cursor:pointer;font-size:14px;line-height:1.6;padding-block:8px;color:#315a91}
+.group-optional-details[open] summary{margin-bottom:14px}
+@media(max-width:780px){.site-native-dialog{width:calc(100% - 24px)}}
+
+/* Consultable revision outlines, separate from future recorded courses. */
+.revision-outline{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);column-gap:48px;row-gap:24px;border-top:3px solid #3975bd;padding:32px 0}
+.revision-heading{align-self:start}
+.revision-outline h2{margin:12px 0;font-size:clamp(1.6rem,3vw,2.1rem)}
+.revision-status{display:inline-block;color:#245a99;background:#edf4fc;border-radius:5px;padding:5px 10px;font-size:13px;font-weight:600}
+.revision-outline ol{grid-column:2;grid-row:1 / span 2;list-style:none;counter-reset:revision;margin:0;padding:0}
+.revision-outline li{counter-increment:revision;display:flex;align-items:baseline;gap:18px;border-bottom:1px solid #d6e0ee;padding:17px 0;font-size:17px}
+.revision-outline li::before{content:counter(revision,decimal-leading-zero);color:#3975bd;font:14px ui-monospace,monospace}
+.revision-outline .button{justify-self:start;align-self:start}
+.revision-recordings{border-top:1px solid #d6e0ee;padding-top:24px;margin-top:24px;max-width:740px}
+.revision-recordings h2{font-size:19px}
+.revision-recordings p{font-size:15px}
+.exam-cards .exam-plan-audience{font-size:14px;margin-top:-6px}
+.studio-directions{margin:24px 0}
+.studio-directions>div{padding:14px 0;border-bottom:1px solid #d6e0ee}
+.studio-directions dt{font-weight:650;margin-bottom:5px}
+.studio-directions dd{margin:0}
+.studio-links{display:flex;align-items:flex-start;flex-direction:column;gap:12px}
+@media(max-width:640px){
+ .revision-outline{grid-template-columns:minmax(0,1fr);gap:18px;padding-top:24px}
+ .revision-outline ol{grid-column:auto;grid-row:auto}
+ .revision-page .path-tabs{gap:8px}
+ .revision-page .path-tabs button{flex:1 1 140px;padding:11px 12px}
+ .revision-outline li{font-size:16px}
+}
+
+.assessment-navigation{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}.assessment-navigation .button{min-height:46px;white-space:normal}.assessment-counts{font-size:14px;font-weight:500}
+@media(max-width:480px){.assessment-navigation .button{flex:1 1 180px}}

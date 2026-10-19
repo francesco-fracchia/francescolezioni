@@ -21,7 +21,7 @@ export default function StudyGuide(){
         <p>{subject==='matematica'?'Equazioni, funzioni e geometria, con gli esercizi della tua classe.':'Logica, programmazione, database, sistemi e reti, con le consegne e il codice del tuo corso.'}</p>
         <a className="button dark" href={'/lezioni/'+subject}>Argomenti e modalità<ArrowRight className="action-arrow" aria-hidden="true" size={18}/></a>
       </>:need==='universita'?<>
-        <h3>{plan.name} · da {recommendedLessons(plan)} lezioni di ripasso</h3><p>Proposta per chi ha già seguito il corso. Puoi togliere argomenti o aggiungere esercitazioni.</p><a className="button dark" href={'/esami/'+plan.slug}>Scegli gli argomenti<ArrowRight className="action-arrow" aria-hidden="true" size={18}/></a>
+        <h3>{plan.name}</h3><p>Esempio di piano: {recommendedLessons(plan)} lezioni di ripasso, per chi ha già seguito il corso. Puoi togliere argomenti o aggiungere esercitazioni.</p><a className="button dark" href={'/esami/'+plan.slug}>Scegli gli argomenti<ArrowRight className="action-arrow" aria-hidden="true" size={18}/></a>
       </>:<>
         <h3>Un primo blocco di 5 lezioni individuali a 95 €</h3><p>Matematica, Informatica o Sistemi e Reti. Anche in gruppo da 2 a 4 studenti, a 15 € a persona.</p><a className="button dark" href="/maturita">Il ripasso per la maturità<ArrowRight className="action-arrow" aria-hidden="true" size={18}/></a>
       </>}</div>
