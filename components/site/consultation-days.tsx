@@ -13,6 +13,6 @@ export default function ConsultationDays({days,selected,onSelect}:{days:string[]
    {['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].map(day=><span className="calendar-weekday" key={day}>{day}</span>)}
    {Array.from({length:offset},(_,i)=><span key={'blank-'+i}/>)}
    {Array.from({length:count},(_,i)=>{const day=month+'-'+String(i+1).padStart(2,'0'),available=days.includes(day);return <button key={day} type="button" disabled={!available} aria-pressed={day===selected} aria-label={consultationDate(day+'T12:00:00.000Z')+(available?' · orari disponibili':' · nessun orario')} onClick={()=>onSelect(day)}>{i+1}</button>;})}
-  </div><p className="form-note">Puoi scegliere i giorni con orari disponibili.</p>
+  </div>
  </div>;
 }
