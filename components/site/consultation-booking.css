@@ -1,0 +1,70 @@
+/* Loaded with the booking component, on its page and inside public dialogs. */
+.public-shell .consultation-page{max-width:1000px}
+.consultation-booking{min-width:0}
+.consultation-booking>h1{font-size:clamp(28px,4vw,40px);line-height:1.18}
+.consultation-booking .consultation-fields{margin:28px 0 20px}
+.consultation-booking .consultation-picker{display:grid;grid-template-columns:minmax(260px,300px) minmax(0,1fr);gap:36px;align-items:start;padding-bottom:28px;border-bottom:1px solid #dce2ed}
+.consultation-booking .consultation-calendar{margin:0;max-width:none}
+.consultation-booking .consultation-month{font-size:15px;min-height:44px}
+.consultation-booking .consultation-month .button{width:40px;min-height:40px;padding:8px}
+.consultation-booking .consultation-day-grid{gap:4px}
+.consultation-booking .calendar-weekday{text-align:center;font-size:12px;color:#536175;padding-block:5px}
+.consultation-booking .consultation-day-grid button{font-size:14px;min-height:40px}
+.consultation-booking .consultation-day-times{min-width:0}
+.consultation-booking .consultation-day-times h3{font-family:inherit;font-size:18px;font-weight:700;line-height:1.4;letter-spacing:0;margin:0 0 8px;text-transform:capitalize}
+.consultation-booking .consultation-time-note{font-size:13px;color:#536175;margin:0 0 16px;line-height:1.6}
+.consultation-booking .consultation-bands{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.consultation-booking .consultation-bands button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:8px 10px;border:1px solid #b3c1d4;border-radius:8px;background:#fff;color:#102b54;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.consultation-booking .consultation-bands button>span{display:inline-grid;place-items:center;min-width:20px;height:20px;padding-inline:4px;border-radius:5px;background:#edf2f9;font-size:11px;font-weight:500}
+.consultation-booking .consultation-bands button[aria-pressed=true]{background:#102b54;color:#fff;border-color:#102b54}
+.consultation-booking .consultation-bands button[aria-pressed=true]>span{background:#ffffff24}
+.consultation-booking .consultation-time-chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.consultation-booking .consultation-time-chips label{position:relative;display:flex;align-items:center;justify-content:center;min-height:48px;padding:10px 6px;margin:0;border:1px solid #8b9bb3;border-radius:8px;background:#fff;color:#102b54;font-size:15px;font-weight:600;text-align:center;cursor:pointer}
+.consultation-booking .consultation-time-chips label.selected{background:#eaf1ff;border-color:#245bb0;color:#173e84;box-shadow:inset 0 0 0 1px #245bb0}
+.consultation-booking .consultation-time-chips small{display:block;font-size:11px;font-weight:400;line-height:1.4;margin-top:3px}
+.consultation-booking :is(.consultation-time-chips,.consultation-mode) input[type=radio]{position:absolute;width:1px;height:1px;min-width:0;min-height:0;margin:0;padding:0;border:0;opacity:0;clip-path:inset(50%);overflow:hidden}
+.consultation-booking :is(.consultation-time-chips,.consultation-mode) label:has(input:focus-visible){outline:3px solid #376eb9;outline-offset:3px}
+.consultation-booking .consultation-selection{margin:24px 0;padding:20px;background:#f5f8fc;border:1px solid #c9d5e7;border-radius:12px}
+.consultation-booking .consultation-selection>strong{display:block;font-size:15px;line-height:1.5;text-transform:capitalize}
+.consultation-booking .consultation-selection>p{font-size:13px;margin:12px 0 0;line-height:1.6}
+.consultation-booking .consultation-mode{border:0;padding:0;margin:16px 0 0;min-width:0}
+.consultation-booking .consultation-mode legend{font-size:13px;font-weight:500;padding:0;margin-bottom:10px}
+.consultation-booking .consultation-mode>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.consultation-booking .consultation-mode label{position:relative;display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;margin:0;padding:10px;border:1px solid #8b9bb3;border-radius:8px;background:#fff;color:#102b54;font-size:14px;cursor:pointer}
+.consultation-booking .consultation-mode label.selected{border-color:#245bb0;background:#eaf1ff;box-shadow:inset 0 0 0 1px #245bb0;color:#173e84;font-weight:600}
+.consultation-booking .consultation-mode svg{flex-shrink:0}
+.consultation-booking .consultation-details-heading{font-family:inherit;font-size:18px;letter-spacing:0;margin:28px 0 18px}
+.consultation-booking .form-grid{gap:18px 20px}
+.consultation-booking .form-grid>label{margin:0;min-width:0}
+.consultation-booking label{font-size:14px;line-height:1.5}
+.consultation-booking :is(input:not([type=radio]):not([type=checkbox]),select,textarea){display:block;box-sizing:border-box;width:100%;min-height:48px;padding:12px;margin-top:7px;border:1px solid #718096;border-radius:8px;background-color:#fff;color:#102b54;font:inherit;font-size:16px;line-height:1.4}
+.consultation-booking select{appearance:none;padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23536175' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:16px;background-position:right 13px center}
+.consultation-booking textarea{min-height:96px;resize:vertical}
+.consultation-booking :is(input,textarea)::placeholder{color:#647084;opacity:1;font-size:14px}
+.consultation-booking .consultation-referral{max-width:340px;margin:20px 0}
+.consultation-booking .form-privacy{font-size:12px;line-height:1.7;padding:14px;margin:20px 0 16px;background:#f5f8fc;border-radius:8px}
+.consultation-booking .checkbox{font-size:13px;line-height:1.6;gap:10px;margin:16px 0 4px}
+.consultation-booking .checkbox input{box-sizing:border-box;width:18px;height:18px;min-height:18px;margin:2px 0 0;padding:0;accent-color:#245bb0}
+.consultation-booking .consultation-fields :is(input,select,textarea)[aria-invalid=true]{border-color:var(--field-error);box-shadow:inset 0 0 0 1px var(--field-error)}
+.consultation-booking .button[type=submit]{min-height:48px}
+.modal .consultation-booking .consultation-picker{grid-template-columns:minmax(0,1fr);gap:24px}
+@media(hover:hover){
+ .consultation-booking .consultation-bands button:not([aria-pressed=true]):hover{background:#f1f5fb;border-color:#245bb0}
+ .consultation-booking :is(.consultation-time-chips,.consultation-mode) label:hover{border-color:#245bb0;background:#f1f5fb}
+}
+@media(max-width:780px){
+ .consultation-booking .consultation-picker{grid-template-columns:minmax(0,1fr);gap:26px}
+ .consultation-booking .consultation-calendar{max-width:380px;width:100%;margin-inline:auto}
+ .consultation-booking .consultation-day-times h3{font-size:17px}
+}
+@media(max-width:480px){
+ .consultation-booking .consultation-time-chips{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ .consultation-booking .consultation-bands{gap:6px}
+ .consultation-booking .consultation-bands button{padding:8px;font-size:12px;gap:6px}
+ .consultation-booking .consultation-bands button>span{min-width:18px;height:18px;font-size:10px}
+ .consultation-booking .form-grid{grid-template-columns:minmax(0,1fr);gap:18px}
+ .consultation-booking .consultation-selection{padding:16px}
+ .consultation-booking .consultation-mode label{gap:6px;padding:10px 7px;font-size:13px}
+ .consultation-booking .consultation-referral{max-width:none}
+ .consultation-booking .button[type=submit]{width:100%}
+}
