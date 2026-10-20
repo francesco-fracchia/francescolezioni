@@ -1,5 +1,5 @@
 "use client";
-import {MapPin,Monitor,CalendarDays,ArrowRight,NotebookPen} from 'lucide-react';
+import {MapPin,Video,CalendarDays,ArrowRight,ArrowUpRight,NotebookPen} from 'lucide-react';
 import Portrait from './portrait';
 import StudyGraphic from './study-graphic';
 import HomePreview from './home-preview';
@@ -18,9 +18,9 @@ export default function Landing({open}:{open:OpenDialog}){
     <h1>Ripetizioni di matematica<br/><span>e informatica</span></h1>
     <p>Seguo ragazzi delle superiori e studenti universitari, a Lodi oppure online. Possiamo recuperare un argomento, preparare una verifica o lavorare sugli esercizi di un esame.</p>
     <a className="hero-credential" href="/francesco"><strong>Francesco Fracchia</strong><span>Laureato in Informatica, studente magistrale</span></a>
-    <div className="hero-formats">
-     <div><MapPin size={19} aria-hidden="true"/><span><strong>Lezioni in presenza a Lodi</strong><small>Studio in {studio.address}</small></span></div>
-     <div><Monitor size={19} aria-hidden="true"/><span><strong>Lezioni in videochiamata</strong><small>Lavagna digitale e schermo condiviso</small></span></div>
+    <div className="hero-formats" role="group" aria-label="Dove si svolgono le lezioni">
+     <a href={studio.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`In studio a Lodi, ${studio.address}. Apri su Google Maps in una nuova scheda`}><MapPin size={20} aria-hidden="true"/><span><strong>In studio a Lodi<ArrowUpRight size={14} aria-hidden="true"/></strong><small>{studio.address}</small></span></a>
+     <a href="/lodi#lezioni-online"><Video size={20} aria-hidden="true"/><span><strong>Lezioni online<ArrowRight size={14} aria-hidden="true"/></strong><small>Come si svolgono</small></span></a>
     </div>
     <div className="actions"><a className="button dark" href="/incontro"><CalendarDays aria-hidden="true" size={19}/>Prenota un incontro gratuito</a><a className="text-link hero-whatsapp" href="https://wa.me/393500316324" target="_blank" rel="noopener noreferrer"><WhatsAppIcon/>Scrivimi su WhatsApp</a></div>
    </div>
