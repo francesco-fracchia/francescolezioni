@@ -1,7 +1,7 @@
 'use client';
 import {useState} from 'react';
 import {consultationTime,type ConsultationSlot} from '@/lib/consultations';
-const bands=[{id:'morning',label:'Mattina',from:0,to:12},{id:'afternoon',label:'Pomeriggio',from:12,to:17},{id:'evening',label:'Sera',from:17,to:24}];
+const bands=[{id:'morning',label:'Mattina',from:0,to:12},{id:'afternoon',label:'Pomeriggio',from:12,to:24}];
 const hour=(s:ConsultationSlot)=>Number(consultationTime(s.starts_at).split(':')[0]);
 const modeLabel=(s:ConsultationSlot)=>s.mode==='Entrambe'?'Online o in presenza':s.mode==='Lodi'?'In presenza a Lodi':'Online';
 export default function ConsultationTimes({slots,selected,onSelect}:{slots:ConsultationSlot[];selected:string;onSelect:(slot:ConsultationSlot|null)=>void}){
