@@ -14,14 +14,14 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
               <Clock size={16} aria-hidden="true" /> 55 minuti
             </p></div><CardArt kind="individual" /></div>
             <p className="individual-choice">Ogni lezione individuale dura 55 minuti e costa 20 €.</p>
-            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 100 €</strong><p>20 € per lezione · pagamento unico</p></div>
+            <div className="package-price-note"><span>Pacchetto individuale</span><strong>5 lezioni · 95 €</strong><p>19 € per lezione · pagamento unico</p></div>
             <div className="price-student-actions"><a className="button dark" href="/incontro">È la prima volta? Incontro gratuito</a><a className="text-link" href="/acquista">Sei già studente? Acquista</a></div>
             <p className="price-account-note">Ti attivo l’account dopo aver concordato programma e disponibilità.</p>
           </article>
           <article className="price-card group-price">
             <div className="price-card-heading"><div><h2>Lezioni di gruppo</h2>
             <div className="price">
-              20 €<span>/ persona</span>
+              15 €<span>/ persona</span>
             </div>
             <p className="duration">
               <Clock size={16} /> 55 minuti <span>·</span>
@@ -30,7 +30,7 @@ export default function Prices({open}:{open:OpenDialog}){const [groupSize,setGro
             <div className="group-explorer">
               <div className="group-explorer-top"><span>Quanti siete?</span><div className="group-size-options" role="group" aria-label="Numero di studenti">{([2,3,4] as const).map(size => <button key={size} aria-pressed={groupSize === size} onClick={() => setGroupSize(size)}>{size}</button>)}</div></div>
               <div className="group-people" aria-hidden="true">{Array.from({length:4},(_,i) => <span key={i} className={i < groupSize ? 'present' : ''}><UserRound size={22}/></span>)}</div>
-              <p className="group-total"><b>20 €</b> a persona · {groupSize} studenti</p><p className="group-example" aria-live="polite">{groupSize===2?'Per esempio, due compagni che preparano la stessa verifica.':groupSize===3?'Per esempio, tre universitari dello stesso corso, con un appello comune.':'Per esempio, quattro compagni con lo stesso programma da ripassare.'}</p>
+              <p className="group-total"><b>15 €</b> a persona · {groupSize} studenti</p><p className="group-example" aria-live="polite">{groupSize===2?'Per esempio, due compagni che preparano la stessa verifica.':groupSize===3?'Per esempio, tre universitari dello stesso corso, con un appello comune.':'Per esempio, quattro compagni con lo stesso programma da ripassare.'}</p>
             </div>
             <div className="actions">
               <button className="button dark" onClick={() => open("group", undefined, false, groupSize)}>

@@ -1,6 +1,6 @@
 export const schoolSubjects = ['Matematica', 'Informatica', 'Sistemi e Reti'];
 export const universitySubjects = ['Analisi 1', 'Algebra Lineare e Geometria', 'Fondamenti di Informatica', 'Algoritmi', 'Programmazione 1', 'Programmazione 2 / Java', 'C++', 'Basi di Dati', 'Architettura degli Elaboratori', 'Probabilità e Statistica per Informatica', 'Fisica 1'];
-export const bookingRules = { lessonMinutes: 55, bufferMinutes: 5, consultationMinutes: 15, maxGroupSize: 4, individualPrice: 20, groupPrice: 20 };
+export const bookingRules = { lessonMinutes: 55, bufferMinutes: 5, consultationMinutes: 15, maxGroupSize: 4, individualPrice: 20, groupPrice: 15 };
 export type Question = { topic: string; text: string; options: string[]; correct: number; explanation: string };
 export const tests: Record<string, Question[]> = {
  'Matematica superiori': [

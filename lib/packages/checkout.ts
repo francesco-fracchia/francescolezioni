@@ -12,7 +12,7 @@ export async function reconcilePurchase(id:string){
 export async function openPurchase(id:string,studentId:string,units:1|5){
  const config=paymentConfig();if(!config.ready)throw new LearningError('I pagamenti online non sono ancora disponibili.',503);
  const db=bookingDb(),now=new Date().toISOString();
- await db.prepare("INSERT INTO lesson_packages(id,student_id,amount,units,unit_amount,payment_method,created_at,live_mode) SELECT ?,id,?,?,?,'online',?,? FROM students WHERE id=? AND status='active' ON CONFLICT(id) DO NOTHING").bind(id,units===5?10000:2000,units,2000,now,config.live?1:0,studentId).run();
+ await db.prepare("INSERT INTO lesson_packages(id,student_id,amount,units,unit_amount,payment_method,created_at,live_mode) SELECT ?,id,?,?,?,'online',?,? FROM students WHERE id=? AND status='active' ON CONFLICT(id) DO NOTHING").bind(id,units===5?9500:2000,units,units===5?1900:2000,now,config.live?1:0,studentId).run();
  const read=()=>db.prepare('SELECT * FROM lesson_packages WHERE id=? AND student_id=?').bind(id,studentId).first<Purchase>();
  let p=await read();if(!p||p.units!==units||p.payment_method!=='online'||!!p.live_mode!==!!config.live)throw new LearningError('Acquisto non disponibile.',409);
  await reconcilePurchase(id);p=await read();if(!p||p.status!=='awaiting')throw new LearningError('Acquisto già saldato o chiuso. Aggiorna la pagina.',409);

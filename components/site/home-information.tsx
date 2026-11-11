@@ -9,12 +9,12 @@ export function LessonFormats({open}:{open:OpenDialog}){
    <article className="home-format-individual">
     <h3 className="home-format-heading"><UserRound size={22} aria-hidden="true"/>Lezioni individuali</h3>
     <p className="home-format-price"><strong>20 €</strong><span>per lezione · 55 minuti</span></p>
-    <p className="home-format-package"><strong>5 lezioni · 100 €</strong></p>
+    <p className="home-format-package"><strong>5 lezioni · 95 €</strong></p>
     <a className="button outline" href="/incontro">Incontro gratuito<ArrowRight size={18} aria-hidden="true"/></a>
    </article>
    <article className="home-format-group">
     <h3 className="home-format-heading"><Users size={22} aria-hidden="true"/>Lezioni di gruppo</h3>
-    <p className="home-format-price"><strong>20 €</strong><span>a persona, per lezione · 55 minuti</span></p>
+    <p className="home-format-price"><strong>15 €</strong><span>a persona, per lezione · 55 minuti</span></p>
     <p className="home-format-group-size">Da 2 a 4 studenti</p>
     <div className="actions"><button className="button outline" onClick={()=>open('group',undefined,true)}>Ho già un compagno</button><button className="text-link" onClick={()=>open('group')}>Cerco un gruppo<ArrowRight size={18} aria-hidden="true"/></button></div>
    </article>

@@ -16,7 +16,7 @@ export default function Landing({open}:{open:OpenDialog}){
   <section className="hero wrap marketing-hero">
    <div className="hero-copy">
     <h1>Ripetizioni di matematica<br/><span>e informatica</span></h1>
-    <p>Sono Francesco e insegno informatica al Volta di Lodi. Per le lezioni private di matematica e informatica, partiamo dagli argomenti che stai studiando e li affrontiamo con calma, a Lodi o online.</p>
+    <p>Lezioni di matematica e informatica, a Lodi e online. Lavoriamo sugli argomenti del tuo programma e sugli esercizi per cui ti serve una mano.</p>
     <a className="hero-credential" href="/francesco"><strong>Francesco Fracchia</strong><span>Docente di informatica al Volta di Lodi</span></a>
     <div className="hero-formats" role="group" aria-label="Dove si svolgono le lezioni">
      <a href={studio.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`In studio a Lodi, ${studio.address}. Apri su Google Maps in una nuova scheda`}><MapPin size={20} aria-hidden="true"/><span><strong>In studio a Lodi<ArrowUpRight size={14} aria-hidden="true"/></strong><small>{studio.address}</small></span></a>
@@ -32,7 +32,7 @@ export default function Landing({open}:{open:OpenDialog}){
    <div className="home-tutor-photo"><Portrait placement="home"/></div>
    <div>
     <h2 id="home-tutor-title">Ciao, sono Francesco</h2>
-    <p>Insegno informatica al Volta di Lodi e tengo lezioni private di matematica e informatica. Seguiamo gli argomenti del tuo programma, con il tempo necessario per fare domande e riprendere i passaggi meno chiari.</p>
+    <p>Durante la lezione lavoriamo sul programma che stai seguendo: riprendiamo i passaggi da chiarire e svolgiamo esercizi, con i tuoi tempi.</p>
 
     <div className="actions"><a className="text-link" href="/francesco">Chi sono<ArrowRight size={18} aria-hidden="true"/></a><a className="text-link" href="/metodo">Come lavoro a lezione<ArrowRight size={18} aria-hidden="true"/></a><button className="text-link" onClick={()=>open('test')}>Prova il test gratuito</button></div>
    </div>

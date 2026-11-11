@@ -21,7 +21,7 @@ export const recommendedLessons=(plan:ExamPlan)=>plan.blocks.reduce((sum,b)=>sum
 export function examEstimate(plan:ExamPlan,indices:number[],extra:number){
  const selected=plan.blocks.filter((_,i)=>indices.includes(i));const lessons=selected.reduce((sum,b)=>sum+b.lessons,0)+extra;
  const packages=Math.floor(lessons/5),singles=lessons%5;
- return {selected,lessons,packages,singles,individual:packages*100+singles*bookingRules.individualPrice,group:lessons*bookingRules.groupPrice};
+ return {selected,lessons,packages,singles,individual:packages*95+singles*bookingRules.individualPrice,group:lessons*bookingRules.groupPrice};
 }
 export function examContactMessage(params:{piano?:string|string[];argomenti?:string|string[];extra?:string|string[]}){
  if(typeof params.piano!=='string'||typeof params.argomenti!=='string')return '';
