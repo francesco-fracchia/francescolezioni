@@ -16,8 +16,6 @@ export default function Landing({open}:{open:OpenDialog}){
   <section className="hero wrap marketing-hero">
    <div className="hero-copy">
     <h1>Ripetizioni di matematica<br/><span>e informatica</span></h1>
-    <p>Lezioni di matematica e informatica, a Lodi e online. Lavoriamo sugli argomenti del tuo programma e sugli esercizi per cui ti serve una mano.</p>
-    <a className="hero-credential" href="/francesco"><strong>Francesco Fracchia</strong><span>Docente di informatica al Volta di Lodi</span></a>
     <div className="hero-formats" role="group" aria-label="Dove si svolgono le lezioni">
      <a href={studio.mapsUrl} target="_blank" rel="noopener noreferrer" aria-label={`In studio a Lodi, ${studio.address}. Apri su Google Maps in una nuova scheda`}><MapPin size={20} aria-hidden="true"/><span><strong>In studio a Lodi<ArrowUpRight size={14} aria-hidden="true"/></strong><small>{studio.address}</small></span></a>
      <a href="/lodi#lezioni-online"><Video size={20} aria-hidden="true"/><span><strong>Lezioni online<ArrowRight size={14} aria-hidden="true"/></strong><small>Come si svolgono</small></span></a>
