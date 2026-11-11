@@ -11,7 +11,7 @@ export async function POST(request:Request){if(!await isRequestOwner())return Re
  const selectedGroup=p.groupId?await resolveGroup(p.groupId):null;
  const people=selectedGroup?selectedGroup.members:await Promise.all((p.participants||[{name:p.name,email:p.email,studentId:p.studentId}]).map(resolveStudent));
  if(new Set(people.map(x=>x.email.toLowerCase())).size!==people.length)return Response.json({error:'Inserisci un’email diversa per ogni partecipante.'},{status:400});
- const amount=people.length===1?2000:1500;const groupId=selectedGroup?.id||(people.length>1?crypto.randomUUID():null);
+ const amount=2000;const groupId=selectedGroup?.id||(people.length>1?crypto.randomUUID():null);
  const registryStatements=groupId&&!selectedGroup?[
  db.prepare('INSERT INTO student_groups(id,name,subject,created_at,updated_at) VALUES(?,?,?,?,?)').bind(groupId,p.name,p.subject,new Date().toISOString(),new Date().toISOString()),
  ...people.map(s=>db.prepare('INSERT INTO group_members(group_id,student_id) VALUES(?,?)').bind(groupId,s.id))]:[];
