@@ -25,7 +25,7 @@ export async function POST(request:Request){try{
  const p=schema.parse(JSON.parse(raw)),db=bookingDb(),now=new Date().toISOString();
  if(p.kind==='create'){
  const old=await db.prepare('SELECT student_id,payment_method FROM lesson_packages WHERE id=?').bind(p.id).first<{student_id:string;payment_method:string}>();if(old){if(old.student_id===p.studentId&&old.payment_method===p.method)return Response.json({ok:true},{headers:privateHeaders});throw new LearningError('Identificativo già utilizzato.',409);}
- const r=await db.prepare("INSERT INTO lesson_packages(id,student_id,amount,units,unit_amount,payment_method,created_at) SELECT ?,id,9500,5,1900,?,? FROM students WHERE id=? AND status='active' ON CONFLICT(id) DO NOTHING").bind(p.id,p.method,now,p.studentId).run();
+ const r=await db.prepare("INSERT INTO lesson_packages(id,student_id,amount,units,unit_amount,payment_method,created_at) SELECT ?,id,10000,5,2000,?,? FROM students WHERE id=? AND status='active' ON CONFLICT(id) DO NOTHING").bind(p.id,p.method,now,p.studentId).run();
  if(!r.meta.changes){const winner=await db.prepare('SELECT student_id,payment_method FROM lesson_packages WHERE id=?').bind(p.id).first<{student_id:string;payment_method:string}>();if(winner?.student_id===p.studentId&&winner.payment_method===p.method)return Response.json({ok:true},{headers:privateHeaders});throw new LearningError('Studente non disponibile.',409);}
  return Response.json({ok:true},{status:201,headers:privateHeaders});
  }

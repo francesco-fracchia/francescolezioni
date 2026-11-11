@@ -41,7 +41,7 @@ export async function openLessonCheckout(id:string,token:string){
   p=await readLessonPayment(id,token);if(!p||p.status!=='pending')throw Error('CLOSED');
  }
  if(!p.attempt_key||!p.checkout_expires_at)throw Error('UNAVAILABLE');
- const body=new URLSearchParams({mode:'payment',locale:'it','payment_method_types[0]':'card','line_items[0][price_data][currency]':'eur','line_items[0][price_data][unit_amount]':String(p.amount),'line_items[0][price_data][product_data][name]':`${p.subject} · 55 minuti${p.amount===1500?' · quota personale':''}`,'line_items[0][quantity]':'1',customer_email:p.email,'metadata[lesson_payment_id]':id,'metadata[attempt_key]':p.attempt_key,success_url:returnUrl,cancel_url:returnUrl,expires_at:String(p.checkout_expires_at)});
+ const body=new URLSearchParams({mode:'payment',locale:'it','payment_method_types[0]':'card','line_items[0][price_data][currency]':'eur','line_items[0][price_data][unit_amount]':String(p.amount),'line_items[0][price_data][product_data][name]':`${p.subject} · 55 minuti${p.amount===2000?' · quota personale':''}`,'line_items[0][quantity]':'1',customer_email:p.email,'metadata[lesson_payment_id]':id,'metadata[attempt_key]':p.attempt_key,success_url:returnUrl,cancel_url:returnUrl,expires_at:String(p.checkout_expires_at)});
  if(p.checkout_paypal===1)body.set('payment_method_types[1]','paypal');
  // The persisted attempt keeps retries identical even if Stripe times out.
  const session=await stripe('checkout/sessions',body,p.attempt_key);
